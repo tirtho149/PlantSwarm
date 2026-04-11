@@ -88,8 +88,14 @@ model:
   max_new_tokens: 512
   image_size: 448
   vllm_base_url: "http://localhost:8000/v1"
+  # Chat token logprobs (entropy_routing always forces True). Used by VLLMClient.chat_with_logprobs.
   logprobs: true
+  # Constrained label scoring (Appendix B); vision-conditioned when image is present.
   guided_choice: true
+  # vLLM ≥0.12: structured_outputs.choice; set false to prefer legacy guided_choice only.
+  prefer_structured_outputs: true
+  # If true, require GET /v1/models to list model.backbone before running (fail-fast).
+  strict_server_model: false
   # Chat logprobs depth for token-level entropy (entropy_routing orchestrator)
   top_logprobs: 20
 

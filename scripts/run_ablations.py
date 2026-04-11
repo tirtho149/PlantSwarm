@@ -22,7 +22,7 @@ import yaml
 
 from ablations.runner import run_all_ablations
 from data.loader import PlantDiagBenchLoader
-from utils.vllm_client import VLLMClient
+from utils.vllm_client import VLLMClient, configure_vllm_client_from_yaml, validate_model_server_matches_config
 
 
 def parse_args():
@@ -61,6 +61,8 @@ def main():
         seed=cfg["model"]["seed"],
         max_new_tokens=cfg["model"]["max_new_tokens"],
     )
+    configure_vllm_client_from_yaml(client, cfg.get("model"), orchestrator="autogen_swarm")
+    validate_model_server_matches_config(cfg)
 
     rw = cfg.get("routing") or {}
     print(f"\nRunning factorial ablations (Table 3) on task {args.task}...")

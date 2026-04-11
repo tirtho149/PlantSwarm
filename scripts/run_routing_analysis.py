@@ -45,7 +45,7 @@ from utils.routing_trace import (
     save_traces,
 )
 from utils.hedge_lexicon import HedgeScorer
-from utils.vllm_client import VLLMClient
+from utils.vllm_client import VLLMClient, configure_vllm_client_from_yaml, validate_model_server_matches_config
 
 
 def parse_args():
@@ -83,6 +83,9 @@ def main():
         seed=cfg["model"]["seed"],
         max_new_tokens=cfg["model"]["max_new_tokens"],
     )
+    configure_vllm_client_from_yaml(client, cfg.get("model"), orchestrator="autogen_swarm")
+    validate_model_server_matches_config(cfg)
+
     pipeline = AutoGenPlantSwarmPipeline(
         client,
         label_space,

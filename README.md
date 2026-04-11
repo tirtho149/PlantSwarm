@@ -114,6 +114,20 @@ python scripts/run_bias_analysis.py --config configs/default.yaml
 
 Default orchestration is **AutoGen Swarm** (`--orchestrator autogen_swarm`). For **entropy-driven routing** from vLLM chat logprobs, use `--orchestrator entropy_routing` (see `plantswarm/entropy_pipeline.py`). The value `classic` is rejected.
 
+### Experiment readiness checklist
+
+Before a full benchmark, align **config**, **server**, and **data**:
+
+| Check | What to verify |
+|--------|----------------|
+| **OpenAI-compatible server** | `GET {vllm_base_url}/models` succeeds (script prints a line when OK). |
+| **Model id** | Optional: set `model.strict_server_model: true` so `model.backbone` must appear in that list (fail-fast). |
+| **Label scoring** | `model.guided_choice: true` enables vision-conditioned **Appendix B** scoring via `/chat/completions` when an image is present; `prefer_structured_outputs` matches vLLM ≥0.12 (`structured_outputs.choice`). If vision scoring fails, the client warns and may fall back to text-only `/completions`. |
+| **Entropy routing** | `entropy_routing` forces chat token logprobs on `VLLMClient`; set `model.logprobs: true` for other orchestrators if you use any path that calls `chat_with_logprobs`. |
+| **Nova / Slurm** | Job templates under `scripts/slurm/` use `partition=nova` and scratch paths—edit for your site. |
+| **Colab** | Notebook may cache HF weights; inference still uses `vllm_base_url` from YAML. |
+| **Secrets** | Copy `.env.example` → `.env` and set `HF_TOKEN` if a gated dataset is used. |
+
 1. **Manual step-by-step** (good for debugging each stage)
 2. **Bundled full run** (recommended for reproducible experiments and Slurm)
 
@@ -218,7 +232,27 @@ Use `configs/plantdoc_github.yaml`: set `data.plantdoc_repo_root`, `data.plantdo
 
 Cluster scripts share one **Nova / ISU scratch** template: `nodes=1`, `cpus-per-task=4`, `mem=32G`, `time=24:00:00`, `gres=gpu:1`, `partition=nova`, logs under `/work/mech-ai-scratch/tirtho/CyAg/PlantSwarm/logs/`, `chdir` to that `PlantSwarm` tree, and mail to `tirtho@iastate.edu`. Copy from `scripts/run_all_tests.slurm` or any `scripts/slurm/*.slurm` when adding jobs; only `--job-name`, optional `--array`, and `%j` vs `%A_%a` in log names differ.
 
-Submit examples:
+### One allocation (vLLM + bundle on the same GPU node)
+
+If you only have **one Slurm job** (one node, one GPU), you cannot run a separate long-lived inference service elsewhere. Use **`scripts/run_single_allocation.sh`**: it starts **`vllm serve`** on `127.0.0.1`, waits until **`GET /v1/models`** succeeds, merges **`model.vllm_base_url`** to match, runs **`scripts/run_experiment_bundle.sh`**, then stops vLLM.
+
+Required environment variables: **`PYTHON_BIN`**, **`CONFIG_PATH`**, **`RESULTS_DIR`**, **`VLLM_MODEL`** (same Hugging Face id as **`model.backbone`** in your YAML). Optional: **`VLLM_EXTRA_ARGS`**, **`VLLM_READY_TIMEOUT_SEC`**, **`SINGLE_ALLOC_CMD`** (custom command instead of the full bundle).
+
+Slurm example (edit `WORKDIR`, `ENV_PATH`, `chdir`, logs, **`VLLM_MODEL`**):
+
+```bash
+sbatch scripts/slurm/run_bundle_single_allocation.slurm
+```
+
+Manual test on an interactive GPU session:
+
+```bash
+export PYTHON_BIN=python3 CONFIG_PATH=configs/qwen25_vl_3b_smoke.yaml
+export RESULTS_DIR=results/single_alloc_smoke VLLM_MODEL=Qwen/Qwen2.5-VL-3B-Instruct
+bash scripts/run_single_allocation.sh
+```
+
+Submit examples (older flows assume vLLM is already reachable at **`model.vllm_base_url`**):
 
 ```bash
 sbatch scripts/run_all_tests.slurm

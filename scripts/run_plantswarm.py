@@ -29,7 +29,11 @@ from plantswarm.autogen_pipeline import AutoGenPlantSwarmPipeline, run_local_qwe
 from plantswarm.entropy_pipeline import EntropyPlantSwarmPipeline
 from utils.metrics import macro_f1, tpcp
 from utils.routing_trace import save_traces
-from utils.vllm_client import VLLMClient
+from utils.vllm_client import (
+    VLLMClient,
+    configure_vllm_client_from_yaml,
+    validate_model_server_matches_config,
+)
 
 
 GT_ATTR = {
@@ -195,6 +199,13 @@ def main():
 
     cfg = load_config(args.config)
 
+    orchestrator = args.orchestrator or cfg.get("routing", {}).get("orchestrator", "autogen_swarm")
+    if orchestrator == "classic":
+        raise ValueError(
+            "Orchestrator 'classic' is no longer supported. Use AutoGen AgentChat Swarm: "
+            "routing.orchestrator: autogen_swarm (see plantswarm/autogen_pipeline.py)."
+        )
+
     results_dir = args.output_dir or cfg["output"]["results_dir"]
     traces_dir = cfg["output"]["traces_dir"]
     os.makedirs(results_dir, exist_ok=True)
@@ -217,18 +228,11 @@ def main():
         seed=cfg["model"]["seed"],
         max_new_tokens=cfg["model"]["max_new_tokens"],
     )
-    top_lp = cfg["model"].get("top_logprobs")
-    if top_lp is not None:
-        client.top_logprobs = int(top_lp)
+    configure_vllm_client_from_yaml(client, cfg.get("model"), orchestrator=orchestrator)
 
     _check_openai_compatible_api(cfg["model"]["vllm_base_url"])
+    validate_model_server_matches_config(cfg)
 
-    orchestrator = args.orchestrator or cfg.get("routing", {}).get("orchestrator", "autogen_swarm")
-    if orchestrator == "classic":
-        raise ValueError(
-            "Orchestrator 'classic' is no longer supported. Use AutoGen AgentChat Swarm: "
-            "routing.orchestrator: autogen_swarm (see plantswarm/autogen_pipeline.py)."
-        )
     r_cfg = cfg.get("routing", {})
     if orchestrator == "entropy_routing":
         pipeline = EntropyPlantSwarmPipeline(
