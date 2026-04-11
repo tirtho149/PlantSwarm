@@ -216,11 +216,12 @@ Use `configs/plantdoc_github.yaml`: set `data.plantdoc_repo_root`, `data.plantdo
 
 ## Slurm full flow
 
-Preconfigured scripts are in `scripts/slurm/` (edit `#SBATCH` paths and `WORKDIR` for your cluster).
+Cluster scripts share one **Nova / ISU scratch** template: `nodes=1`, `cpus-per-task=4`, `mem=32G`, `time=24:00:00`, `gres=gpu:1`, `partition=nova`, logs under `/work/mech-ai-scratch/tirtho/CyAg/PlantSwarm/logs/`, `chdir` to that `PlantSwarm` tree, and mail to `tirtho@iastate.edu`. Copy from `scripts/run_all_tests.slurm` or any `scripts/slurm/*.slurm` when adding jobs; only `--job-name`, optional `--array`, and `%j` vs `%A_%a` in log names differ.
 
 Submit examples:
 
 ```bash
+sbatch scripts/run_all_tests.slurm
 sbatch scripts/slurm/run_partial_100.slurm
 sbatch scripts/slurm/run_partial_500.slurm
 sbatch scripts/slurm/run_matrix_array.slurm

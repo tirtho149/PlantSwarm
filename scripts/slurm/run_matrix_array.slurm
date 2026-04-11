@@ -9,10 +9,12 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=64G
+#SBATCH --mem=32G
 #SBATCH --time=24:00:00
 #SBATCH --gres=gpu:1
 #SBATCH --partition=nova
+#SBATCH --mail-user=tirtho@iastate.edu
+#SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --array=0-1
 #SBATCH --chdir=/work/mech-ai-scratch/tirtho/CyAg/PlantSwarm
 
