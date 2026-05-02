@@ -587,6 +587,25 @@ data:
 
 ---
 
+## 📦 Advanced: DataLoader.py (30+ Datasets)
+
+For comprehensive dataset curation across 30+ plant disease sources (Kaggle, Zenodo, HuggingFace):
+
+**See [DATALOADER_GUIDE.md](DATALOADER_GUIDE.md)** for:
+- Support for SBRD, MangoLeaf, BananaLeaf, Cucumber, PlantDoc, LeafNet, and 24+ more datasets
+- Interactive sampling per class with stratification
+- Excel multi-sheet reporting with validation
+- Crop/disease name normalization across sources
+
+**Note:** For PlantSwarm pipeline, use modular loaders:
+- Training: `data/tfds_plant_village.py` (PlantVillage)
+- OOD Eval: `data/plantwild_hf.py` (PlantWild)
+- General: `data/loader.py` (unified dispatcher)
+
+DataLoader.py is a legacy research tool for exploration and custom dataset integration.
+
+---
+
 ## 📊 Understanding Results
 
 ### plantswarm_metrics.json
