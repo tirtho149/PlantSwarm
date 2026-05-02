@@ -40,6 +40,81 @@ python -c "from agents import *; from plantswarm import *; print('✓ Ready')"
 
 ---
 
+## 🖥️ First-Time Nova HPC Setup
+
+### Step 1: SSH Access
+```bash
+# On your local machine
+ssh tirtho@hpc-login.iastate.edu
+
+# You'll be prompted for your ISU credentials
+# If this is your first time, contact HPC support for account activation
+```
+
+### Step 2: Clone Repository
+```bash
+# On Nova login node
+cd /work/mech-ai/tirtho/
+git clone https://github.com/tirtho149/PlantSwarm.git
+cd PlantSwarm
+```
+
+### Step 3: Load Modules & Create Virtual Environment
+```bash
+# Load required modules
+module load python cuda/11.8
+
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate
+
+# Verify Python
+python --version  # Should be 3.10+
+```
+
+### Step 4: Install Dependencies
+```bash
+# Install core dependencies
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+
+# Install TFDS support for PlantVillage
+pip install -r requirements-tfds.txt
+
+# Verify installation
+python -c "from agents import *; from plantswarm import *; print('✓ Ready')"
+```
+
+### Step 5: Create Required Directories
+```bash
+# Create directory structure
+mkdir -p logs data results observe/checkpoints
+
+# Set proper permissions
+chmod -R 755 logs data results observe
+```
+
+### Step 6: Configure Git (One-time)
+```bash
+# Set up Git credentials for syncing
+git config --global user.name "Your Name"
+git config --global user.email "your.email@iastate.edu"
+
+# Verify
+git config --global --list
+```
+
+### Verification Checklist
+```bash
+# Verify all setup
+python -c "import tensorflow_datasets; print('✓ TFDS')"
+python -c "import torch; print('✓ PyTorch')"
+python -c "from observe import OBSERVE; print('✓ OBSERVE')"
+sbatch --version  # Should show SLURM version
+```
+
+---
+
 ## 🚀 Running on Nova HPC (SLURM Scripts)
 
 For distributed GPU training on Nova HPC cluster, use the provided shell scripts. All scripts use SLURM with automatic dependency chaining.
