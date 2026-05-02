@@ -33,6 +33,47 @@ Complete guide for syncing code and results bidirectionally between your local m
 
 ---
 
+## 📦 DataLoader Integration & Syncing
+
+DataLoader.py is now integrated into the pipeline. Sync and use 30+ datasets:
+
+### Using DataLoader Datasets
+
+**Local machine:**
+```bash
+# Run with DataLoader config (30+ datasets)
+python scripts/run_plantswarm.py --config configs/dataloader_example.yaml
+```
+
+**Nova HPC:**
+```bash
+# Pull latest code (includes DataLoader)
+git pull origin main
+
+# Submit DataLoader experiment
+sbatch scripts/submit_phase1_plantswarm.sh  # Or custom DataLoader job
+```
+
+### Syncing DataLoader Results
+
+**Nova → GitHub:**
+```bash
+# After DataLoader job completes
+cd /work/mech-ai/tirtho/ObservePlantSwarm
+git add results/dataloader_experiment/
+git commit -m "DataLoader results: [dataset-name]"
+git push origin main
+```
+
+**GitHub → Local:**
+```bash
+# Retrieve results
+git pull origin main
+cat results/dataloader_experiment/plantswarm_metrics.json
+```
+
+---
+
 ## Prerequisites
 
 ### Local Machine
