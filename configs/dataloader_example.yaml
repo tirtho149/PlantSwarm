@@ -1,0 +1,75 @@
+# Example: Using DataLoader.py datasets with PlantSwarm pipeline
+#
+# DataLoader.py integrates 30+ plant disease datasets into the pipeline.
+# See data/dataloader_wrapper.py and DATALOADER_GUIDE.md for details.
+#
+# Usage:
+#   python scripts/run_plantswarm.py --config configs/dataloader_example.yaml
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  DATA: Load from DataLoader (30+ datasets)
+# ═══════════════════════════════════════════════════════════════════════════
+
+data:
+  # Use DataLoader to load one of 30+ supported datasets
+  dataloader_dataset_name: "plant_village"  # See DATALOADER_GUIDE.md for all options
+
+  # Limit number of images per class (None = all)
+  dataloader_max_examples: 1000
+
+  # Column names for images and benchmark label
+  image_col: "image"
+  benchmark_col: "benchmark"
+
+  # Random seed for reproducibility
+  seed: 42
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  MODEL
+# ═══════════════════════════════════════════════════════════════════════════
+
+model:
+  backbone: "Qwen/Qwen2.5-VL-3B-Instruct"
+  vllm_base_url: "http://localhost:8000/v1"
+  temperature: 0.0  # Deterministic routing
+  vllm_timeout: 60
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  ROUTING (PlantSwarm)
+# ═══════════════════════════════════════════════════════════════════════════
+
+routing:
+  orchestrator: "autogen_swarm"
+  Tmax: 15  # Max agents per image
+  allow_backtrack: true
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  EVALUATION
+# ═══════════════════════════════════════════════════════════════════════════
+
+eval:
+  metrics:
+    - macro_f1
+    - macro_acc
+    - weighted_f1
+    - ece
+  report_dir: "./results/dataloader_experiment/"
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  CALIBRATION
+# ═══════════════════════════════════════════════════════════════════════════
+
+calibration:
+  method: "temperature_scaling"
+  calibration_split_size: 500
+  temperature_scaling_epochs: 100
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  OUTPUT
+# ═══════════════════════════════════════════════════════════════════════════
+
+output:
+  results_dir: "./results/dataloader_experiment/"
+  save_predictions: true
+  save_traces: true
+  save_metrics: true

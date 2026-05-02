@@ -8,6 +8,7 @@ Data sources:
     * Directory tree (``directory_root``): labels from folder names; see ``data/directory_index.py``.
     * Hugging Face (``hf_dataset_id``): e.g. ``rashikahura/plantWild``; see ``data/plantwild_hf.py`` (set ``HF_TOKEN`` in ``.env``).
     * TFDS (``tfds_name: plant_village``): TensorFlow Datasets Plant Village; see ``data/tfds_plant_village.py``.
+    * DataLoader (``dataloader_dataset_name``): 30+ datasets (PlantVillage, PlantWild, PlantDoc, etc.); see ``data/dataloader_wrapper.py``.
 """
 
 from __future__ import annotations
@@ -96,6 +97,7 @@ class PlantDiagBenchLoader:
         self._from_directory = bool(cfg.get("directory_root"))
         self._from_hf = bool(cfg.get("hf_dataset_id"))
         self._from_tfds = bool(cfg.get("tfds_name"))
+        self._from_dataloader = bool(cfg.get("dataloader_dataset_name"))
         self.parquet_path: Optional[Path] = None
 
         if self._from_directory:
@@ -106,12 +108,14 @@ class PlantDiagBenchLoader:
             self._df_full = self._load_hf_dataframe()
         elif self._from_tfds:
             self._df_full = self._load_tfds_dataframe()
+        elif self._from_dataloader:
+            self._df_full = self._load_dataloader_dataframe()
         else:
             pq_path = cfg.get("parquet_path")
             if not pq_path:
                 raise ValueError(
                     "Set data.directory_root, data.hf_dataset_id, data.tfds_name, "
-                    "or data.parquet_path."
+                    "data.dataloader_dataset_name, or data.parquet_path."
                 )
             self.parquet_path = Path(pq_path)
             if not self.parquet_path.is_file():
@@ -191,6 +195,22 @@ class PlantDiagBenchLoader:
                 image_col=self.cfg.get("image_col", "image_bytes"),
             )
         raise ValueError(f"Unknown data.tfds_name: {self.cfg.get('tfds_name')!r}")
+
+    def _load_dataloader_dataframe(self) -> pd.DataFrame:
+        """Load from DataLoader.py (30+ datasets)."""
+        from data.dataloader_wrapper import build_dataloader_dataframe
+
+        dataset_name = self.cfg.get("dataloader_dataset_name")
+        if not dataset_name:
+            raise ValueError("data.dataloader_dataset_name must be set")
+
+        return build_dataloader_dataframe(
+            dataset_name=dataset_name,
+            max_examples=self.cfg.get("dataloader_max_examples"),
+            image_col=self.cfg.get("image_col", "image"),
+            seed=int(self.cfg.get("seed", 42)),
+            benchmark_col=self.cfg.get("benchmark_col", "benchmark"),
+        )
 
     def _load_plantdoc_dataframe(self) -> pd.DataFrame:
         from data.plantdoc_github import build_plantdoc_dataframe
