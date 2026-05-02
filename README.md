@@ -40,6 +40,27 @@ python -c "from agents import *; from plantswarm import *; print('✓ Ready')"
 
 ---
 
+## ☁️ Google Colab Setup (Free GPU)
+
+Run on Google Colab for free GPU access (T4 15GB) or upgrade to Pro for faster GPUs (V100/A100).
+
+### Quick Start
+```bash
+# Option 1: Direct Colab Link
+# Open in browser:
+https://colab.research.google.com/github/tirtho149/PlantSwarm/blob/main/notebooks/plantswarm_colab.ipynb
+
+# Option 2: VS Code + Colab Extension (Recommended)
+# 1. Install: Extensions → Search "Colab" → Install "Colab" by Google
+# 2. Open notebook in VS Code
+# 3. Click "Open in Colab" button
+# 4. Edit in VS Code, execute in Colab browser tab
+```
+
+**See [COLAB_SETUP.md](COLAB_SETUP.md) for full details, free vs Pro comparison, and troubleshooting.**
+
+---
+
 ## 🖥️ First-Time Nova HPC Setup
 
 ### Step 1: SSH Access
