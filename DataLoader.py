@@ -5810,75 +5810,55 @@ def generate_xlsx(all_datasets, output_path):
         row4 += 1
 
     # ════════════════════════════════════════════════════════════════════════
-    #  SAVE WITH FALLBACK: Excel → CSV if rows exceed limit
+    #  EXPORT TO CSV ONLY (skip Excel generation)
     # ════════════════════════════════════════════════════════════════════════
 
-    # Check if any sheet was truncated
-    truncated = False
-    if row_idx >= 1048576 or row3 >= 1048576 or row4 >= 1048576:
-        truncated = True
-        _log("⚠ Dataset too large for single Excel file. Exporting to CSV format instead.")
+    base_name = os.path.splitext(output_path)[0]
 
+    # Export comprehensive summary CSV
     try:
-        wb.save(output_path)
-        _log(f"  XLSX -> {os.path.abspath(output_path)}")
+        registry_csv = base_name + ".csv"
+        summary_df.to_csv(registry_csv, index=False)
+        _log(f"  CSV (Summary) -> {os.path.abspath(registry_csv)}")
         _log(f"         {len(sorted_pairs)} unique crop-disease pairs")
     except Exception as e:
-        _log(f"  [ERROR] Could not save XLSX: {e}")
-        truncated = True
+        _log(f"  [WARN] Could not write summary CSV: {e}")
 
-    # Always export comprehensive CSV for large datasets
+    # Sheet 1: By Crop & Disease
     try:
-        registry_csv = os.path.splitext(output_path)[0] + ".csv"
-        summary_df.to_csv(registry_csv, index=False)
-        _log(f"  CSV  -> {os.path.abspath(registry_csv)}")
-
-        if truncated:
-            _log(f"  [INFO] Use CSV for complete data (no row limit)")
-            _log(f"  [INFO] Load with: pd.read_csv('{os.path.basename(registry_csv)}')")
+        sheet1_csv = f"{base_name}_sheet1_crop_disease.csv"
+        sheet1_data = []
+        for row in ws1.iter_rows(min_row=2, values_only=True):
+            if row[0]:  # Skip empty rows
+                sheet1_data.append({
+                    "Crop": row[0],
+                    "Disease": row[1],
+                    "Source Dataset": row[2],
+                    "Images": row[3]
+                })
+        if sheet1_data:
+            pd.DataFrame(sheet1_data).to_csv(sheet1_csv, index=False)
+            _log(f"  CSV (Sheet 1) -> {sheet1_csv}")
     except Exception as e:
-        _log(f"  [WARN] Could not write registry summary CSV: {e}")
+        _log(f"  [WARN] Could not export Sheet 1 to CSV: {e}")
 
-    # Export per-sheet data as separate CSVs if truncated
-    if truncated:
-        base_name = os.path.splitext(output_path)[0]
-
-        # Sheet 1: By Crop & Disease
-        try:
-            sheet1_csv = f"{base_name}_sheet1_crop_disease.csv"
-            sheet1_data = []
-            for row in ws1.iter_rows(min_row=2, values_only=True):
-                if row[0]:  # Skip empty rows
-                    sheet1_data.append({
-                        "Crop": row[0],
-                        "Disease": row[1],
-                        "Source Dataset": row[2],
-                        "Images": row[3]
-                    })
-            import pandas as pd
-            if sheet1_data:
-                pd.DataFrame(sheet1_data).to_csv(sheet1_csv, index=False)
-                _log(f"  CSV (Sheet 1) -> {sheet1_csv}")
-        except Exception as e:
-            _log(f"  [WARN] Could not export Sheet 1 to CSV: {e}")
-
-        # Sheet 3: Image Sources (most detailed)
-        try:
-            sheet3_csv = f"{base_name}_sheet3_image_sources.csv"
-            sheet3_data = []
-            for row in ws3.iter_rows(min_row=2, values_only=True):
-                if row[0]:  # Skip empty rows
-                    sheet3_data.append({
-                        "Crop": row[0],
-                        "Disease": row[1],
-                        "Source": row[2],
-                        "Filename": row[3]
-                    })
-            if sheet3_data:
-                pd.DataFrame(sheet3_data).to_csv(sheet3_csv, index=False)
-                _log(f"  CSV (Sheet 3) -> {sheet3_csv}")
-        except Exception as e:
-            _log(f"  [WARN] Could not export Sheet 3 to CSV: {e}")
+    # Sheet 3: Image Sources (most detailed)
+    try:
+        sheet3_csv = f"{base_name}_sheet3_image_sources.csv"
+        sheet3_data = []
+        for row in ws3.iter_rows(min_row=2, values_only=True):
+            if row[0]:  # Skip empty rows
+                sheet3_data.append({
+                    "Crop": row[0],
+                    "Disease": row[1],
+                    "Source": row[2],
+                    "Filename": row[3]
+                })
+        if sheet3_data:
+            pd.DataFrame(sheet3_data).to_csv(sheet3_csv, index=False)
+            _log(f"  CSV (Sheet 3) -> {sheet3_csv}")
+    except Exception as e:
+        _log(f"  [WARN] Could not export Sheet 3 to CSV: {e}")
 
     return
 

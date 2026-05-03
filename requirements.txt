@@ -27,8 +27,8 @@ statsmodels>=0.14.0           # MixedLM REML (Appendix D)
 tqdm>=4.66.0
 pyyaml>=6.0
 requests>=2.31.0
-autogen-agentchat>=0.4.0
-autogen-ext[openai]>=0.4.0
+autogen-agentchat==0.2.40
+autogen-ext[openai]==0.2.40
 
 # Optional: for hedge lexicon PMI (Appendix E)
 # nltk>=3.8.1
