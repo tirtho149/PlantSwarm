@@ -232,9 +232,12 @@ def main():
 
     if orchestrator == "hf_direct":
         # Single-GPU in-process mode — no vLLM server, no AutoGen required
-        # Uses Qwen2.5-VL-7B from replica_backbones (fits on 32 GB V100 in fp16)
+        # Pick a Qwen2.5-VL model: prefer one with "Qwen" and "VL" in the name
         replica_backbones = cfg["model"].get("replica_backbones", [])
-        hf_model = replica_backbones[0] if replica_backbones else cfg["model"]["backbone"]
+        hf_model = next(
+            (m for m in replica_backbones if "Qwen" in m and "VL" in m),
+            "Qwen/Qwen2.5-VL-7B-Instruct",
+        )
         print(f"  HF direct mode: loading {hf_model} in-process (no server needed)...")
         client = HFClient(
             model=hf_model,

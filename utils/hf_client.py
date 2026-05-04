@@ -39,15 +39,23 @@ def _load_model(model_name: str):
     import torch
     from transformers import AutoProcessor
 
-    try:
-        from transformers import Qwen2VLForConditionalGeneration
-        model = Qwen2VLForConditionalGeneration.from_pretrained(
-            model_name,
-            torch_dtype=torch.float16,
-            device_map="auto",
-        )
-    except (ImportError, OSError, Exception):
-        # Fallback for Qwen3-VL or other AutoModel-compatible checkpoints
+    # Only use Qwen2VLForConditionalGeneration for actual Qwen2/2.5-VL checkpoints.
+    # For anything else (Qwen3-VL, other architectures) fall through to AutoModelForCausalLM
+    # so we never load a non-Qwen model into the wrong class.
+    _is_qwen2vl = "Qwen2" in model_name or "Qwen2.5" in model_name
+    if _is_qwen2vl:
+        try:
+            from transformers import Qwen2VLForConditionalGeneration
+            model = Qwen2VLForConditionalGeneration.from_pretrained(
+                model_name,
+                torch_dtype=torch.float16,
+                device_map="auto",
+            )
+        except (ImportError, OSError) as e:
+            raise RuntimeError(
+                f"Could not load {model_name} as Qwen2VLForConditionalGeneration: {e}"
+            ) from e
+    else:
         from transformers import AutoModelForCausalLM
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
@@ -193,7 +201,7 @@ class HFClient:
             return_tensors="pt",
             padding=True,
         )
-        inputs = {k: v.to(model.device) for k, v in inputs.items()}
+        inputs = {k: v.to(model.device) for k, v in inputs.items() if v is not None}
 
         torch.manual_seed(self.seed)
         do_sample = self.temperature > 0.0
@@ -279,7 +287,7 @@ class HFClient:
             return_tensors="pt",
             padding=True,
         )
-        inputs = {k: v.to(model.device) for k, v in inputs.items()}
+        inputs = {k: v.to(model.device) for k, v in inputs.items() if v is not None}
 
         with torch.no_grad():
             out = model(**inputs)
