@@ -31,35 +31,75 @@ from scipy.stats import spearmanr
 # Trace serialization
 # ---------------------------------------------------------------------------
 
+def _trace_to_record(trace: Any) -> Dict[str, Any]:
+    """Convert a RoutingTrace (or compatible object) to a JSON-serialisable dict."""
+    record: Dict[str, Any] = {
+        "image_id": trace.image_id,
+        "path": trace.path,
+        "path_length": trace.path_length if hasattr(trace, "path_length") else len(trace.path),
+        "backtrack_count": trace.backtrack_count if hasattr(trace, "backtrack_count") else 0,
+        "loop_rate": trace.loop_rate if hasattr(trace, "loop_rate") else 0.0,
+        "early_terminated": trace.early_terminated if hasattr(trace, "early_terminated") else False,
+        "total_tokens": trace.total_tokens,
+        "final_predictions": trace.final_predictions,
+    }
+    ep = getattr(trace, "ensemble_probs", None)
+    if ep:
+        record["ensemble_probs"] = ep
+    if getattr(trace, "routing_signal", None):
+        record["routing_signal"] = trace.routing_signal
+    ef = getattr(trace, "entropy_field", None)
+    if ef:
+        record["entropy_field"] = ef
+    eg = getattr(trace, "entropy_gradients", None)
+    if eg:
+        record["entropy_gradients"] = eg
+    return record
+
+
 def save_traces(traces: List[Any], output_dir: str, filename: str = "traces.jsonl") -> str:
     """
-    Save routing traces to JSONL (one JSON per line).
+    Save routing traces to JSONL (one JSON per line). Overwrites any existing file.
     Traces use opaque image IDs rather than raw file paths where possible (§10 Ethics).
     """
     os.makedirs(output_dir, exist_ok=True)
     path = os.path.join(output_dir, filename)
     with open(path, "w") as f:
         for trace in traces:
-            record = {
-                "image_id": trace.image_id,
-                "path": trace.path,
-                "path_length": trace.path_length if hasattr(trace, "path_length") else len(trace.path),
-                "backtrack_count": trace.backtrack_count if hasattr(trace, "backtrack_count") else 0,
-                "loop_rate": trace.loop_rate if hasattr(trace, "loop_rate") else 0.0,
-                "early_terminated": trace.early_terminated if hasattr(trace, "early_terminated") else False,
-                "total_tokens": trace.total_tokens,
-                "final_predictions": trace.final_predictions,
-            }
-            if getattr(trace, "routing_signal", None):
-                record["routing_signal"] = trace.routing_signal
-            ef = getattr(trace, "entropy_field", None)
-            if ef:
-                record["entropy_field"] = ef
-            eg = getattr(trace, "entropy_gradients", None)
-            if eg:
-                record["entropy_gradients"] = eg
-            f.write(json.dumps(record) + "\n")
+            f.write(json.dumps(_trace_to_record(trace)) + "\n")
     return path
+
+
+def append_trace(trace: Any, output_dir: str, filename: str = "traces.jsonl") -> str:
+    """
+    Append a single routing trace to JSONL with fsync, so partial progress
+    survives SIGKILL/SLURM walltime termination.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    path = os.path.join(output_dir, filename)
+    with open(path, "a") as f:
+        f.write(json.dumps(_trace_to_record(trace)) + "\n")
+        f.flush()
+        os.fsync(f.fileno())
+    return path
+
+
+def existing_trace_ids(output_dir: str, filename: str = "traces.jsonl") -> set:
+    """Return the set of image_ids already persisted in the trace JSONL (for resume)."""
+    path = os.path.join(output_dir, filename)
+    if not os.path.exists(path):
+        return set()
+    seen = set()
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                seen.add(json.loads(line)["image_id"])
+            except Exception:
+                continue
+    return seen
 
 
 def load_traces(path: str) -> List[Dict]:

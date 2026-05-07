@@ -29,7 +29,7 @@ from plantswarm.autogen_pipeline import AutoGenPlantSwarmPipeline, run_local_qwe
 from plantswarm.entropy_pipeline import EntropyPlantSwarmPipeline
 from plantswarm.hf_pipeline import HFDirectPipeline
 from utils.metrics import macro_f1, tpcp
-from utils.routing_trace import save_traces
+from utils.routing_trace import append_trace, existing_trace_ids, save_traces
 from utils.vllm_client import (
     VLLMClient,
     configure_vllm_client_from_yaml,
@@ -289,26 +289,61 @@ def main():
     if args.subset:
         records = records[: args.subset]
 
+    # Resume support: skip image_ids already persisted to plantswarm_traces.jsonl.
+    # Each successful trace is appended + fsynced inside the loop, so a SLURM
+    # walltime kill or crash leaves a usable partial result.
+    traces_filename = "plantswarm_traces.jsonl"
+    preds_path = os.path.join(results_dir, "plantswarm_predictions.jsonl")
+    already_done = existing_trace_ids(traces_dir, traces_filename)
+    if already_done:
+        print(f"  Resuming: {len(already_done)} traces already on disk — skipping those.")
+        records = [r for r in records if r.image_id not in already_done]
+
     print(f"Running PlantSwarm ({orchestrator}) on {len(records)} images...")
+    n_failed = 0
     for record in tqdm(records):
-        trace = pipeline.run(record.image_id, record.image_b64)
+        try:
+            trace = pipeline.run(record.image_id, record.image_b64)
+        except KeyboardInterrupt:
+            raise
+        except Exception as e:  # noqa: BLE001
+            n_failed += 1
+            tqdm.write(f"  [skip] {record.image_id}: {type(e).__name__}: {e}")
+            continue
+
+        # Persist trace immediately (fsync inside) so SIGKILL doesn't lose it.
+        try:
+            append_trace(trace, traces_dir, traces_filename)
+        except Exception as e:  # noqa: BLE001
+            tqdm.write(f"  [warn] failed to persist trace for {record.image_id}: {e}")
+
+        pred_record = {
+            "image_id": record.image_id,
+            "predictions": trace.final_predictions,
+            "ground_truth": {
+                "T1": record.symptom_type,
+                "T2": record.pathogen_class,
+                "T3": record.disease_name,
+                "T4": record.severity_class,
+                "T5": record.crop_species,
+            },
+            "path": trace.path,
+            "total_tokens": trace.total_tokens,
+            "early_terminated": trace.early_terminated,
+        }
+        try:
+            with open(preds_path, "a") as pf:
+                pf.write(json.dumps(pred_record) + "\n")
+                pf.flush()
+                os.fsync(pf.fileno())
+        except Exception as e:  # noqa: BLE001
+            tqdm.write(f"  [warn] failed to persist prediction for {record.image_id}: {e}")
+
         all_traces.append(trace)
-        predictions_output.append(
-            {
-                "image_id": record.image_id,
-                "predictions": trace.final_predictions,
-                "ground_truth": {
-                    "T1": record.symptom_type,
-                    "T2": record.pathogen_class,
-                    "T3": record.disease_name,
-                    "T4": record.severity_class,
-                    "T5": record.crop_species,
-                },
-                "path": trace.path,
-                "total_tokens": trace.total_tokens,
-                "early_terminated": trace.early_terminated,
-            }
-        )
+        predictions_output.append(pred_record)
+
+    if n_failed:
+        print(f"  {n_failed} images skipped due to runtime errors (see warnings above).")
 
     print("\nComputing metrics...")
     metrics = {}
@@ -395,12 +430,9 @@ def main():
     with open(os.path.join(results_dir, "plantswarm_metrics.json"), "w") as f:
         json.dump(metrics, f, indent=2)
 
-    with open(os.path.join(results_dir, "plantswarm_predictions.jsonl"), "w") as f:
-        for record in predictions_output:
-            f.write(json.dumps(record) + "\n")
-
-    if cfg["output"]["save_traces"]:
-        save_traces(all_traces, traces_dir, "plantswarm_traces.jsonl")
+    # Predictions and traces are appended inside the loop with fsync, so we do
+    # NOT rewrite the JSONL files here — that would clobber resumed entries
+    # from a previous partial run. The on-disk JSONLs are already authoritative.
 
     print(f"\nDone. Results saved to {results_dir}")
     return metrics
