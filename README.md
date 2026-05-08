@@ -193,27 +193,90 @@ sbatch scripts/submit_pathome_setup_filter.sh
 PATHOME_THRESHOLD=15 sbatch scripts/submit_pathome_setup_filter.sh
 ```
 
-### Phase 0 — Seed VisualSymptom blocks via Claude
+### Phase 0 — Build the seed PathomeDB knowledge base (provenance-tracked)
 
-`scripts/submit_pathome_phase0_seed.sh`
+`scripts/submit_pathome_phase0_seed.sh` → `python -m pathome_kb`
+
+This is the **SAGE-ported `disease_registry` internet track**, adapted to the 484 (crop, disease) classes from the filtered CSV. Three stages per crop:
+
+```
+discovery       claude -p WebSearch per disease (parallel)  →  candidate URLs
+                          │
+                          ▼
+extraction      fetch each URL  →  claude -p extracts disease records with
+                VERBATIM QUOTES from the page text (never invents content)
+                          │
+                          ▼
+reconciliation  merge per-source records into a canonical entry per disease.
+                Every field stored as {value, url, quote}, so each visual
+                fact in the KB is traceable to the exact sentence on the
+                exact source page that supports it.
+```
+
+The orchestrator groups the 484 classes by crop, runs the internet track once per crop (so the discovery search can focus on one crop's disease catalogue), and merges per-crop registries into a single `symptoms_seed.json` consumable by Phase 1.
 
 | | |
 |---|---|
-| **Purpose** | For each of the 484 (crop, disease) profiles, call `claude -p` with a fixed JSON schema and parse a `VisualSymptom` block (lesion color/shape/margin/texture, sporulation, distinctive signs, progression, confusion partners). |
-| **Compute** | 4 CPUs, 8 GB RAM, no GPU, network access for `api.anthropic.com` |
-| **Walltime** | 4 h budget; typically completes in 15–30 min with 4 workers on Sonnet |
-| **Inputs** | `BugWood_Diseases_usable.csv` (defines the 484 classes), authenticated `claude` CLI |
-| **Outputs** | `artifacts/pathome_seed/symptoms_seed.json`, `artifacts/pathome_seed/failed.jsonl` |
-| **Knobs** | `PATHOME_SEED_WORKERS` (default `4`), `PATHOME_SEED_MODEL` (default `sonnet`; accepts `opus`, `haiku`, or full IDs) |
-| **Resume** | Yes — already-seeded profiles are skipped. Re-run after editing the prompt or adding new classes. |
+| **Purpose** | Build a provenance-tracked seed KB with `{value, url, quote}` per visual field. |
+| **Compute** | 8 CPUs, 16 GB RAM, no GPU, outbound HTTPS for `api.anthropic.com` + every per-source page fetch |
+| **Walltime** | 24 h budget. Quick mode (3 sources/crop): ~30 min. Full run (197 crops × ~5–15 sources each): typically 12–20 h depending on parallelism + page-fetch latency. |
+| **Inputs** | `BugWood_Diseases_usable.csv`, authenticated `claude` CLI on PATH, `ANTHROPIC_API_KEY` in environment or `.env` |
+| **Outputs** | `artifacts/pathome_kb/<Crop>/{discovery_results,raw_extractions,final_registry}.json` + `registry.md` + `internet.xlsx` per crop, plus the merged `artifacts/pathome_seed/symptoms_seed.json` for Phase 1 |
+| **Knobs** | `PATHOME_SEED_QUICK=1` (smoke), `PATHOME_SEED_LIMIT=N` (first N crops), `PATHOME_SEED_ONLY_CROPS="Tomato,Soybean"`, `PATHOME_SEED_RESUME=discovery\|extraction\|reconciliation`, `PATHOME_SEED_NO_CACHE=1` |
+| **Resume** | Yes, two levels. (1) Per-crop: any crop with an existing `final_registry.json` is skipped on re-run unless `PATHOME_SEED_NO_CACHE=1`. (2) Per-stage within a crop: `--resume-from extraction` reuses cached `discovery_results.json` etc. |
+| **Cost** | ~$50–150 in Anthropic API spend for a full run; quick mode is ~$5. Per-source extraction is the dominant cost. |
 
 ```bash
+# Smoke test on the top 3 crops (Tomato, Soybean, Corn) to validate auth + plumbing
+PATHOME_SEED_QUICK=1 PATHOME_SEED_ONLY_CROPS="Tomato,Soybean,Corn" \
+  sbatch scripts/submit_pathome_phase0_seed.sh
+
+# Full run (12-20 h)
 sbatch scripts/submit_pathome_phase0_seed.sh
-# bigger model + parallelism:
-PATHOME_SEED_WORKERS=8 PATHOME_SEED_MODEL=opus sbatch scripts/submit_pathome_phase0_seed.sh
-# retry only failures from a previous run:
-python scripts/seed_pathome_with_claude.py --retry-failed
+
+# Resume only the reconciliation stage across crops that already have
+# raw_extractions.json on disk:
+PATHOME_SEED_RESUME=reconciliation sbatch scripts/submit_pathome_phase0_seed.sh
+
+# Force every crop to re-run from scratch:
+PATHOME_SEED_NO_CACHE=1 sbatch scripts/submit_pathome_phase0_seed.sh
+
+# Run locally (no Nova) — same flags, same outputs:
+python -m pathome_kb --csv BugWood_Diseases_usable.csv \
+  --out artifacts/pathome_seed/symptoms_seed.json \
+  --quick --only-crops "Tomato,Soybean"
 ```
+
+**What lands in `symptoms_seed.json`** (per profile):
+
+```json
+{
+  "profile_id": "Tomato::Early Blight",
+  "crop": "Tomato",
+  "disease": "Early Blight",
+  "visual": {
+    "plant_parts": ["leaf", "stem", "fruit"],
+    "distinctive_signs": ["concentric rings on lesions", "yellow halo"],
+    "confusion_diseases": ["Septoria leaf spot", "Late blight"],
+    "notes": "Lesions begin on older leaves as small brown flecks ...",
+    "sources": {
+      "plant_parts":       [{"value": "leaf, stem, fruit", "url": "https://extension.../early-blight", "quote": "..."}],
+      "distinctive_signs": [{"value": "concentric rings ... yellow halo", "url": "...", "quote": "..."}],
+      "confusion_diseases":[{"value": "Septoria leaf spot; Late blight", "url": "...", "quote": "..."}],
+      "notes":             [{"value": "Lesions begin ...", "url": "...", "quote": "..."}]
+    }
+  },
+  ...
+}
+```
+
+The structured tuples (color, shape, margin, texture, sporulation, progression) are intentionally left empty by this pipeline — the SAGE pipeline emits free-form prose with citations rather than discrete enums, and the auto re-observation prompt builds itself from whichever fields *are* populated. If you want the discrete tuples too, you can run the legacy schema-driven seeder afterward as an additive pass:
+
+```bash
+python scripts/seed_pathome_with_claude.py --workers 4 --model sonnet
+```
+
+That path skips profiles whose visual block is already populated, so it only fills the still-empty discrete fields without overwriting the SAGE-sourced content.
 
 ### Phase 1 — Build PathomeDB v1_seed
 

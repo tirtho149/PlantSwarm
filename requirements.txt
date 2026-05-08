@@ -29,6 +29,11 @@ tqdm>=4.66.0
 pyyaml>=6.0
 requests>=2.31.0
 
+# Phase 0 KB build (pathome_kb/) — provenance-tracked SAGE-style pipeline
+anthropic>=0.40.0             # direct API for extraction + reconciliation (claude-sonnet-4-6)
+httpx>=0.27.0                 # fetch source URLs in the extraction stage
+openpyxl>=3.1.0               # xlsx output of the per-crop registry
+
 # Optional: for hedge lexicon PMI (Appendix E)
 # nltk>=3.8.1
 

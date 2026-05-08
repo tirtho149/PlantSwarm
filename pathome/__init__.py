@@ -19,7 +19,13 @@ ReferenceLibrary continues to back ``db.refs``.
 
 from .database import GeoPriorResult, PathomeDB
 from .layer5_references import ReferenceLibrary
-from .symptoms import SwarmObservations, SymptomLibrary, SymptomProfile, VisualSymptom
+from .symptoms import (
+    Citation,
+    SwarmObservations,
+    SymptomLibrary,
+    SymptomProfile,
+    VisualSymptom,
+)
 
 __all__ = [
     "PathomeDB",
@@ -27,6 +33,7 @@ __all__ = [
     "SymptomLibrary",
     "SymptomProfile",
     "VisualSymptom",
+    "Citation",
     "SwarmObservations",
     "ReferenceLibrary",
 ]

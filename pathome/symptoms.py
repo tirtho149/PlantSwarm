@@ -39,6 +39,21 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 # ---------------------------------------------------------------------------
 
 @dataclass
+class Citation:
+    """A single (value, url, quote) record supporting one VisualSymptom field.
+
+    Mirrors the SAGE/disease_registry provenance schema: the URL and the
+    verbatim quote from that URL that supports the field's value. Keeping
+    citations on the profile lets the paper claim "every visual fact is
+    traceable to a sourced extension-service or APS publication."
+    """
+
+    value: str = ""              # the extracted fact (string or "; "-joined list)
+    url: str = ""                # source page / pdf://...
+    quote: str = ""              # verbatim sentence supporting `value`
+
+
+@dataclass
 class VisualSymptom:
     """Structured description of what a disease looks like.
 
@@ -46,6 +61,12 @@ class VisualSymptom:
     fills it in — geo + reference data still drive routing and retrieval in
     that case. Field names mirror the diagnostic vocabulary used by
     extension-service literature, not OBSERVE's internal label space.
+
+    ``sources`` (optional) maps a field name (e.g. ``"distinctive_signs"``,
+    ``"plant_parts"``, ``"notes"``) to a list of ``Citation`` records. The
+    auto re-observation prompt and routing only read the typed fields; the
+    citations are preserved on disk so downstream consumers (paper, audit
+    UI, deployment dashboards) can show provenance.
     """
 
     plant_parts: List[str] = field(default_factory=list)         # leaf, stem, fruit, root, flower
@@ -58,6 +79,7 @@ class VisualSymptom:
     progression: str = ""                                        # expanding | systemic | static
     confusion_diseases: List[str] = field(default_factory=list)  # easily-confused diseases
     notes: str = ""
+    sources: Dict[str, List[Citation]] = field(default_factory=dict)
 
     def is_empty(self) -> bool:
         return not any([
@@ -155,7 +177,22 @@ class SymptomProfile:
 
     @classmethod
     def from_dict(cls, d: dict) -> "SymptomProfile":
-        v = d.get("visual") or {}
+        v = dict(d.get("visual") or {})
+        # sources: {field: [Citation-like dict, ...]} → rehydrate Citations.
+        raw_sources = v.get("sources") or {}
+        rehydrated: Dict[str, List[Citation]] = {}
+        for k, items in raw_sources.items():
+            if not isinstance(items, list):
+                continue
+            rehydrated[k] = [
+                Citation(
+                    value=str(it.get("value", "")),
+                    url=str(it.get("url", "")),
+                    quote=str(it.get("quote", "")),
+                )
+                for it in items if isinstance(it, dict)
+            ]
+        v["sources"] = rehydrated
         sw_raw = d.get("swarm_observations")
         sw = SwarmObservations(**sw_raw) if isinstance(sw_raw, dict) else None
         return cls(
