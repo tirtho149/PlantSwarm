@@ -386,37 +386,66 @@ than expert opinion.
 \section{Data}
 \label{sec:data}
 
-\subsection{Training: Bugwood Field Images}
+\subsection{Training: Bugwood IPMNet CSV}
 
-\bugwood~\citep{bugwood} provides geo-tagged
-field disease photographs with GPS precision,
-species-level labels, and capture timestamps.
-We select $10$ images per disease class under
-strict quality filters: GPS precision ${\leq}10$km,
-species-level disease annotation, resolution
-${\geq}512{\times}512$, single dominant subject
-with diagnostic region occupying ${\geq}25\%$ of
-frame, no severe compression artifacts. From
-passing candidates, $10$ images per class are
-selected by $k$-medoids ($k{=}10$) diversity
-sampling on CLIP~\citep{radford2021learning}
-embeddings, covering early, mid, and late stage
-presentations and multiple geographic origins.
+\bugwood~\citep{bugwood} maintains a
+multi-million-image disease repository through
+the University of Georgia. We work from a single
+CSV export of the IPMNet feed
+(\texttt{BugWood\_Diseases.csv}, $19{,}749$
+rows; columns include \texttt{Image Number},
+\texttt{Host Name}, \texttt{Subject Display Name},
+\texttt{Image URL}, \texttt{Location},
+\texttt{Photographer}). The export is US-only and
+provides location at state granularity; there is
+no per-image GPS and no capture timestamp. The
+implications for the geo prior are described in
+\S\ref{sec:pathomedb} and the limitations.
 
-From the $10$ images per disease class we make
-a hard split \emph{before any} \plantswarm
-run or \pathomedb construction:
+\paragraph{Filtering.}
+\texttt{scripts/filter\_bugwood\_csv.py}
+normalises the export in five steps: drop rows
+without \texttt{Host Name} ($2{,}171$ rows);
+canonicalise the host via the
+\texttt{BUGWOOD\_EXACT\_CROP\_MAP} ported from
+the unified \texttt{DataLoader.py} registry;
+strip the parenthetical Latin binomial from
+\texttt{Subject Display Name} to recover the
+common-name disease; drop rows whose
+\texttt{Location} (state) cannot be resolved;
+group by $(\text{crop},\,\text{disease})$ and
+keep only classes with $\geq{10}$ candidate rows.
+The output, \texttt{BugWood\_Diseases\_usable.csv},
+contains $11{,}513$ rows over $\mathbf{484}$
+classes, with five derived columns appended
+(\texttt{NormCrop}, \texttt{NormDisease},
+\texttt{StateLat}, \texttt{StateLon},
+\texttt{AezCode}) so downstream consumers do
+not redo the normalisation. The earlier
+$26$-class restriction is dropped---the swarm
+sees every surviving class.
+
+\paragraph{Per-class budget and split.}
+The loader admits the first $10$ rows per class
+(deterministic ordering by \texttt{Image Number})
+and routes:
 \begin{itemize}
-  \item \textbf{7 images per class} $\to$ \plantswarm
-    trace generation ($30$ runs per image;
-    $7 \times 26 \times 30 = 5{,}460$ traces).
-  \item \textbf{3 images per class} $\to$ \pathomedb
-    Layer~5 reference library
-    ($3 \times 26 = 78$ geo-tagged field references),
-    one per disease stage (early/mid/late).
+  \item \textbf{$7$ images per class} $\to$ \plantswarm
+    trace generation ($30$ stochastic runs per
+    image: $7 \times 484 \times 30 = \mathbf{101{,}640}$
+    traces);
+  \item \textbf{$3$ images per class} $\to$ the
+    \texttt{ReferenceLibrary} ($3 \times 484
+    = \mathbf{1{,}452}$ held-out field references).
 \end{itemize}
-Total unique images used in any form of training
-or knowledge base construction: $\mathbf{260}$.
+Image bytes are downloaded from \texttt{Image URL}
+into a local cache on first build; subsequent
+builds are cache hits. The optional CLIP
+$k$-medoids helper (\texttt{select\_diverse\_subset})
+is retained for callers who want diversity sampling
+within a class's pool, but the deterministic
+Image-Number ordering is sufficient for
+reproducibility.
 
 \subsection{Evaluation: Full PlantVillage (Easy)}
 
@@ -566,12 +595,16 @@ provides pretrained visual representations;
 Each trace $\tau$ records per-step tuples
 $(m_t, \kappa_t, a^\text{cur}_t, a^\text{next}_t,
 \text{BT}_t)$ plus episode metadata: path
-length $L$, backtrack count $B$, early-termination
-flag, prediction entropy $H_{\hat{y}}$, GPS
-coordinates $(\lambda, \phi)$, capture
-timestamp, FAO agro-ecological zone code,
-and correctness label. GPS and AEZ code
-feed \pathomedb Layer~3 construction directly.
+length $L$, backtrack count $B$,
+early-termination flag, prediction entropy
+$H_{\hat{y}}$, the seed image's
+$(\text{state},\,\text{lat},\,\text{lon},
+\,\mathrm{AEZ})$ block (\texttt{bugwood\_meta}),
+and correctness label. The \texttt{bugwood\_meta}
+block feeds both the per-state \texttt{state\_counts}
+on the symptom profile during build
+(\S\ref{sec:pathomedb}) and the Phase~3
+\texttt{SwarmObservations} aggregation directly.
 
 \textbf{PDS:} $\mathrm{PDS}(d, M){=}
 \mathbb{E}[M \mid d] - \mathbb{E}[M]$,
@@ -584,124 +617,138 @@ a finding the geospatial trace schema
 makes measurable.
 
 %% ---------------------------------------------------------------
-\section{PathomeDB}
+\section{PathomeDB Construction}
 \label{sec:pathomedb}
 
-\pathomedb is a five-layer mechanistic
-knowledge graph. Each layer serves a distinct
-function; together they provide \observe with
-the visual, mechanistic, and geospatial context
-that $182$ training images alone cannot supply.
+\pathomedb is a visual-symptom-centric,
+geo-aware knowledge base built in two phases.
+\textbf{Phase~0} seeds the visual content for
+every $(\text{crop},\,\text{disease})$ class
+by shelling out to a Claude headless endpoint.
+\textbf{Phase~3} (after \plantswarm trace
+generation) attaches per-class behavioural
+aggregates---path-length, backtrack rate,
+confusion-target histogram---onto the same
+profiles. Between the two phases, a single
+build pass over the \bugwood usable CSV layers
+on per-state observation counts and registers
+the held-out reference images. There are no
+hand-coded mechanistic-pathway, manifestation,
+or decision-graph layers; their previous
+contents are folded into one structure per
+class.
 
-\subsection{Layer 1: Mechanistic Infection Pathway}
+\subsection{Two stores, one schema}
 
-For each pathogen, Layer~1 encodes the causal
-cascade from entry to symptom. This is the
-source of cross-crop transferability: enzymatic
-mechanisms are crop-agnostic. \textit{Colletotrichum}
-secretes the same cutinase-pectinase-cellulase
-cascade on mango and soybean, producing the
-same circular lesion from radial pectinase
-diffusion (Step~3) and the same orange acervuli
-from carotenoid conidia (Step~4). An agent
-that understands Step~4 can diagnose any host.
+The build emits exactly two on-disk artifacts:
 
-Each step records: entry mechanism and trigger
-conditions; features that \emph{increase} and
-\emph{decrease}; the causal explanation for
-each visual feature; and the epistemic
-implication for \observe---Step~2 features
-imply high $\epsilon_t$ (more evidence would
-help), Step~4 orange sporulation implies
-immediate early termination.
+\begin{itemize}
+  \item \texttt{symptoms.json} -- a
+    \texttt{SymptomLibrary} of
+    \texttt{SymptomProfile}s, one per
+    $(\text{crop},\,\text{disease})$.
+    Each profile carries (a) a
+    \texttt{VisualSymptom} block (plant parts,
+    color, shape, margin, texture, sporulation,
+    distinctive signs, progression, confusion
+    diseases, free-form notes); (b) per-state
+    and per-AEZ observation counts; (c) a list
+    of reference IDs; (d) an auto-built
+    \texttt{reobservation\_prompt} composed
+    from the populated visual fields; and (e)
+    an optional \texttt{SwarmObservations}
+    aggregate populated post-trace.
+  \item \texttt{refs/} -- a
+    \texttt{ReferenceLibrary} over the held-out
+    image split ($1{,}452$ images), CLIP-embedded
+    and indexed by FAISS, with geo-weighted
+    retrieval (Eq.~\ref{eq:retrieval}).
+\end{itemize}
 
-\subsection{Layer 2: Cross-Crop Manifestation}
+The library at large is keyed by
+$\texttt{profile\_id}{=}\texttt{"\{crop\}::\{disease\}"}$;
+disease-only lookup is supported via a secondary
+index (\texttt{find\_by\_disease}). Both stores
+load lazily---in particular, the FAISS index is
+built on the first
+\texttt{retrieve\_references} call rather than
+at construction time, so \pathomedb build is fast
+and deterministic.
 
-Layer~2 maps crop-agnostic mechanisms to
-host-specific presentations: lesion diameter
-(mango $30$mm, soybean $15$mm, strawberry
-$8$mm), sporulation timing, dominant tissue
-affected, color shift from host pigmentation
-baseline, and confusion pairs per host.
-The $12$ unseen \pv disease classes are
-diagnosed through Layers~1 and~2 alone:
-if a disease maps to a known pathogen
-in a known crop category, the mechanistic
-pathway provides sufficient routing template.
+\subsection{Phase~0: Claude-headless visual seeding}
+\label{sec:claudeseed}
 
-\subsection{Layer 3: Geospatially-Grounded Regional Epidemiology}
-\label{sec:layer3}
+For each of the $484$ profiles,
+\texttt{scripts/seed\_pathome\_with\_claude.py}
+issues a single subprocess call:
+\begin{verbatim}
+claude -p "<schema-fixed prompt>"
+       --output-format json
+       --disallowedTools "Bash,Edit,Write,
+                          Read,Grep,Glob,
+                          WebFetch,WebSearch"
+       --model sonnet
+\end{verbatim}
+The prompt fixes a JSON schema enumerating the
+\texttt{VisualSymptom} fields and instructs the
+model to return empty arrays/strings rather
+than guessing for diseases it is uncertain
+about. The response is parsed via the
+envelope's \texttt{result} key, code-fence
+stripped, validated against the schema, and
+written incrementally into the seed file
+so that walltime kills resume cleanly.
+Failures (timeouts, malformed JSON, schema
+violations) are logged to \texttt{failed.jsonl}
+and resubmittable via \texttt{--retry-failed}.
+At four parallel workers and $\sim$$7$\,s per
+profile (Sonnet), the full $484$-class seed
+lands in well under an hour and costs a fraction
+of a single curator-day. We explicitly do
+\emph{not} rely on the seed being expert-grade
+on every profile; it is the input to the
+trace-driven enhancement pass, not the
+endpoint.
 
-Layer~3 is \pathomedb's primary methodological
-contribution. Monthly disease prevalence by
-FAO agro-ecological zone is estimated from
-\bugwood observation density
-(Eq.~\ref{eq:density}). Regions with
-$<3$ GPS observations in an AEZ-month
-cell are marked \texttt{sparse} and excluded
-from prior computation; \observe falls back
-to the global pathogen prior. The resulting
-monthly risk profiles are validated against
-EPPO historical records at Pearson
-$r{\geq}0.71$ (P7).
+\subsection{Build: layering the CSV onto the seed}
 
-Layer~3 additionally records:
-\textit{co-occurrence pairs}---diseases
-observed within $50$km of each other in
-\bugwood, flagged as potential regional
-confusion pairs and verified against
-extension service literature;
-\textit{variety-resistance profiles}
-from national agriculture ministry reports;
-\textit{treatment availability} by region
-(first/second-line options, access level,
-cost per hectare in local currency);
-and a \textit{camera quality tag} that
-adjusts \observe's $\alpha_t$ threshold---smallholder
-smartphones produce images with structurally
-higher aleatoric uncertainty than
-laboratory cameras.
+\texttt{scripts/build\_pathome.py} loads the
+seed JSON, then iterates the trace-split and
+reference-split records yielded by
+\texttt{BugwoodLoader} over
+\texttt{BugWood\_Diseases\_usable.csv}. For
+each record:
+\begin{itemize}
+  \item \texttt{state\_counts[state] += 1} on
+    the matching \texttt{SymptomProfile};
+  \item \texttt{aez\_counts[aez\_code] += 1}
+    using the AEZ derived from the state
+    centroid;
+  \item the reference-split image's
+    \texttt{image\_id} is appended to the
+    profile's \texttt{reference\_ids} and
+    a \texttt{ReferenceImage} entry is
+    registered in \texttt{db.refs}.
+\end{itemize}
+The visual block from Phase~0 is preserved
+verbatim. The geo prior (Eq.~\ref{eq:density})
+reads its counts directly off
+\texttt{state\_counts}---there is no separate
+regional-epidemiology table to maintain.
+The on-disk DB is written as
+\texttt{artifacts/pathome\_v1\_seed/} and is
+the input to trace generation
+(\S\ref{sec:plantswarm}).
 
-\subsection{Layer 4: Diagnostic Decision Graph}
+\subsection{Reference library}
+\label{sec:refs}
 
-Layer~4 encodes expert diagnostic reasoning
-as a directed acyclic graph (NetworkX DiGraph)
-with six mandatory branches in order: host,
-plant part, symptom category, progression
-direction, pathogen signs, environment.
-Angular vs.\ circular lesion margin is the
-single most informative visual feature
-separating bacterial from fungal etiology
-and is a hard branch condition. Terminal
-conditions enable early routing: orange
-sporulation is definitive for
-\textit{Colletotrichum} regardless of host.
-
-Each graph node carries the responsible agent,
-visual features required for branch resolution,
-posterior updates, and the targeted
-re-observation instruction injected into
-$\mathcal{C}_{t+1}$ when \observe forces
-a backtrack. Backtracking is purposeful:
-\observe injects ``examine lesion margins for
-orange or salmon masses specifically'' rather
-than a generic retry.
-
-\subsection{Layer 5: Geo-Tagged Reference Library}
-\label{sec:layer5}
-
-\textbf{Source.} The $3$ images per disease class
-held out from \bugwood ($78$ total) are staged
-using Qwen2.5-VL-7B prompted with Layer~1
-descriptions (five-sample majority vote;
-$<60\%$ agreement $\to$ flagged uncertain,
-excluded). These are the \textbf{only} reference
-images in \pathomedb: no PlantVillage or
-PlantWild images are used, ensuring zero
-data leakage into either evaluation set.
-
-\textbf{Geo-weighted retrieval.} At inference,
-\observe retrieves top-3 references by:
+The $3$ held-out images per class
+($3 \times 484 = 1{,}452$ total) are downloaded
+into a local cache on first build, embedded
+with CLIP ViT-B/32~\citep{radford2021learning}
+and indexed by FAISS~\citep{johnson2019billion}.
+Retrieval is geo-weighted:
 \begin{equation}
   \text{score}(q, r_i) =
   0.7\cdot\cos(\mathbf{e}_q, \mathbf{e}_{r_i})
@@ -709,14 +756,80 @@ data leakage into either evaluation set.
   \label{eq:retrieval}
 \end{equation}
 where $\mathbf{e}$ are CLIP embeddings and
-$\phi$ climate-zone vectors from GPS.
-A query from Nigeria retrieves references
-from similar humid-tropical field conditions
-rather than visually similar but climatically
-distant Himalayan images.
-FAISS~\citep{johnson2019billion} indexes
-precomputed $512$-dim embeddings;
-retrieval latency $<1$ms.
+$\phi$ a climate vector derived from the query's
+state centroid. Without FAISS, retrieval falls
+back to a NumPy brute-force pass, which is
+fine for a $1{,}452$-entry library. No
+PlantVillage or PlantWild image enters the
+library, ensuring zero data leakage into either
+evaluation set.
+
+\subsection{Phase~3: Swarm-derived enhancement}
+\label{sec:swarmobs}
+
+After \plantswarm produces the $101{,}640$
+routing traces against \texttt{pathome\_v1\_seed}
+(\S\ref{sec:plantswarm}),
+\texttt{scripts/enhance\_pathome\_from\_traces.py}
+groups traces by their ground-truth
+$(\text{crop},\,\text{disease})$ from
+\texttt{bugwood\_meta} and computes a
+\texttt{SwarmObservations} record per profile:
+\begin{itemize}
+  \item \texttt{n\_traces}: number of routing
+    traces aggregated for this class;
+  \item \texttt{avg\_path\_length}: mean handoff
+    count along the trace;
+  \item \texttt{backtrack\_rate}: fraction of
+    traces with $\geq{1}$ backtrack;
+  \item \texttt{high\_confidence\_rate}: fraction
+    ending in $\kappa{=}\kH$ (early termination);
+  \item \texttt{confusion\_targets}: ranked
+    histogram of disease labels the swarm
+    misroutes \emph{to}.
+\end{itemize}
+This block is attached to the matching
+\texttt{SymptomProfile}; the visual content
+from Phase~0 is left untouched. The output
+is a new on-disk DB,
+\texttt{artifacts/pathome\_v1\_enhanced/},
+identical to the seed DB except every profile
+the swarm visited at least once now carries a
+populated \texttt{swarm\_observations}.
+Training \observe twice---once against the
+seed DB, once against the enhanced DB---on
+the same trace set produces the headline
+before-vs-after delta (\S\ref{sec:exp}).
+
+\subsection{Geo prior at state granularity}
+\label{sec:geoprior}
+
+The geo prior $\hat{P}(d \mid s)$ reads off the
+profile's \texttt{state\_counts} directly:
+\begin{equation}
+  \hat{P}(d \mid s) =
+  \frac{\mathrm{count}(d, s)}
+       {\sum_{d'} \mathrm{count}(d', s)},
+  \label{eq:density}
+\end{equation}
+where $s$ is the US state recovered from the
+query image's GPS via the nearest-centroid
+lookup
+(\texttt{utils.geo.US\_STATE\_CENTROID}, $50$
+states $+$ DC $+$ territories) and
+$\mathrm{count}(d, s)$ is
+\texttt{state\_counts[$s$]} on the symptom
+profile for disease $d$. State cells with
+$<3$ observations are flagged sparse and
+\observe falls back to
+\texttt{global\_prior(d)}. Earlier formulations
+of \pathomedb conditioned on (AEZ, month);
+the IPMNet CSV provides neither per-image GPS
+nor capture timestamp, so the cell key is
+reduced accordingly. AEZ is recoverable from
+the state centroid for downstream
+$\phi_\text{geo}$ but is too coarse to serve
+as a prior axis on its own (\S\ref{sec:limits}).
 
 %% ---------------------------------------------------------------
 \section{OBSERVE}
@@ -1222,50 +1335,83 @@ broader coverage strengthens the claim.
 %% ---------------------------------------------------------------
 \appendix
 
-\section{Bugwood Image Selection}
+\section{Bugwood CSV Filtering}
 \label{app:selection}
 
-Hard filters: GPS precision ${\leq}10$km,
-species-level disease label, resolution
-${\geq}512{\times}512$, single dominant
-subject with diagnostic region ${\geq}25\%$
-of frame, no severe JPEG compression
-($<60$ quality factor). From candidates
-passing all filters, $k$-medoids ($k{=}10$,
-initialized by $k$-means++) on CLIP ViT-B/32
-embeddings selects the maximally diverse
-$10$ images per class. This ensures early,
-mid, and late stage presentations are covered
-and multiple geographic origins are represented
-within the $10$.
+The IPMNet export
+(\texttt{BugWood\_Diseases.csv}, $19{,}749$ rows)
+is normalised by
+\texttt{scripts/filter\_bugwood\_csv.py} in
+five steps:
+\begin{enumerate}
+  \item drop rows with empty \texttt{Host Name}
+    ($2{,}171$);
+  \item map \texttt{Host Name} via
+    \texttt{BUGWOOD\_EXACT\_CROP\_MAP}---a
+    $60{+}$-entry crop synonym table imported
+    from the unified \texttt{DataLoader.py}
+    registry; non-host taxa (``wood decay
+    fungi'', ``shelf fungi'', \ldots) are
+    dropped;
+  \item strip the parenthetical Latin binomial
+    from \texttt{Subject Display Name} (regex
+    \texttt{\textbackslash{}s*\textbackslash{}(.*\$})
+    and title-case the result;
+  \item drop rows whose \texttt{Location}
+    (state name) is empty or unrecognised;
+  \item group by
+    $(\text{NormCrop},\,\text{NormDisease})$
+    and keep classes with $\geq{10}$ candidate
+    rows.
+\end{enumerate}
+Output: \texttt{BugWood\_Diseases\_usable.csv},
+$11{,}513$ rows over $\mathbf{484}$ classes,
+plus five derived columns (\texttt{NormCrop},
+\texttt{NormDisease}, \texttt{StateLat},
+\texttt{StateLon}, \texttt{AezCode}).
 
-Of the $10$ images per class: $7$ feed
-\plantswarm ($30$ runs each, temperature
-$T{=}0.9$, max path length $15$ steps,
-backtrack budget $1$ per episode); $3$ are
-held as \pathomedb Layer~5 references
-(one per disease stage, staged by Qwen2.5-VL-7B
-prompted with Layer~1 pathway descriptions,
-five-sample majority vote).
+The first $10$ rows per class (deterministic
+ordering by \texttt{Image Number}) are admitted
+by \texttt{BugwoodLoader}; $7$ feed \plantswarm
+trace generation ($30$ runs each,
+temperature $T{=}0.9$, max path length $15$
+steps, backtrack budget $1$ per episode); $3$
+are held as references for the
+\texttt{ReferenceLibrary}.
+\texttt{select\_diverse\_subset}
+($k$-medoids over CLIP ViT-B/32 embeddings) is
+still exposed for callers who want diversity
+sampling within a class's pool, but the
+deterministic Image-Number ordering is
+sufficient for reproducibility.
 
-\section{Layer 3 Construction Details}
+\section{Geo Prior at State Granularity}
 \label{app:layer3}
 
-GPS coordinates from $182$ trace images are
-mapped to FAO agro-ecological zones using
-the FAO shapefile at $0.5^\circ$ resolution.
-AEZ-month cells with $<3$ observations are
-marked \texttt{sparse} and excluded from
-$\hat{P}(d \mid r, \sigma)$; \observe queries
-the global pathogen prior for sparse cells.
-Risk tiers: \textit{critical} (top quartile
-by count density), \textit{high} (50--75th),
-\textit{medium} (25--50th), \textit{low} ($<25$th).
-Validation uses Pearson $r$ over shared
-(disease, AEZ, month) triples in both
-\pathomedb and the EPPO database; five
-disease classes are held out from trace
-generation for this validation.
+The geo prior is computed directly off
+\texttt{state\_counts} on each
+\texttt{SymptomProfile}: there is no separate
+regional-epidemiology table to maintain.
+US state names from the CSV's \texttt{Location}
+column are resolved to a population-weighted
+centroid
+(\texttt{utils.geo.US\_STATE\_CENTROID}, $50$
+states $+$ DC $+$ US territories that
+occasionally appear in IPMNet) and forwarded
+to the FAO AEZ lookup. State cells with
+$<3$ observations are flagged \texttt{sparse}
+and \observe queries
+\texttt{db.symptoms.global\_prior(d)} in
+those cases. The earlier formulation's
+AEZ-month grid and EPPO Pearson-$r$ validation
+were dropped because the IPMNet CSV provides
+neither the GPS nor the capture-date fields
+needed to construct them; the coarse-fallback
+AEZ table maps the entire US footprint into
+two zones (TMP, STM), and the full
+$\sim$$17$-zone resolution requires
+\texttt{PATHOME\_AEZ\_SHAPEFILE} pointing at
+a real FAO GAEZ shapefile.
 
 \section{Training Configuration}
 \label{app:training}
