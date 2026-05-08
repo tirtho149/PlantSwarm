@@ -1,0 +1,486 @@
+{
+  "diseases": [
+    {
+      "disease_name": "Bacterial Pustule Of Soybean Disease",
+      "pathogen_scientific_name": {
+        "value": "Xanthomonas axonopodis pv. glycines",
+        "url": "https://extension.umn.edu/pest-management/bacterial-pustule-soybean",
+        "quote": "Bacterial pustule is caused by the bacterium  Xanthomonas axonopodis  pv.  glycines .",
+        "taxonomy_validated": false
+      },
+      "type_of_disease": {
+        "value": "Bacterial",
+        "url": "https://extension.umn.edu/pest-management/bacterial-pustule-soybean",
+        "quote": "Bacterial pustule is caused by the bacterium  Xanthomonas axonopodis  pv.  glycines ."
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Pod"
+        ],
+        "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+        "quote": "Light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. ... Small raised spots may also develop on pods."
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": "Symptoms begin as small, light green spots (without water-soaking); light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. Lesions can grow together into large, irregular patches of dead tissue, giving leaves a ragged appearance, and small raised spots may also develop on pods.",
+          "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+          "quote": "Symptoms begin as small, light green spots (without water-soaking). Light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. The lesions can grow together into large, irregular patches of dead tissue. Loss of tissue in the infected areas may give the leaves a ragged appearance like bacterial blight. Small raised spots may also develop on pods."
+        },
+        "diagnostic_features": {
+          "value": "Bacterial pustule can be differentiated by a lack of water soaking at the initial site of infection, less chlorosis around lesions, and by the formation of tiny tan bumps on the undersides of leaves. Unlike soybean rust, bacterial pustule does not have an opening in the pustules or masses of spores.",
+          "url": "https://extension.umn.edu/pest-management/bacterial-pustule-soybean",
+          "quote": "Bacterial pustule can be differentiated by a lack of water soaking at the initial site of infection, less chlorosis around lesions, and by the formation of tiny tan bumps on the undersides of leaves. The pustules can be mistaken for those of soybean rust, however, bacterial pustule does not have an opening in the pustules or masses of spores like those of soybean rust."
+        },
+        "look_alikes": {
+          "value": [
+            "bacterial blight",
+            "soybean rust"
+          ],
+          "url": "https://extension.umn.edu/pest-management/bacterial-pustule-soybean",
+          "quote": "Early symptoms of bacterial pustule look similar to bacterial blight... The pustules can be mistaken for those of soybean rust"
+        }
+      },
+      "confidence": "high",
+      "num_sources": 2,
+      "conflicts": [
+        {
+          "field": "pathogen_scientific_name",
+          "canonical_value": "Xanthomonas axonopodis pv. glycines",
+          "alternative_value": "Xanthomonas campestris pv. glycines",
+          "alternative_source_url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+          "note": "Both names appear in extension literature as synonyms for the same pathogen; no NCBI/MycoBank validation was provided to select a current accepted name."
+        }
+      ]
+    },
+    {
+      "disease_name": "Bean Pod Mottle Virus",
+      "pathogen_scientific_name": {
+        "value": "Bean pod mottle virus",
+        "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
+        "quote": "Bean pod mottle is caused by the comovirus Bean pod mottle virus.",
+        "taxonomy_validated": false
+      },
+      "type_of_disease": {
+        "value": "Viral",
+        "url": "https://extension.umn.edu/soybean-pest-management/bean-pod-mottle-virus-soybean",
+        "quote": "Bean pod mottle virus (BPMV) is a widespread viral disease in the U.S. soybean growing areas transmitted by leaf-feeding beetles."
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Pod",
+          "Seed"
+        ],
+        "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
+        "quote": "Symptoms of BPMV are green to yellow mottling (blotchiness) of younger leaves in the upper canopy. In severe cases leaves may show puckering and distortion and plants can be stunted. Pods can be misshapen with mottling and reduced in size. Infected plants may have green stems after the pods have matured. Seed from infected plants may appear smoky in color or have reduced size and quality due to seed coat mottling which will be brown or black depending on hilum color."
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": "Green to yellow mottling (blotchiness) of younger leaves in the upper canopy, with possible puckering, distortion, and stunting; pods can be misshapen and mottled and reduced in size, and seed may appear smoky or have seed coat mottling (brown or black depending on hilum color).",
+          "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
+          "quote": "Symptoms of BPMV are green to yellow mottling (blotchiness) of younger leaves in the upper canopy. In severe cases leaves may show puckering and distortion and plants can be stunted. Pods can be misshapen with mottling and reduced in size. Infected plants may have green stems after the pods have matured. Seed from infected plants may appear smoky in color or have reduced size and quality due to seed coat mottling which will be brown or black depending on hilum color."
+        },
+        "diagnostic_features": {
+          "value": "Green stems after pods have matured, along with seed coat mottling (brown or black depending on hilum color) and smoky seed appearance; because BPMV is caused by a virus there are no physical signs of the pathogen, so confirmation requires serological testing (ELISA).",
+          "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
+          "quote": "Infected plants may have green stems after the pods have matured. Seed from infected plants may appear smoky in color or have reduced size and quality due to seed coat mottling which will be brown or black depending on hilum color. The only way to confirm the presence of BPMV is with serological testing (ELISA)."
+        },
+        "look_alikes": {
+          "value": [
+            "soybean mosaic virus"
+          ],
+          "url": "https://extension.umn.edu/soybean-pest-management/bean-pod-mottle-virus-soybean",
+          "quote": "BPMV can interact with the soybean mosaic virus to create severe symptoms in plants infected by both viruses."
+        }
+      },
+      "confidence": "high",
+      "num_sources": 3,
+      "conflicts": [
+        {
+          "field": "disease_name",
+          "canonical_value": "Bean Pod Mottle Virus",
+          "alternative_value": "Bean Pod Mottle",
+          "alternative_source_url": "https://content.ces.ncsu.edu/bean-pod-mottle-virus",
+          "note": "NC State Extension uses 'Bean Pod Mottle' as the disease name, while UMN and Nebraska CropWatch use 'Bean Pod Mottle Virus'."
+        }
+      ]
+    },
+    {
+      "disease_name": "Sclerotinia Timber Rot",
+      "pathogen_scientific_name": {
+        "value": "Sclerotinia sclerotiorum",
+        "url": "https://ohioline.osu.edu/factsheet/plpath-soy-3",
+        "quote": "Sclerotinia stem rot of soybean is caused by the fungus Sclerotinia sclerotiorum .",
+        "taxonomy_validated": false
+      },
+      "type_of_disease": {
+        "value": "Fungal",
+        "url": "https://ohioline.osu.edu/factsheet/plpath-soy-3",
+        "quote": "Sclerotinia stem rot of soybean is caused by the fungus Sclerotinia sclerotiorum ."
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Pod",
+          "Seed"
+        ],
+        "url": "https://ohioline.osu.edu/factsheet/plpath-soy-3",
+        "quote": "ascospores are produced and forcibly ejected into the air where they are spread by wind or splashing rainwater to stems, branches, flowers and pods... Sclerotia produced inside stems (C) and inside pods (D)... If the seeds were infected during the early stages of development, they may have a flat and shriveled appearance... mycelia can grow through leaves, stems and petioles."
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": "Diseased plants appear wilted with grayish green leaves that turn brown to tan; stems develop water-soaked lesions that progress above and below nodes, eventually becoming bleached, stringy, and pithy. White fluffy/cottony mycelia and black sclerotia form on and inside infected stems and pods, and severe infection causes wilting, lodging, and plant death.",
+          "url": "https://cropprotectionnetwork.org/publications/an-overview-of-white-mold",
+          "quote": "Symptoms of white mold include water-soaked stem lesions that progress above and below infected nodes and eventually encircle the stem. Over time, infected stems are often killed and become bleached and stringy (Figure 3). Lesions can also occur on pods, petioles, and, in rare cases, on leaves. ... Severe infection weakens the plant and can result in wilting, lodging, and plant death (Figure 4). ... Signs of the fungus that can assist in diagnosis include white cottony mycelia (fungal growth) and sclerotia (Figure 5) on and inside infected plant stems and pods."
+        },
+        "diagnostic_features": {
+          "value": "Bleached, pithy, stringy stems that shred easily, covered with white cottony/fluffy mycelia under high moisture; hard, black, irregularly shaped sclerotia (with pink to white center, resembling mouse droppings) form inside or outside stems and pods; tan, cup-shaped apothecia (1/8 to 1/4 inch) on the soil surface.",
+          "url": "https://cropprotectionnetwork.org/publications/an-overview-of-white-mold",
+          "quote": "Signs of the fungus that can assist in diagnosis include white cottony mycelia (fungal growth) and sclerotia (Figure 5) on and inside infected plant stems and pods. These signs of S. sclerotiorum and symptoms of white mold distinguish it from most other soybean diseases. ... sclerotia, which are hard, black survival structures that resemble mouse droppings residing in the soil. ... Apothecia are small (approximately 1⁄8- to 1⁄4-inch (3-6 mm) in diameter), tan, cup-shaped mushrooms"
+        },
+        "look_alikes": {
+          "value": [
+            "other stem and root rot diseases",
+            "bird's nest fungus"
+          ],
+          "url": "https://cropwatch.unl.edu/plant-disease/soybean/sclerotinia-stem-rot/",
+          "quote": "It is important to observe stems and pods for white mycelium and sclerotia to differentiate Sclerotinia stem rot from other stem and root rot diseases."
+        }
+      },
+      "confidence": "high",
+      "num_sources": 3,
+      "conflicts": []
+    },
+    {
+      "disease_name": "Southern Blight",
+      "pathogen_scientific_name": {
+        "value": "Agroathelia rolfsii",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+        "quote": "Southern blight is caused by Agroathelia rolfsii , a soilborne fungus",
+        "taxonomy_validated": false
+      },
+      "type_of_disease": {
+        "value": "Fungal",
+        "url": "https://content.ces.ncsu.edu/southern-blight-of-soybean",
+        "quote": "Southern blight of soybean is caused by the fungus Sclerotium rolfsii."
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Root",
+          "Seed",
+          "Whole plant"
+        ],
+        "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+        "quote": "Seedling infection results in pre- or post-emergence damping-off. Later in the season, entire plants may become yellow and wilt, with leaves turning brown and often remaining attached to the plant. A dark brown lesion that girdles the stem occurs at the soil surface."
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": "Yellowing and wilting appear in patches; entire plants may become yellow and wilt with brown leaves remaining attached. Light to dark brown lesions develop on stems near the soil surface and girdle the stem, accompanied by conspicuous white, fan-like mats of fungal mycelium on the lower stem and soil surface, with numerous mustard-seed-sized sclerotia.",
+          "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+          "quote": "entire plants may become yellow and wilt, with leaves turning brown and often remaining attached to the plant. A dark brown lesion that girdles the stem occurs at the soil surface. This lesion is generally accompanied by the development of conspicuous white, fanlike mats of fungal mycelium that form on the base of the stem, on leaf residue, and on the soil surface around infected plants. Numerous, small round fungal bodies that are about the size of mustard seeds (called sclerotia) form on these fungal mats and on the lower stem."
+        },
+        "diagnostic_features": {
+          "value": "Conspicuous white, fan-like mats of fungal mycelium on the base of the stem, leaf residue, and soil surface around infected plants, with numerous small round sclerotia about the size of mustard seeds that progress from yellow-tan to reddish-brown to dark brown at maturity.",
+          "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+          "quote": "conspicuous white, fanlike mats of fungal mycelium that form on the base of the stem, on leaf residue, and on the soil surface around infected plants. Numerous, small round fungal bodies that are about the size of mustard seeds (called sclerotia) form on these fungal mats and on the lower stem. Initially, sclerotia are yellow-tan then progress to a reddish-brown color and finally dark brown at maturity."
+        },
+        "look_alikes": {
+          "value": [],
+          "url": "",
+          "quote": ""
+        }
+      },
+      "confidence": "high",
+      "num_sources": 2,
+      "conflicts": [
+        {
+          "field": "pathogen_scientific_name",
+          "canonical_value": "Agroathelia rolfsii",
+          "alternative_value": "Sclerotium rolfsii",
+          "alternative_source_url": "https://content.ces.ncsu.edu/southern-blight-of-soybean",
+          "note": "Sclerotium rolfsii is the older/anamorph name reported by NC State Extension; Agroathelia rolfsii is the more recent accepted name reported by Crop Protection Network. No NCBI/MycoBank validation was supplied, so the newer CPN name is used as canonical."
+        },
+        {
+          "field": "disease_name",
+          "canonical_value": "Southern Blight",
+          "alternative_value": "Southern Blight of Soybeans",
+          "alternative_source_url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+          "note": "Sources use 'Southern Blight of Soybean' (NC State) and 'Southern Blight of Soybeans' (CPN); both refer to the same disease."
+        }
+      ]
+    },
+    {
+      "disease_name": "Bacterial Blight",
+      "pathogen_scientific_name": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "type_of_disease": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "affected_parts": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "diagnostic_features": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "look_alikes": {
+          "value": null,
+          "url": null,
+          "quote": null
+        }
+      },
+      "confidence": "low",
+      "num_sources": 0,
+      "conflicts": []
+    },
+    {
+      "disease_name": "Cercospora Blight",
+      "pathogen_scientific_name": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "type_of_disease": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "affected_parts": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "diagnostic_features": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "look_alikes": {
+          "value": null,
+          "url": null,
+          "quote": null
+        }
+      },
+      "confidence": "low",
+      "num_sources": 0,
+      "conflicts": []
+    },
+    {
+      "disease_name": "Charcoal Rot",
+      "pathogen_scientific_name": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "type_of_disease": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "affected_parts": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "diagnostic_features": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "look_alikes": {
+          "value": null,
+          "url": null,
+          "quote": null
+        }
+      },
+      "confidence": "low",
+      "num_sources": 0,
+      "conflicts": []
+    },
+    {
+      "disease_name": "Downy Mildew",
+      "pathogen_scientific_name": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "type_of_disease": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "affected_parts": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "diagnostic_features": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "look_alikes": {
+          "value": null,
+          "url": null,
+          "quote": null
+        }
+      },
+      "confidence": "low",
+      "num_sources": 0,
+      "conflicts": []
+    },
+    {
+      "disease_name": "Frogeye Leaf Spot",
+      "pathogen_scientific_name": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "type_of_disease": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "affected_parts": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "diagnostic_features": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "look_alikes": {
+          "value": null,
+          "url": null,
+          "quote": null
+        }
+      },
+      "confidence": "low",
+      "num_sources": 0,
+      "conflicts": []
+    },
+    {
+      "disease_name": "Root And Stem Rot",
+      "pathogen_scientific_name": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "type_of_disease": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "affected_parts": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "diagnostic_features": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "look_alikes": {
+          "value": null,
+          "url": null,
+          "quote": null
+        }
+      },
+      "confidence": "low",
+      "num_sources": 0,
+      "conflicts": []
+    },
+    {
+      "disease_name": "Soybean Rust",
+      "pathogen_scientific_name": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "type_of_disease": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "affected_parts": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "diagnostic_features": {
+          "value": null,
+          "url": null,
+          "quote": null
+        },
+        "look_alikes": {
+          "value": null,
+          "url": null,
+          "quote": null
+        }
+      },
+      "confidence": "low",
+      "num_sources": 0,
+      "conflicts": []
+    }
+  ],
+  "crop": "Soybean",
+  "generated_date": "2026-05-08"
+}

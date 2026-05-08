@@ -1,0 +1,792 @@
+{
+  "Soybean::Bacterial Pustule Of Soybean Disease": {
+    "Iowa": {
+      "state": "Iowa",
+      "state_specific": false,
+      "summary": {
+        "value": "Symptoms begin as small, light green spots without water-soaking, and light-colored raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves, and small raised spots may also develop on pods.",
+        "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+        "quote": "Symptoms begin as small, light green spots (without water-soaking). Light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. The lesions can grow together into large, irregular patches of dead tissue. Loss of tissue in the infected areas may give the leaves a ragged appearance like bacterial blight. Small raised spots may also develop on pods.",
+        "image_id": "bugwood::5623579"
+      },
+      "diagnostic_features": {
+        "value": "Bacterial pustules differ from soybean rust pustules because they lack a natural opening in the pustule and the masses of spores produced by soybean rust.",
+        "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+        "quote": "Bacterial pustules will differ from those of soybean rust, however, because they will not have a natural opening in the pustule, or masses of spores like those of soybean rust.",
+        "image_id": "bugwood::5623579"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "pod"
+        ],
+        "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+        "quote": "Light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. ... Small raised spots may also develop on pods.",
+        "image_id": "bugwood::5623579"
+      },
+      "look_alikes": {
+        "value": [
+          "soybean rust",
+          "bacterial blight"
+        ],
+        "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+        "quote": "Because this pathogen produces a pustule, it can easily be confused with soybean rust, a much more serious disease. ... Loss of tissue in the infected areas may give the leaves a ragged appearance like bacterial blight.",
+        "image_id": "bugwood::5623579"
+      },
+      "__image_ids__": [
+        "bugwood::5623579",
+        "bugwood::5623580",
+        "bugwood::5623581",
+        "bugwood::5623582",
+        "bugwood::5623583",
+        "bugwood::5623584",
+        "bugwood::5623585",
+        "bugwood::5623586",
+        "bugwood::5623587",
+        "bugwood::5623588"
+      ]
+    },
+    "Kentucky": {
+      "state": "Kentucky",
+      "state_specific": false,
+      "summary": {
+        "value": "Symptoms begin as small, light green spots (without water-soaking), and light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves; small raised spots may also develop on pods.",
+        "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+        "quote": "Symptoms begin as small, light green spots (without water-soaking). Light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves.",
+        "image_id": "bugwood::5368281"
+      },
+      "diagnostic_features": {
+        "value": "Bacterial pustules differ from soybean rust pustules because they will not have a natural opening in the pustule, or masses of spores like those of soybean rust.",
+        "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+        "quote": "Bacterial pustules will differ from those of soybean rust, however, because they will not have a natural opening in the pustule, or masses of spores like those of soybean rust.",
+        "image_id": "bugwood::5368281"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "pod"
+        ],
+        "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+        "quote": "Light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. ... Small raised spots may also develop on pods.",
+        "image_id": "bugwood::5368281"
+      },
+      "look_alikes": {
+        "value": [
+          "soybean rust",
+          "bacterial blight"
+        ],
+        "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+        "quote": "Because this pathogen produces a pustule, it can easily be confused with soybean rust, a much more serious disease. ... Loss of tissue in the infected areas may give the leaves a ragged appearance like bacterial blight.",
+        "image_id": "bugwood::5368281"
+      },
+      "__image_ids__": [
+        "bugwood::5368281",
+        "bugwood::5368282",
+        "bugwood::5368283",
+        "bugwood::5368284",
+        "bugwood::5368285",
+        "bugwood::5368286",
+        "bugwood::5368287",
+        "bugwood::5368288",
+        "bugwood::5368289",
+        "bugwood::5368290"
+      ]
+    }
+  },
+  "Soybean::Bacterial Blight": {
+    "Illinois": {
+      "state": "Illinois",
+      "state_specific": false,
+      "summary": {
+        "value": "Infections begin as small, angular, water-soaked spots that turn yellow and then brown as the tissue dies, surrounded by yellowish-green halos and often merging into large dead patches that may fall out, giving leaves a ragged appearance.",
+        "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
+        "quote": "Infections begin as small, angular, water-soaked spots that turn yellow and then brown as the tissue dies. The spots darken and are surrounded by yellowish-green halos. Spots often merge to form large, dead patches on the leaves. The dead tissue may fall out giving the leaves a ragged appearance.",
+        "image_id": "bugwood::5609905"
+      },
+      "diagnostic_features": {
+        "value": "Bacterial blight can be distinguished from Septoria brown spot by the presence of a halo around lesions and its prevalence on young leaves in the mid to upper canopy rather than older lower leaves.",
+        "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
+        "quote": "The two diseases can be distinguished by the presence of a halo around bacterial blight lesions. Both diseases can occur together on the same plants, but bacterial blight is most common on young leaves whereas brown spot is usually seen on older, lower leaves in the plant.",
+        "image_id": "bugwood::5609905"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "stem",
+          "petiole",
+          "pod",
+          "seed"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
+        "quote": "Infection can also occur on stems, petioles, pods, and seeds in infected pods.",
+        "image_id": "bugwood::5609905"
+      },
+      "look_alikes": {
+        "value": [
+          "Septoria brown spot"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
+        "quote": "Bacterial blight can be mistaken for Septoria brown spot.",
+        "image_id": "bugwood::5609905"
+      },
+      "__image_ids__": [
+        "bugwood::5609905",
+        "bugwood::5609906"
+      ]
+    },
+    "Indiana": {
+      "state": "Indiana",
+      "state_specific": false,
+      "summary": {
+        "value": "The most common symptoms on leaves are brown, angular lesions with chlorotic halos.",
+        "url": "https://u.osu.edu/osusoybeandisease/foliar-diseases/bacterial-blight/extended-version/",
+        "quote": "The most common symptoms on leaves are brown, angular lesions with chlorotic halos.",
+        "image_id": "bugwood::5607299"
+      },
+      "diagnostic_features": {
+        "value": "A cross section of a lesion submerged in water shows bacterial streaming under the microscope.",
+        "url": "https://u.osu.edu/osusoybeandisease/foliar-diseases/bacterial-blight/extended-version/",
+        "quote": "a cross section of a lesion is submerged in water and observed under the microscope. The dark cloud emerging from the leaf tissue contains millions of bacterial cells, commonly referred to as bacterial streaming.",
+        "image_id": "bugwood::5607299"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "pod",
+          "stem"
+        ],
+        "url": "https://u.osu.edu/osusoybeandisease/foliar-diseases/bacterial-blight/extended-version/",
+        "quote": "Symptoms caused by P. savastanoi pv . glycinea can be observed on the leaves, pods, and stems of the plant",
+        "image_id": "bugwood::5607299"
+      },
+      "look_alikes": {
+        "value": [
+          "Septoria brown spot"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
+        "quote": "Bacterial blight can be mistaken for Septoria brown spot.",
+        "image_id": "bugwood::5607299"
+      },
+      "__image_ids__": [
+        "bugwood::5607299"
+      ]
+    }
+  },
+  "Soybean::Bean Pod Mottle Virus": {
+    "Iowa": {
+      "state": "Iowa",
+      "state_specific": false,
+      "summary": {
+        "value": "Green to yellow mottling of younger leaves in the upper canopy, with possible puckering, distortion, and stunting; pods can be misshapen and mottled, and seed may appear smoky or have seed coat mottling.",
+        "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
+        "quote": "Symptoms of BPMV are green to yellow mottling (blotchiness) of younger leaves in the upper canopy. In severe cases leaves may show puckering and distortion and plants can be stunted. Pods can be misshapen with mottling and reduced in size.",
+        "image_id": "bugwood::5623785"
+      },
+      "diagnostic_features": {
+        "value": "Infected plants may retain green stems after pods have matured, along with seed coat mottling (brown or black depending on hilum color) and smoky-appearing seed.",
+        "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
+        "quote": "Infected plants may have green stems after the pods have matured. Seed from infected plants may appear smoky in color or have reduced size and quality due to seed coat mottling which will be brown or black depending on hilum color.",
+        "image_id": "bugwood::5623785"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Pod",
+          "Seed"
+        ],
+        "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
+        "quote": "Symptoms of BPMV are green to yellow mottling (blotchiness) of younger leaves in the upper canopy. In severe cases leaves may show puckering and distortion and plants can be stunted. Pods can be misshapen with mottling and reduced in size. Infected plants may have green stems after the pods have matured. Seed from infected plants may appear smoky in color or have reduced size and quality due to seed coat mottling which will be brown or black depending on hilum color.",
+        "image_id": "bugwood::5623785"
+      },
+      "look_alikes": {
+        "value": [
+          "herbicide injury",
+          "other viruses"
+        ],
+        "url": "https://extension.sdstate.edu/soybean-pests-bean-leaf-beetles-and-bean-pod-mottle-virus",
+        "quote": "Bean pod mottle virus  symptoms are commonly confused with herbicide injury and can resemble symptoms of other viruses",
+        "image_id": "bugwood::5623785"
+      },
+      "__image_ids__": [
+        "bugwood::5623785"
+      ]
+    },
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "Symptoms first appear on younger leaves and range from mild chlorotic mottling of foliage to severe mosaic, with green stem, stunting, leaf distortion and puckering, and reduced pod size in severe infections.",
+        "url": "https://content.ces.ncsu.edu/bean-pod-mottle-virus",
+        "quote": "Symptoms first appear on the younger leaves and can range from mild chlorotic mottling of foliage to a severe mosaic",
+        "image_id": "bugwood::5581647"
+      },
+      "diagnostic_features": {
+        "value": "Because BPMV is a virus there are no physical signs of the pathogen, so field presence must be confirmed through lab testing.",
+        "url": "https://content.ces.ncsu.edu/bean-pod-mottle-virus",
+        "quote": "Since BPMV is caused by a virus, there are no physical signs of the pathgogen and the presence of the disease in the field needs to be confirmed through lab testing.",
+        "image_id": "bugwood::5581647"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Pod"
+        ],
+        "url": "https://content.ces.ncsu.edu/bean-pod-mottle-virus",
+        "quote": "Symptoms first appear on the younger leaves and can range from mild chlorotic mottling of foliage to a severe mosaic ( Figure 2 ). Green stem may also occur. In severe infections, stunting, leaf distortion and puckering and reduced pod size are also common.",
+        "image_id": "bugwood::5581647"
+      },
+      "look_alikes": {
+        "value": [
+          "herbicide injury",
+          "other viruses"
+        ],
+        "url": "https://extension.sdstate.edu/soybean-pests-bean-leaf-beetles-and-bean-pod-mottle-virus",
+        "quote": "Bean pod mottle virus  symptoms are commonly confused with herbicide injury and can resemble symptoms of other viruses",
+        "image_id": "bugwood::5581647"
+      },
+      "__image_ids__": [
+        "bugwood::5581647",
+        "bugwood::5581648",
+        "bugwood::5581649",
+        "bugwood::5581650",
+        "bugwood::5581647",
+        "bugwood::5581648",
+        "bugwood::5581649",
+        "bugwood::5581650"
+      ]
+    }
+  },
+  "Soybean::Charcoal Rot": {
+    "Georgia": {
+      "state": "Georgia",
+      "state_specific": false,
+      "summary": {
+        "value": "Plants exhibit reduced vigor, yellowing, and wilting, with premature death with leaves still attached being the most common symptom.",
+        "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+        "quote": "the fungus can cause reduced vigor, yellowing, and wilting... Premature death with leaves still attached to the plant is the most common symptom",
+        "image_id": "bugwood::5472515"
+      },
+      "diagnostic_features": {
+        "value": "Numerous microsclerotia give the lower stem and taproot tissue a charcoal-like appearance, looking as if peppered with black spots.",
+        "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+        "quote": "Numerous microsclerotia give the lower stem and taproot tissue a charcoal-like appearance",
+        "image_id": "bugwood::5472515"
+      },
+      "affected_parts": {
+        "value": [
+          "Root",
+          "Stem",
+          "Seed",
+          "Vascular",
+          "Foliar"
+        ],
+        "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+        "quote": "the charcoal rot fungus can infect seed, seedlings, or mature plants... The fungus grows within the roots and stem and interferes with water uptake by clogging vascular tissue",
+        "image_id": "bugwood::5472515"
+      },
+      "look_alikes": {
+        "value": [
+          "Pod and Stem Blight (Diaporthe/Phomopsis spp.)",
+          "Phytophthora Root and Stem Rot (Phytophthora sojae)",
+          "Saprophytic Fungi",
+          "White Mold / Sclerotinia stem rot (Sclerotinia sclerotiorum)",
+          "Soybean Cyst Nematode (Heterodera glycines)",
+          "Stem Canker (Diaporthe spp.)",
+          "Sudden Death Syndrome (Fusarium virguliforme)",
+          "Red Crown Rot (Calonectria ilicicola)",
+          "general drought stress"
+        ],
+        "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+        "quote": "Diseases With Similar Symptoms... Pod and Stem Blight (Diaporthe/Phomopsis spp.)... Phytophthora Root and Stem Rot (PRR — Phytophthora sojae)... Saprophytic Fungi... White Mold (Sclerotinia stem rot — Sclerotinia sclerotiorum)... Soybean Cyst Nematode (SCN — Heterodera glycines)... Stem Canker (Diaporthe spp.)... Sudden Death Syndrome (SDS — Fusarium virguliforme)... Red Crown Rot (RCR - Calonectria ilicicola)... Charcoal rot is hard to diagnose in dry years, as it is difficult to distinguish its symptoms from those of general drought stress",
+        "image_id": "bugwood::5472515"
+      },
+      "__image_ids__": [
+        "bugwood::5472515",
+        "bugwood::5472516"
+      ]
+    },
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "Premature death with leaves still attached to the plant is the most common symptom, along with reduced vigor, yellowing, wilting, and gray discoloration on the lower stem.",
+        "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+        "quote": "Premature death with leaves still attached to the plant is the most common symptom",
+        "image_id": "bugwood::5591031"
+      },
+      "diagnostic_features": {
+        "value": "Numerous microsclerotia (less than 1 mm) embedded in the taproot and lower stem give it a charcoal-like, peppered appearance, with light gray or silver discoloration and black streaks visible in cross-section.",
+        "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+        "quote": "To the naked eye, it will look as if the root or stem has been \"peppered\" with black spots",
+        "image_id": "bugwood::5591031"
+      },
+      "affected_parts": {
+        "value": [
+          "Root",
+          "Stem",
+          "Vascular",
+          "Seed",
+          "Foliar"
+        ],
+        "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+        "quote": "The fungus grows within the roots and stem and interferes with water uptake by clogging vascular tissue",
+        "image_id": "bugwood::5591031"
+      },
+      "look_alikes": {
+        "value": [
+          "Pod and Stem Blight (Diaporthe/Phomopsis spp.)",
+          "Phytophthora Root and Stem Rot (Phytophthora sojae)",
+          "White Mold / Sclerotinia stem rot (Sclerotinia sclerotiorum)",
+          "Soybean Cyst Nematode (Heterodera glycines)",
+          "Stem Canker (Diaporthe spp.)",
+          "Sudden Death Syndrome (Fusarium virguliforme)",
+          "Red Crown Rot (Calonectria ilicicola)",
+          "general drought stress"
+        ],
+        "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+        "quote": "Pod and Stem Blight (Diaporthe/Phomopsis spp.)... Phytophthora Root and Stem Rot (PRR — Phytophthora sojae)... Saprophytic Fungi... White Mold (Sclerotinia stem rot — Sclerotinia sclerotiorum)... Soybean Cyst Nematode (SCN — Heterodera glycines)... Stem Canker (Diaporthe spp.)... Sudden Death Syndrome (SDS — Fusarium virguliforme)... Red Crown Rot (RCR - Calonectria ilicicola)",
+        "image_id": "bugwood::5591031"
+      },
+      "__image_ids__": [
+        "bugwood::5591031",
+        "bugwood::5591031"
+      ]
+    }
+  },
+  "Soybean::Downy Mildew": {
+    "Iowa": {
+      "state": "Iowa",
+      "state_specific": false,
+      "summary": {
+        "value": "Pale green to light yellow spots appear on upper leaf surfaces and enlarge into pale to bright yellow spots, with centers eventually turning brown bordered by yellow margins, and grayish to pale-purplish sporulation on the lower leaf surface during humid weather.",
+        "url": "https://soybeanresearchinfo.com/soybean-disease/downy-mildew/",
+        "quote": "Look for pale green to light yellow spots which enlarge into pale to bright yellow spots. The center of the spots eventually turns brown, bordered by yellow margins. Check the leaves for signs of grayish to pale-purplish spores on the lower leaf surface during humid weather.",
+        "image_id": "bugwood::5624664"
+      },
+      "diagnostic_features": {
+        "value": "Tufts of tan-colored fungal growth on the underside of infected leaves distinguish downy mildew from other foliar soybean diseases.",
+        "url": "https://extension.umn.edu/soybean-pest-management/downy-mildew",
+        "quote": "Downy mildew can be distinguished from other foliar soybean diseases by the tufts of tan-colored fungal growth on the underside of infected leaves.",
+        "image_id": "bugwood::5624664"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Pod",
+          "Seed"
+        ],
+        "url": "https://cropprotectionnetwork.org/encyclopedia/downy-mildew-of-soybean",
+        "quote": "Downy mildew-infected pods show no external symptoms, but the inside of the pod and seed may be covered with a dried, whitish fungal mass",
+        "image_id": "bugwood::5624664"
+      },
+      "look_alikes": {
+        "value": [
+          "common soybean viruses",
+          "white mold"
+        ],
+        "url": "https://soybeanresearchinfo.com/soybean-disease/downy-mildew/",
+        "quote": "Some soybean varieties express mild leaf distortion that may resemble symptoms caused by common soybean viruses",
+        "image_id": "bugwood::5624664"
+      },
+      "__image_ids__": [
+        "bugwood::5624664",
+        "bugwood::5624665",
+        "bugwood::5624666",
+        "bugwood::5624667",
+        "bugwood::5624668",
+        "bugwood::5624669",
+        "bugwood::5624670"
+      ]
+    },
+    "Kentucky": {
+      "state": "Kentucky",
+      "state_specific": false,
+      "summary": {
+        "value": "Pale green to light yellow spots appear first on the upper surface of young leaves and enlarge into pale to bright yellow spots; centers eventually turn brown bordered by yellow margins, with grayish to pale-purplish sporulation on the lower leaf surface during humid weather.",
+        "url": "https://soybeanresearchinfo.com/soybean-disease/downy-mildew/",
+        "quote": "Look for pale green to light yellow spots which enlarge into pale to bright yellow spots. The center of the spots eventually turns brown, bordered by yellow margins. Check the leaves for signs of grayish to pale-purplish spores on the lower leaf surface during humid weather.",
+        "image_id": "bugwood::5368994"
+      },
+      "diagnostic_features": {
+        "value": "Fuzzy, gray tufts growing from lesions on the leaf underside, particularly when humidity is high or leaves are wet.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/downy-mildew-of-soybean",
+        "quote": "On the leaf underside, fuzzy, gray tufts may be seen growing from lesions, particularly when humidity is high or leaves are wet (e.g., early in the morning).",
+        "image_id": "bugwood::5368994"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Pod",
+          "Seed"
+        ],
+        "url": "https://cropprotectionnetwork.org/encyclopedia/downy-mildew-of-soybean",
+        "quote": "Downy mildew-infected pods show no external symptoms, but the inside of the pod and seed may be covered with a dried, whitish fungal mass",
+        "image_id": "bugwood::5368994"
+      },
+      "look_alikes": {
+        "value": [
+          "common soybean viruses",
+          "white mold"
+        ],
+        "url": "https://soybeanresearchinfo.com/soybean-disease/downy-mildew/",
+        "quote": "Some soybean varieties express mild leaf distortion that may resemble symptoms caused by common soybean viruses",
+        "image_id": "bugwood::5368994"
+      },
+      "__image_ids__": [
+        "bugwood::5368994",
+        "bugwood::5368995",
+        "bugwood::5368996",
+        "bugwood::5368997"
+      ]
+    }
+  },
+  "Soybean::Frogeye Leaf Spot": {
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "Leaf lesions are small, irregular to circular, gray with reddish-brown borders, starting as dark, water-soaked spots on the upper leaf surface, and as they age the central area becomes gray to light brown with dark, red-brown margins.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
+        "quote": "Leaf lesions are small, irregular to circular in shape, and gray with reddish-brown borders.",
+        "image_id": "bugwood::5582257"
+      },
+      "diagnostic_features": {
+        "value": "Reddish purple margins surround the gray centers on mature lesions; on some varieties lesions may have light green to yellow halos; fuzzy, gray sporulation (conidia) can sometimes occur in lesions on the leaf underside.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
+        "quote": "Reddish purple margins surround the gray centers on mature frogeye leaf spot lesions.",
+        "image_id": "bugwood::5582257"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Pod",
+          "Seed"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/frogeye-leaf-spot",
+        "quote": "Symptoms of frogeye leaf spot are most visible and typically seen on leaves, but can also occur on stems, pods, and seeds.",
+        "image_id": "bugwood::5582257"
+      },
+      "look_alikes": {
+        "value": [
+          "Cercospora leaf blight"
+        ],
+        "url": "https://cropprotectionnetwork.org/publications/an-overview-of-cercospora-leaf-blight-of-soybean",
+        "quote": "The fungus that causes frogeye leaf spot may also cause purple petiole lesions",
+        "image_id": "bugwood::5582257"
+      },
+      "__image_ids__": [
+        "bugwood::5582257",
+        "bugwood::5582258",
+        "bugwood::5582259",
+        "bugwood::5582257",
+        "bugwood::5582258",
+        "bugwood::5582259"
+      ]
+    },
+    "Illinois": {
+      "state": "Illinois",
+      "state_specific": false,
+      "summary": {
+        "value": "Leaf lesions are small, irregular to circular, gray with reddish-brown borders, starting as dark water-soaked spots that age into gray to light brown centers with dark red-brown margins.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
+        "quote": "Leaf lesions are small, irregular to circular in shape, and gray with reddish-brown borders.",
+        "image_id": "bugwood::5609900"
+      },
+      "diagnostic_features": {
+        "value": "Frogeye leaf spot can be distinguished from other soybean foliar diseases by the reddish-brown or purple ring surrounding the round leaf spots.",
+        "url": "https://extension.umn.edu/soybean-pest-management/frogeye-leaf-spot",
+        "quote": "Frogeye leaf spot can be distinguished from other soybean foliar diseases by the reddish-brown or purple ring surrounding the round leaf spots.",
+        "image_id": "bugwood::5609900"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "stem",
+          "pod",
+          "seed"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/frogeye-leaf-spot",
+        "quote": "Symptoms of frogeye leaf spot are most visible and typically seen on leaves, but can also occur on stems, pods, and seeds.",
+        "image_id": "bugwood::5609900"
+      },
+      "look_alikes": {
+        "value": [
+          "Cercospora leaf blight"
+        ],
+        "url": "https://cropprotectionnetwork.org/publications/an-overview-of-cercospora-leaf-blight-of-soybean",
+        "quote": "The foliar phase of FLS is usually severe and easily distinguishable from CLB when FLS petiole lesions occur.",
+        "image_id": "bugwood::5609900"
+      },
+      "__image_ids__": [
+        "bugwood::5609900",
+        "bugwood::5609901",
+        "bugwood::5609902",
+        "bugwood::5609903",
+        "bugwood::5609904"
+      ]
+    }
+  },
+  "Soybean::Root And Stem Rot": {
+    "Illinois": {
+      "state": "Illinois",
+      "state_specific": false,
+      "summary": {
+        "value": "The most characteristic symptom of Phytophthora root and stem rot is a dark brown lesion on the lower stem that extends up from the taproot of the plant.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/phytophthora-root-and-stem-rot-of-soybean",
+        "quote": "The most characteristic symptom of Phytophthora root and stem rot is a dark brown lesion on the lower stem that extends up from the taproot of the plant.",
+        "image_id": "bugwood::5626218"
+      },
+      "diagnostic_features": {
+        "value": "A dark brown lesion on the lower stem that extends up from the taproot, often reaching as high as several nodes and girdling soybean stems.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/phytophthora-root-and-stem-rot-of-soybean",
+        "quote": "The most characteristic symptom of Phytophthora root and stem rot is a dark brown lesion on the lower stem that extends up from the taproot of the plant. The lesion often reaches as high as several nodes and will girdle soybean stems",
+        "image_id": "bugwood::5626218"
+      },
+      "affected_parts": {
+        "value": [
+          "Root",
+          "Stem",
+          "Seed",
+          "Whole plant"
+        ],
+        "url": "https://cropprotectionnetwork.org/encyclopedia/phytophthora-root-and-stem-rot-of-soybean",
+        "quote": "Early season symptoms include seed rot and pre- and postemergence damping off. The most characteristic symptom of Phytophthora root and stem rot is a dark brown lesion on the lower stem that extends up from the taproot of the plant.",
+        "image_id": "bugwood::5626218"
+      },
+      "look_alikes": {
+        "value": [
+          "Pythium",
+          "stem canker"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/phytophthora-root-and-stem-rot-soybean",
+        "quote": "It is important to recognize that Pythium is a related pathogen that causes similar damage and symptoms on seeds and seedlings... This disease can be confused with stem canker, which usually starts at a node and spreads up and down the stems of infected plants.",
+        "image_id": "bugwood::5626218"
+      },
+      "__image_ids__": [
+        "bugwood::5626218"
+      ]
+    },
+    "Iowa": {
+      "state": "Iowa",
+      "state_specific": false,
+      "summary": {
+        "value": "The most characteristic symptom of Phytophthora root and stem rot is a dark brown lesion on the lower stem that extends up from the taproot, with early-season seed rot and pre- and postemergence damping off.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/phytophthora-root-and-stem-rot-of-soybean",
+        "quote": "Early season symptoms include seed rot and pre- and postemergence damping off. The most characteristic symptom of Phytophthora root and stem rot is a dark brown lesion on the lower stem that extends up from the taproot of the plant.",
+        "image_id": "bugwood::5626213"
+      },
+      "diagnostic_features": {
+        "value": "A dark brown lesion on the lower stem that extends up from the taproot, often reaching several nodes and girdling soybean stems.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/phytophthora-root-and-stem-rot-of-soybean",
+        "quote": "a dark brown lesion on the lower stem that extends up from the taproot of the plant. The lesion often reaches as high as several nodes and will girdle soybean stems",
+        "image_id": "bugwood::5626213"
+      },
+      "affected_parts": {
+        "value": [
+          "Root",
+          "Stem",
+          "Seed",
+          "Whole plant"
+        ],
+        "url": "https://cropprotectionnetwork.org/encyclopedia/phytophthora-root-and-stem-rot-of-soybean",
+        "quote": "Early season symptoms include seed rot and pre- and postemergence damping off. The most characteristic symptom of Phytophthora root and stem rot is a dark brown lesion on the lower stem that extends up from the taproot of the plant.",
+        "image_id": "bugwood::5626213"
+      },
+      "look_alikes": {
+        "value": [
+          "Pythium",
+          "stem canker"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/phytophthora-root-and-stem-rot-soybean",
+        "quote": "This disease can be confused with stem canker, which usually starts at a node and spreads up and down the stems of infected plants.",
+        "image_id": "bugwood::5626213"
+      },
+      "__image_ids__": [
+        "bugwood::5626213",
+        "bugwood::5626214",
+        "bugwood::5626215"
+      ]
+    }
+  },
+  "Soybean::Southern Blight": {
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "Entire plants become yellow and wilt with brown leaves remaining attached, and a dark brown lesion girdles the stem at the soil surface.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+        "quote": "entire plants may become yellow and wilt, with leaves turning brown and often remaining attached to the plant. A dark brown lesion that girdles the stem occurs at the soil surface.",
+        "image_id": "bugwood::5581651"
+      },
+      "diagnostic_features": {
+        "value": "Conspicuous white, fanlike mats of fungal mycelium form on the base of the stem and surrounding soil surface, accompanied by small round sclerotia about the size of mustard seeds.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+        "quote": "conspicuous white, fanlike mats of fungal mycelium that form on the base of the stem, on leaf residue, and on the soil surface around infected plants. Numerous, small round fungal bodies that are about the size of mustard seeds (called sclerotia) form on these fungal mats and on the lower stem.",
+        "image_id": "bugwood::5581651"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Seed",
+          "Whole plant"
+        ],
+        "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+        "quote": "Seedling infection results in pre- or post-emergence damping-off. Later in the season, entire plants may become yellow and wilt, with leaves turning brown and often remaining attached to the plant. A dark brown lesion that girdles the stem occurs at the soil surface.",
+        "image_id": "bugwood::5581651"
+      },
+      "look_alikes": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "__image_ids__": [
+        "bugwood::5581651",
+        "bugwood::5581657",
+        "bugwood::5581658",
+        "bugwood::5581659",
+        "bugwood::5581651",
+        "bugwood::5581657",
+        "bugwood::5581658",
+        "bugwood::5581659"
+      ]
+    },
+    "Arkansas": {
+      "state": "Arkansas",
+      "state_specific": false,
+      "summary": {
+        "value": "Entire soybean plants become yellow and wilt with brown leaves remaining attached, and a dark brown lesion girdles the stem at the soil surface accompanied by white fanlike mats of fungal mycelium and mustard-seed-sized sclerotia.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+        "quote": "entire plants may become yellow and wilt, with leaves turning brown and often remaining attached to the plant. A dark brown lesion that girdles the stem occurs at the soil surface. This lesion is generally accompanied by the development of conspicuous white, fanlike mats of fungal mycelium that form on the base of the stem, on leaf residue, and on the soil surface around infected plants. Numerous, small round fungal bodies that are about the size of mustard seeds (called sclerotia) form on these fungal mats and on the lower stem.",
+        "image_id": "bugwood::5625712"
+      },
+      "diagnostic_features": {
+        "value": "Conspicuous white, fanlike mats of fungal mycelium on the base of the stem and soil surface, with small round sclerotia about the size of mustard seeds that progress from yellow-tan to reddish-brown to dark brown at maturity.",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+        "quote": "conspicuous white, fanlike mats of fungal mycelium that form on the base of the stem, on leaf residue, and on the soil surface around infected plants. Numerous, small round fungal bodies that are about the size of mustard seeds (called sclerotia) form on these fungal mats and on the lower stem. Initially, sclerotia are yellow-tan then progress to a reddish-brown color and finally dark brown at maturity.",
+        "image_id": "bugwood::5625712"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Seed",
+          "Whole plant"
+        ],
+        "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+        "quote": "Seedling infection results in pre- or post-emergence damping-off. Later in the season, entire plants may become yellow and wilt, with leaves turning brown and often remaining attached to the plant. A dark brown lesion that girdles the stem occurs at the soil surface.",
+        "image_id": "bugwood::5625712"
+      },
+      "look_alikes": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "__image_ids__": [
+        "bugwood::5625712",
+        "bugwood::5625713",
+        "bugwood::5625712",
+        "bugwood::5625713"
+      ]
+    }
+  },
+  "Soybean::Soybean Rust": {
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "Tan or reddish-brown lesions develop first on the underside of leaves in the lower canopy, with small pustules forming in the lesions that break open to release masses of tan spores.",
+        "url": "https://extension.umn.edu/soybean-pest-management/soybean-rust",
+        "quote": "Symptoms begin on leaves in the lower plant canopy. Tan or reddish-brown lesions (spots) develop first on the underside of leaves. Small pustules (blisters) develop in the lesions, which break open and release masses of tan spores.",
+        "image_id": "bugwood::5440185"
+      },
+      "diagnostic_features": {
+        "value": "Pustules on the underside of leaves containing pale yellow-brown to salmon colored urediniospore masses visible with a 20x hand lens, most often found in the lower canopy at or after flowering and progressing upward.",
+        "url": "https://ohioline.osu.edu/factsheet/plpath-soy-2",
+        "quote": "Urediniospores are pale yellow-brown to salmon colored and have some ornamentation on the surface. ... Urediniospore masses can be seen within the pustules on the underside of leaves using a 20x hand lens. ... SBR is most often found in the lower canopy at or after flowering stage and can rapidly progress upward into the upper canopy.",
+        "image_id": "bugwood::5440185"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Pod",
+          "Stem"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/soybean-rust",
+        "quote": "The lesions and pustules, which can be seen with a 20X hand lens, may also appear on pods and stems.",
+        "image_id": "bugwood::5440185"
+      },
+      "look_alikes": {
+        "value": [
+          "other common leaf diseases on soybean"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/soybean-rust",
+        "quote": "Early symptoms of soybean rust (before pustules develop) are difficult to distinguish from other common leaf diseases on soybean.",
+        "image_id": "bugwood::5440185"
+      },
+      "__image_ids__": [
+        "bugwood::5440185",
+        "bugwood::5440186",
+        "bugwood::5440187",
+        "bugwood::5440188",
+        "bugwood::5440189",
+        "bugwood::5440185",
+        "bugwood::5440186",
+        "bugwood::5440187",
+        "bugwood::5440188",
+        "bugwood::5440189"
+      ]
+    },
+    "Florida": {
+      "state": "Florida",
+      "state_specific": false,
+      "summary": {
+        "value": "Tan or reddish-brown lesions develop first on the underside of leaves in the lower canopy, with small pustules forming in the lesions that break open to release masses of tan spores.",
+        "url": "https://extension.umn.edu/soybean-pest-management/soybean-rust",
+        "quote": "Tan or reddish-brown lesions (spots) develop first on the underside of leaves. Small pustules (blisters) develop in the lesions, which break open and release masses of tan spores.",
+        "image_id": "bugwood::5202010"
+      },
+      "diagnostic_features": {
+        "value": "Pustules on the underside of leaves contain pale yellow-brown to salmon colored urediniospore masses visible with a 20x hand lens.",
+        "url": "https://ohioline.osu.edu/factsheet/plpath-soy-2",
+        "quote": "Urediniospore masses can be seen within the pustules on the underside of leaves using a 20x hand lens.",
+        "image_id": "bugwood::5202010"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "petiole",
+          "pod",
+          "stem"
+        ],
+        "url": "https://content.ces.ncsu.edu/asian-soybean-rust",
+        "quote": "Lesions tend to be angular with 2-5 mm diameter, and can affect not only leaves, but may be observed on petioles, pods, and stems",
+        "image_id": "bugwood::5202010"
+      },
+      "look_alikes": {
+        "value": [
+          "other common leaf diseases on soybean"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/soybean-rust",
+        "quote": "Early symptoms of soybean rust (before pustules develop) are difficult to distinguish from other common leaf diseases on soybean.",
+        "image_id": "bugwood::5202010"
+      },
+      "__image_ids__": [
+        "bugwood::5202010",
+        "bugwood::5202011",
+        "bugwood::5202012",
+        "bugwood::5202013",
+        "bugwood::5202014",
+        "bugwood::5202017",
+        "bugwood::5202018",
+        "bugwood::5202019",
+        "bugwood::5202022",
+        "bugwood::5605448",
+        "bugwood::5605449"
+      ]
+    }
+  }
+}

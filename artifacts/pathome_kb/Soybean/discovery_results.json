@@ -1,0 +1,464 @@
+{
+  "crop": "Soybean",
+  "candidate_sources": [
+    {
+      "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
+      "title": "Bacterial blight on soybean | UMN Extension",
+      "snippet": "Infections begin as small, angular, water-soaked spots that turn yellow and then brown as the tissue dies, with spots darkening and surrounded by yellowish-green halos. Caused by Pseudomonas syringae pv. glycinea. Development promoted by cool, wet weather (70-80°F). Management: plant resistant varieties, rotate with non-host crops, use pathogen-free seed.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Bacterial blight"
+      ]
+    },
+    {
+      "url": "https://content.ces.ncsu.edu/bacterial-blight-of-soybean",
+      "title": "Bacterial Blight of Soybean | NC State Extension Publications",
+      "snippet": "Symptoms include light to dark brown necrotic regions that are vein-limited giving an angular appearance on the young leaves of the plant, often with chlorosis surrounding the necrotic region. Lesions may coalesce to form large, irregularly shaped lesions. Caused by Pseudomonas syringae pv. glycinea.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Bacterial blight"
+      ]
+    },
+    {
+      "url": "https://cropwatch.unl.edu/plant-disease/soybean/bacterial-blight/",
+      "title": "Bacterial Blight in Soybean | CropWatch | Nebraska",
+      "snippet": "Bacterial blight of soybean caused by Pseudomonas savastanoi pv. glycinea. The pathogen overwinters in crop residue and can be seed transmitted. Bacteria enter through natural openings (stomata) or wounds. Lesions are angular and vein-limited.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Bacterial blight"
+      ]
+    },
+    {
+      "url": "https://www.cabidigitallibrary.org/doi/abs/10.1079/cabicompendium.44963",
+      "title": "Pseudomonas savastanoi pv. glycinea (bacterial blight of soybean) | CABI Compendium",
+      "snippet": "CABI datasheet on Pseudomonas savastanoi pv. glycinea, the causal agent of bacterial blight of soybean. One of the most common diseases of soybeans in the midwestern United States, found throughout the world in cool, temperate regions.",
+      "source_type": "CABI_datasheet",
+      "diseases_mentioned": [
+        "Bacterial blight"
+      ]
+    },
+    {
+      "url": "https://u.osu.edu/osusoybeandisease/foliar-diseases/bacterial-blight/extended-version/",
+      "title": "Bacterial Blight - Extended Version | OSU Soybean Diseases",
+      "snippet": "Detailed extended version on bacterial blight of soybean caused by Pseudomonas syringae pv. glycinea. Covers symptoms on middle and upper leaves and pods, disease cycle, conditions favoring disease, and management strategies.",
+      "source_type": "university_guide",
+      "diseases_mentioned": [
+        "Bacterial blight"
+      ]
+    },
+    {
+      "url": "https://extension.umn.edu/pest-management/bacterial-pustule-soybean",
+      "title": "Bacterial pustule on soybean | UMN Extension",
+      "snippet": "Symptoms begin as small, light green spots (not water-soaked) with raised centers on the upper and lower surfaces of leaves. Light-colored pustules (blisters) often develop in the center of lesions, especially on the undersides of leaves. Caused by the bacterium Xanthomonas axonopodis pv. glycines. Favored by warm, wet weather; optimum temperature 86-92°F.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Bacterial pustule",
+        "Bacterial leaf blight"
+      ]
+    },
+    {
+      "url": "https://cropwatch.unl.edu/plant-disease/soybean/bacterial-pustule/",
+      "title": "Bacterial Pustule | CropWatch - University of Nebraska-Lincoln",
+      "snippet": "Bacterial pustule of soybean caused by Xanthomonas axonopodis pv. glycines. Information on symptoms, disease cycle, and management practices including resistant varieties, pathogen-free seed, crop rotation with non-host crops, and avoiding field cultivation when foliage is wet.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Bacterial pustule"
+      ]
+    },
+    {
+      "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+      "title": "Bacterial Pustule - Soybean Disease - Soybean Research & Information Network (SRIN)",
+      "snippet": "Bacterial pustule disease of soybean information including symptoms (small light green spots with raised pustules on leaves), pathogen Xanthomonas axonopodis pv. glycines, disease cycle, and integrated management strategies.",
+      "source_type": "industry",
+      "diseases_mentioned": [
+        "Bacterial pustule"
+      ]
+    },
+    {
+      "url": "https://plantwiseplusknowledgebank.org/doi/full/10.1079/pwkb.species.56935",
+      "title": "Xanthomonas axonopodis pv. glycines (soyabean bacterial pustule) - CABI",
+      "snippet": "CABI datasheet on Xanthomonas axonopodis pv. glycines, the causal agent of soybean bacterial pustule. Includes pathogen taxonomy, host range, geographic distribution, symptoms, biology and ecology, and management options.",
+      "source_type": "CABI_datasheet",
+      "diseases_mentioned": [
+        "Bacterial pustule",
+        "Soyabean bacterial pustule"
+      ]
+    },
+    {
+      "url": "https://apsjournals.apsnet.org/doi/10.1094/PDIS-11-21-2512-A",
+      "title": "The Complete Genome Resource of Xanthomonas axonopodis pv. glycines ICMP5732 Causing Pustule Disease on Soybean | Plant Disease",
+      "snippet": "APS Plant Disease publication providing the complete genome resource of Xanthomonas axonopodis pv. glycines ICMP5732, the causal agent of bacterial pustule disease of soybean.",
+      "source_type": "APS_publication",
+      "diseases_mentioned": [
+        "Bacterial pustule",
+        "Pustule disease"
+      ]
+    },
+    {
+      "url": "https://extension.umn.edu/soybean-pest-management/bean-pod-mottle-virus-soybean",
+      "title": "Bean pod mottle virus on soybean | UMN Extension",
+      "snippet": "Bean pod mottle virus causes green to yellow mottling of young leaves, and in severe infections, leaves may become distorted. BPMV is transmitted by leaf-feeding beetles, specifically the bean leaf beetle (Cerotoma trifurcata).",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Bean pod mottle virus",
+        "BPMV"
+      ]
+    },
+    {
+      "url": "https://content.ces.ncsu.edu/bean-pod-mottle-virus",
+      "title": "Bean Pod Mottle Virus | NC State Extension Publications",
+      "snippet": "Symptoms associated with BPMV include mild to severe chlorotic mottling or mosaic and rugosity (distortion or wrinkling) on foliage and pods, stunting, and delayed maturity. Bean pod mottle is caused by bean pod mottle virus (BPMV), which is a member of the genus Comovirus in the family Comoviridae.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Bean Pod Mottle Virus",
+        "BPMV"
+      ]
+    },
+    {
+      "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
+      "title": "Bean Pod Mottle Virus | CropWatch | Nebraska",
+      "snippet": "BPMV symptoms include green to yellow mottling of younger leaves in the upper canopy, and in severe cases leaves may show puckering and distortion with plants becoming stunted. The virus is transmitted most commonly by the bean leaf beetle in soybean. BPMV can interact with the soybean mosaic virus to create severe symptoms.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Bean Pod Mottle Virus",
+        "BPMV",
+        "soybean mosaic virus"
+      ]
+    },
+    {
+      "url": "https://extension.sdstate.edu/soybean-pests-bean-leaf-beetles-and-bean-pod-mottle-virus",
+      "title": "Soybean Pests: Bean Leaf Beetles and Bean Pod Mottle Virus",
+      "snippet": "Insecticide seed treatments and foliar sprays targeting management of the bean leaf beetle will reduce the incidence of BPMV. Current recommendations are to consider early season insecticide treatments only if BPMV has been confirmed in your fields in previous years.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Bean Pod Mottle Virus",
+        "BPMV"
+      ]
+    },
+    {
+      "url": "https://content.ces.ncsu.edu/cercospora-blight-of-soybean",
+      "title": "Cercospora Leaf Blight of Soybean | NC State Extension Publications",
+      "snippet": "Cercospora leaf blight (CLB), caused by multiple species of Cercospora fungi, is an important soybean disease, particularly in the southern United States, with C. flagellaris reported to be the dominant species in recent samplings. The first symptom is light purple spots on the top surface of leaves, which expand and deepen to a reddish-purple or bronze. Infected leaves appear leathery and 'sunburned'.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Cercospora Leaf Blight",
+        "Purple Seed Stain"
+      ]
+    },
+    {
+      "url": "https://extension.umn.edu/soybean-pest-management/cercospora-leaf-blight-and-purple-seed-stain-soybean",
+      "title": "Cercospora leaf blight and purple seed stain on soybean | UMN Extension",
+      "snippet": "Cercospora leaf blight and purple seed stain are caused by the fungal pathogen Cercospora kikuchii. C. kikuchii reproduces on the surface of affected leaves under warm, humid conditions, and spores are spread through wind and rain to other plants. Hot (68 to 86 F) and humid (at least 92.5%) conditions with prolonged dew periods (8 to 24 hours) favor the development of CLB.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Cercospora Leaf Blight",
+        "Purple Seed Stain"
+      ]
+    },
+    {
+      "url": "https://cropprotectionnetwork.org/publications/an-overview-of-cercospora-leaf-blight-of-soybean",
+      "title": "Overview of Cercospora Leaf Blight of Soybean | Crop Protection Network",
+      "snippet": "Managing CLB mainly relies on using foliar fungicides from multiple fungicide classes at appropriate reproductive growth stages, with some SDHI (Group 7) and DMI (Group 3) premixes applied from beginning pod to beginning seed (R3-R5) still being effective. Reddish-purple lesions may occur on petioles, stems, and pods, and defoliation occurs in the upper canopy.",
+      "source_type": "university_guide",
+      "diseases_mentioned": [
+        "Cercospora Leaf Blight"
+      ]
+    },
+    {
+      "url": "https://www.udel.edu/academics/colleges/canr/cooperative-extension/fact-sheets/cercospora-leaf-blight-and-purple-seed-stain-in-soybean/",
+      "title": "Cercospora Leaf Blight and Purple Seed Stain in Soybean | University of Delaware Cooperative Extension",
+      "snippet": "Cercospora leaf blight and purple seed stain in soybean caused by Cercospora kikuchii. Discoloration results from numerous irregular-shaped lesions that range from small specks to half-inch spots, and may extend to the upper stems, petioles and pods. Infection is favored by humid conditions and temperatures of 75 to 80 F or higher.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Cercospora Leaf Blight",
+        "Purple Seed Stain"
+      ]
+    },
+    {
+      "url": "https://content.ces.ncsu.edu/soybean-charcoal-rot",
+      "title": "Soybean Charcoal Rot | NC State Extension Publications",
+      "snippet": "Soybean charcoal rot caused by Macrophomina phaseolina. Symptoms include brown to dark spots on cotyledons at seedling stage; mid to late season symptoms include light brown to grey superficial lesions in the stem, plants stunted, wilted, with abnormally small leaves that turn chlorotic and necrotic but remain attached. Microsclerotia in vascular tissue, pith, and mature dry pods are diagnostic.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Charcoal Rot"
+      ]
+    },
+    {
+      "url": "https://extension.umn.edu/soybean-pest-management/charcoal-rot-soybean",
+      "title": "Charcoal rot on soybean | UMN Extension",
+      "snippet": "Charcoal rot of soybean caused by Macrophomina phaseolina. Symptoms appear during reproductive stages, first evident in driest areas of the field. Earliest symptoms include smaller leaves, reduced vigor, premature yellowing of top leaves and wilting during midday heat. Light gray discoloration develops on surface tissues of roots and lower stem. Black dusty microsclerotia appear when outer stem tissues are scraped.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Charcoal Rot"
+      ]
+    },
+    {
+      "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+      "title": "An Overview of Charcoal Rot of Soybean",
+      "snippet": "Comprehensive overview of charcoal rot caused by Macrophomina phaseolina, a soilborne fungus that infects around 100 agricultural crop and weed species. Historically a southern soybean problem, now established across the U.S. and Ontario, Canada. Covers symptoms, disease cycle, and management including variety selection, tillage practices, crop rotation with small grains, and seeding rates.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Charcoal Rot"
+      ]
+    },
+    {
+      "url": "https://www.udel.edu/academics/colleges/canr/cooperative-extension/fact-sheets/charcoal-rot-in-soybean/",
+      "title": "Charcoal Rot in Soybean | Cooperative Extension | University of Delaware",
+      "snippet": "University of Delaware Cooperative Extension factsheet on charcoal rot in soybean caused by Macrophomina phaseolina, with detailed symptoms, pathogen biology, and management recommendations.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Charcoal Rot"
+      ]
+    },
+    {
+      "url": "https://extension.umn.edu/soybean-pest-management/downy-mildew",
+      "title": "Downy mildew on soybean | UMN Extension",
+      "snippet": "Initial symptoms of downy mildew are small, light green spots on upper leaf surfaces. The spots enlarge and turn pale to bright yellow, and may coalesce into large irregular brown areas. Tan to gray tufts of fungal growth often develop on lower leaf surfaces, especially under wet and humid conditions. Caused by Peronospora manshurica.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Downy mildew",
+        "Phytophthora root rot",
+        "Pythium seedling blight"
+      ]
+    },
+    {
+      "url": "https://cropprotectionnetwork.org/encyclopedia/downy-mildew-of-soybean",
+      "title": "Downy Mildew of Soybean",
+      "snippet": "Comprehensive Crop Protection Network publication on soybean downy mildew caused by Peronospora manshurica, including symptoms, disease cycle, favorable conditions, and management options.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Downy mildew"
+      ]
+    },
+    {
+      "url": "https://cals.cornell.edu/field-crops/soybeans/diseases-soybeans/downy-mildew",
+      "title": "Downy mildew - Soybeans - Cornell CALS",
+      "snippet": "Cornell extension page on soybean downy mildew. Disease occurs during periods of high humidity and moderate temperatures. The pathogen Peronospora manshurica overwinters on infected leaves and seeds; management includes resistant varieties, seed treatment, and rotation.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Downy mildew"
+      ]
+    },
+    {
+      "url": "https://soybeanresearchinfo.com/soybean-disease/downy-mildew/",
+      "title": "Downy Mildew - Soybean Disease - Soybean Research & Information Network (SRIN)",
+      "snippet": "SRIN overview of soybean downy mildew with symptoms (light green to yellow spots, gray-tan fungal tufts on leaf undersides), pathogen biology (Peronospora manshurica), and management recommendations.",
+      "source_type": "industry",
+      "diseases_mentioned": [
+        "Downy mildew"
+      ]
+    },
+    {
+      "url": "https://content.ces.ncsu.edu/frogeye-leaf-spot-of-soybean-1",
+      "title": "Frogeye Leaf Spot of Soybean | NC State Extension Publications",
+      "snippet": "Frogeye Leaf Spot (FLS), caused by Cercospora sojina, is a serious disease affecting soybeans and can cause more than 30% yield loss if not properly managed. Early FLS symptoms are small, dark, water soaked, circular to angular lesions (generally 1-5 mm diameter). Spots eventually enlarge to a diameter of about 1/4 inch, and the centers of the lesions become gray to brown and have a reddish-purple margin.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Frogeye Leaf Spot",
+        "Cercospora sojina"
+      ]
+    },
+    {
+      "url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
+      "title": "Frogeye Leaf Spot of Soybean - Crop Protection Network",
+      "snippet": "Frogeye leaf spot, caused by Cercospora sojina, is a foliar disease of soybean. Management practices include the use of cultivars with partial or complete resistance (Rcs genes), cultural practices (crop rotation and tillage) and foliar fungicide applications. Resistance to quinone outside inhibitor (QoI) fungicides has been reported since 2010.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Frogeye Leaf Spot",
+        "Cercospora sojina"
+      ]
+    },
+    {
+      "url": "https://extension.umn.edu/soybean-pest-management/frogeye-leaf-spot",
+      "title": "Frogeye leaf spot on soybean | UMN Extension",
+      "snippet": "Frogeye leaf spot is caused by the fungus Cercospora sojina. Symptoms include small, dark spots on leaves that enlarge with gray to brown centers and reddish-purple margins. Frogeye leaf spot development is favored by warm, moist weather. Appropriate fungicide applications applied at reproductive stages R3 to R5 are most effective.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Frogeye Leaf Spot",
+        "Cercospora sojina"
+      ]
+    },
+    {
+      "url": "https://www.extension.purdue.edu/extmedia/bp/bp-131-w.pdf",
+      "title": "Frogeye Leaf Spot - Purdue Extension BP-131-W",
+      "snippet": "Purdue Extension factsheet on Frogeye Leaf Spot of soybean caused by Cercospora sojina, covering symptoms on leaves, stems, and pods, disease cycle, and management.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Frogeye Leaf Spot",
+        "Cercospora sojina"
+      ]
+    },
+    {
+      "url": "https://extension.umn.edu/soybean-pest-management/phytophthora-root-and-stem-rot-soybean",
+      "title": "Phytophthora root and stem rot on soybean | UMN Extension",
+      "snippet": "Seedlings can be attacked and killed in the ground or soon after emergence, with infected stems appearing bruised and soft, secondary roots rotted, leaves turning yellow and brown, and plants wilting and dying. Caused by Phytophthora sojae, an oomycete (water mold) pathogen.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Phytophthora root and stem rot"
+      ]
+    },
+    {
+      "url": "https://cropprotectionnetwork.org/encyclopedia/phytophthora-root-and-stem-rot-of-soybean",
+      "title": "Phytophthora Root and Stem Rot of Soybean | Crop Protection Network",
+      "snippet": "Phytophthora root and stem rot of soybean is caused by Phytophthora sojae, which is not a true fungus, but belongs to a group of fungal-like organisms called oomycetes (water molds). P. sojae survives in soil as oospores for 5-10 years and is most active in wet soils. Dark chocolate-brown stem lesion extending from the taproot is characteristic.",
+      "source_type": "university_guide",
+      "diseases_mentioned": [
+        "Phytophthora root and stem rot"
+      ]
+    },
+    {
+      "url": "https://content.ces.ncsu.edu/phytopthora-root-and-stem-rot-of-soybean",
+      "title": "Phytopthora Root and Stem Rot of Soybean | NC State Extension Publications",
+      "snippet": "Brown lesions form on the roots, the roots rot and degrade, and a dark chocolate-brown discoloration of the stem extends from below the soil line upward. Best managed by planting resistant varieties with Rps genes (Rps1a, Rps1c, Rps1k, Rps3a, Rps6) and seed treatment with mefenoxam or metalaxyl.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Phytophthora root and stem rot"
+      ]
+    },
+    {
+      "url": "https://ohioline.osu.edu/factsheet/plpath-soy-04",
+      "title": "Phytophthora Damping-off and Root Rot of Soybean | Ohioline",
+      "snippet": "Phytophthora root rot of soybean caused by Phytophthora sojae. Disease favored by wet and warm soil conditions, especially saturated conditions early in the growing season. Optimum conditions for infection are warm soils greater than 60°F.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Phytophthora damping-off",
+        "Phytophthora root rot"
+      ]
+    },
+    {
+      "url": "https://ohioline.osu.edu/factsheet/plpath-soy-3",
+      "title": "Sclerotinia Stem Rot (White Mold) of Soybean | Ohioline",
+      "snippet": "Sclerotinia stem rot of soybean is caused by the fungus Sclerotinia sclerotiorum. This pathogen has a very wide host range with more than 400 plant species. Diseased plants first appear wilted and with grayish green leaves that later turn brown to tan. The stems also have grayish to bleached white lesions that are covered by white fluffy mycelia under conditions of high moisture. The fungus produces a survival structure called a sclerotium, which is black, hard and irregular in shape with a pink to white center.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Sclerotinia stem rot",
+        "white mold",
+        "Sclerotinia sclerotiorum"
+      ]
+    },
+    {
+      "url": "https://cropwatch.unl.edu/plant-disease/soybean/sclerotinia-stem-rot/",
+      "title": "Sclerotinia Stem Rot | CropWatch | Nebraska",
+      "snippet": "Initial symptoms are visible during pod development. Leaves will wilt and turn gray-green before turning brown, curling and dying. Since blossoms are infected first, early stem or pod water-soaked symptoms often initiate near colonized flowers. In a few days, diseased stem areas are killed and become tan and eventually bleached. Signs of the fungus that can assist in diagnosis include white cottony mycelia (fungal growth) and sclerotia on and inside infected plant stems and pods. The fungus can survive overwinter in Nebraska soils as hard dark structures called sclerotia.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Sclerotinia stem rot",
+        "white mold",
+        "Sclerotinia sclerotiorum"
+      ]
+    },
+    {
+      "url": "https://extension.umn.edu/soybean-pest-management/sclerotinia-stem-rot-white-mold-soybean",
+      "title": "Sclerotinia stem rot (white mold) on soybean | UMN Extension",
+      "snippet": "Sclerotinia stem rot, also known as white mold, is a fungal disease of soybeans caused by the pathogen Sclerotinia sclerotiorum. Provides identification, disease cycle, favorable environmental factors, and integrated management strategies including row spacing, varietal selection, rotation, and fungicide applications timed to flowering.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Sclerotinia stem rot",
+        "white mold",
+        "Sclerotinia sclerotiorum"
+      ]
+    },
+    {
+      "url": "https://cropprotectionnetwork.org/publications/an-overview-of-white-mold",
+      "title": "An Overview of White Mold | Crop Protection Network",
+      "snippet": "Comprehensive multi-state extension publication covering Sclerotinia sclerotiorum on soybean: symptoms, signs (white cottony mycelia and sclerotia), disease cycle (apothecia producing airborne ascospores during flowering), yield impact, and integrated management.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "white mold",
+        "Sclerotinia stem rot",
+        "Sclerotinia sclerotiorum"
+      ]
+    },
+    {
+      "url": "https://content.ces.ncsu.edu/southern-blight-of-soybean",
+      "title": "Southern Blight of Soybean | NC State Extension Publications",
+      "snippet": "Seedling infection results in pre- or post-emergence damping-off. Later in the season, entire plants may become yellow and wilt, with leaves turning brown and often remaining attached. A dark brown lesion that girdles the stem occurs at the soil surface. Caused by Sclerotium rolfsii. Disease development is favored by hot (77-95F), humid weather conditions.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Southern Blight",
+        "Sclerotium rolfsii"
+      ]
+    },
+    {
+      "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
+      "title": "Southern Blight of Soybeans - Crop Protection Network",
+      "snippet": "Yellowing and wilting are usually the first symptoms observed. Light brown lesions develop on stems near soil surface. The key sign of southern stem blight is the white, moldy growth on the main stem at the soil surface. Sclerotia act as the principle overwintering structures and primary inoculum for disease.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Southern Blight",
+        "southern stem blight"
+      ]
+    },
+    {
+      "url": "https://www.apsnet.org/edcenter/pdlessons/Pages/SouthernBlight.aspx",
+      "title": "Southern blight, southern stem blight, white mold - APS Education Center",
+      "snippet": "Lesson on southern blight caused by Sclerotium rolfsii. Covers symptoms including white fan-like mat of hyphae on infected stems, sclerotia formation, host range over 200 plant species including peanut, tobacco, cucurbits, sweetpotato, and conditions favoring disease (high temperatures and moist conditions).",
+      "source_type": "APS_publication",
+      "diseases_mentioned": [
+        "southern blight",
+        "southern stem blight",
+        "white mold",
+        "Sclerotium rolfsii"
+      ]
+    },
+    {
+      "url": "https://plantpathology.mgcafe.uky.edu/files/ppfs-gen-16.pdf",
+      "title": "Southern Blight - University of Kentucky Plant Pathology Fact Sheet PPFS-GEN-16",
+      "snippet": "Southern blight affects hundreds of plant species. Disease cycle, symptoms (dark brown lesion girdling stem at soil line, white fan-like mycelium, tan to brown sclerotia), and management practices including deep plowing, sanitation, and crop rotation.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Southern blight",
+        "Sclerotium rolfsii"
+      ]
+    },
+    {
+      "url": "https://extension.umn.edu/soybean-pest-management/soybean-rust",
+      "title": "Soybean rust | UMN Extension",
+      "snippet": "Soybean rust is potentially one of the most significant diseases of soybean. Symptoms begin on leaves in the lower plant canopy with tan or reddish-brown lesions. Caused by Phakopsora pachyrhizi (aggressive Asian pathogen) and P. meibomiae (mild pathogen).",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Soybean rust",
+        "Asian soybean rust"
+      ]
+    },
+    {
+      "url": "https://ohioline.osu.edu/factsheet/plpath-soy-2",
+      "title": "Soybean Rust | Ohioline - The Ohio State University",
+      "snippet": "Soybean rust factsheet describing symptoms, pathogen biology of Phakopsora pachyrhizi, disease cycle, and management. Lesions are angular, 2-5 mm diameter, and may affect leaves, petioles, pods, and stems.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Soybean rust"
+      ]
+    },
+    {
+      "url": "https://content.ces.ncsu.edu/asian-soybean-rust",
+      "title": "Asian Soybean Rust | NC State Extension Publications",
+      "snippet": "Asian soybean rust caused by Phakopsora pachyrhizi. Small tan-colored lesions restricted by leaf veins, with rust pustules visible 5-8 days after initial infection. Fungicide applications between R3 and R5 provide the most yield protection.",
+      "source_type": "extension_factsheet",
+      "diseases_mentioned": [
+        "Asian soybean rust",
+        "Soybean rust"
+      ]
+    },
+    {
+      "url": "https://cropprotectionnetwork.org/encyclopedia/soybean-rust-of-soybean",
+      "title": "Soybean rust | Crop Protection Network",
+      "snippet": "Encyclopedia entry on soybean rust caused by Phakopsora pachyrhizi and Phakopsora meibomiae. Covers symptoms, disease cycle, scouting, and management strategies including fungicide use.",
+      "source_type": "university_guide",
+      "diseases_mentioned": [
+        "Soybean rust"
+      ]
+    },
+    {
+      "url": "https://www.frontiersin.org/journals/microbiology/articles/10.3389/fmicb.2023.1304205/full",
+      "title": "Understanding Phakopsora pachyrhizi in soybean: comprehensive insights, threats, and interventions from the Asian perspective",
+      "snippet": "Comprehensive review of Asian soybean rust caused by Phakopsora pachyrhizi. Discusses pathogen biology, yield losses (10-100%), and management interventions.",
+      "source_type": "peer_reviewed",
+      "diseases_mentioned": [
+        "Asian soybean rust",
+        "Phakopsora pachyrhizi"
+      ]
+    }
+  ],
+  "search_queries_run": []
+}

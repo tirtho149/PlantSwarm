@@ -1,0 +1,860 @@
+{
+  "Tomato::Bacterial Speck Of Tomato": {
+    "North Carolina": {
+      "state": "North Carolina",
+      "state_specific": false,
+      "summary": {
+        "value": "Round, dark-brown to black lesions develop on leaves, sometimes with a yellow halo, and small dark lesions on fruits become sunken or pitted as fruits enlarge, sometimes with a dark green halo.",
+        "url": "https://extension.msstate.edu/publications/bacterial-speck-and-bacterial-spot-tomatoes",
+        "quote": "Round, dark-brown to black lesions develop on leaves infected with the bacterial speck pathogen; over time, a yellow halo may develop around leaf lesions",
+        "image_id": "bugwood::1573569"
+      },
+      "diagnostic_features": {
+        "value": "Leaf lesions extend to both leaf surfaces but are more prominent on the lower leaf surface, and fruit lesions tend to be smoother than those of bacterial spot.",
+        "url": "https://extension.msstate.edu/publications/bacterial-speck-and-bacterial-spot-tomatoes",
+        "quote": "These lesions extend to both leaf surfaces but are more prominent on the lower leaf surface.",
+        "image_id": "bugwood::1573569"
+      },
+      "affected_parts": {
+        "value": [
+          "leaves",
+          "stems",
+          "petioles",
+          "peduncles",
+          "pedicels",
+          "sepals",
+          "fruit"
+        ],
+        "url": "https://extension.msstate.edu/publications/bacterial-speck-and-bacterial-spot-tomatoes",
+        "quote": "Symptoms of bacterial speck can occur on leaves, stems, petioles, peduncles, pedicels, sepals, and fruit.",
+        "image_id": "bugwood::1573569"
+      },
+      "look_alikes": {
+        "value": [
+          "bacterial spot",
+          "early blight",
+          "gray leaf spot",
+          "target spot"
+        ],
+        "url": "https://extension.msstate.edu/publications/bacterial-speck-and-bacterial-spot-tomatoes",
+        "quote": "Symptoms associated with bacterial speck and spot on leaflets may also be confused with other diseases of tomatoes, such as early blight, gray leaf spot, and target spot.",
+        "image_id": "bugwood::1573569"
+      },
+      "__image_ids__": [
+        "bugwood::1573569",
+        "bugwood::1573570",
+        "bugwood::1573571",
+        "bugwood::1573572",
+        "bugwood::1573573",
+        "bugwood::1573574",
+        "bugwood::1576387",
+        "bugwood::1576393",
+        "bugwood::1576394",
+        "bugwood::1577155",
+        "bugwood::1577156",
+        "bugwood::1577157",
+        "bugwood::1577158"
+      ]
+    },
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "Round, dark-brown to black lesions develop on leaves with a yellow halo, and small dark lesions on fruits become sunken or pitted as fruits enlarge, sometimes with a dark green halo.",
+        "url": "https://extension.msstate.edu/publications/bacterial-speck-and-bacterial-spot-tomatoes",
+        "quote": "Round, dark-brown to black lesions develop on leaves infected with the bacterial speck pathogen; over time, a yellow halo may develop around leaf lesions",
+        "image_id": "bugwood::1568046"
+      },
+      "diagnostic_features": {
+        "value": "Leaf lesions extend to both surfaces but are more prominent on the lower leaf surface, and fruit lesions of bacterial speck tend to be smoother than those of bacterial spot.",
+        "url": "https://extension.msstate.edu/publications/bacterial-speck-and-bacterial-spot-tomatoes",
+        "quote": "These lesions extend to both leaf surfaces but are more prominent on the lower leaf surface.",
+        "image_id": "bugwood::1568046"
+      },
+      "affected_parts": {
+        "value": [
+          "leaves",
+          "stems",
+          "petioles",
+          "peduncles",
+          "pedicels",
+          "sepals",
+          "fruit"
+        ],
+        "url": "https://extension.msstate.edu/publications/bacterial-speck-and-bacterial-spot-tomatoes",
+        "quote": "Symptoms of bacterial speck can occur on leaves, stems, petioles, peduncles, pedicels, sepals, and fruit.",
+        "image_id": "bugwood::1568046"
+      },
+      "look_alikes": {
+        "value": [
+          "bacterial spot",
+          "early blight",
+          "gray leaf spot",
+          "target spot"
+        ],
+        "url": "https://extension.msstate.edu/publications/bacterial-speck-and-bacterial-spot-tomatoes",
+        "quote": "Symptoms associated with bacterial speck and spot on leaflets may also be confused with other diseases of tomatoes, such as early blight, gray leaf spot, and target spot.",
+        "image_id": "bugwood::1568046"
+      },
+      "__image_ids__": [
+        "bugwood::1568046",
+        "bugwood::1568046"
+      ]
+    }
+  },
+  "Tomato::Cucumber Mosaic Virus": {
+    "Virginia": {
+      "state": "Virginia",
+      "state_specific": false,
+      "summary": {
+        "value": "CMV symptoms on tomato are varied but can include stunting and yellow/green mottling on leaves, with leaves sometimes becoming strappy or shoestring-like, and few fruit produced on infected plants.",
+        "url": "https://veggiescout.ca.uky.edu/cucumber-mosaic-virus-tomato",
+        "quote": "Cucumber mosaic virus (CMV) symptoms on tomato are varied but can include stunting and yellow/green mottling (light and dark areas in irregular patterns) on leaves. Leaves may become “strappy” or have a “shoestring” appearance; this is the symptom most identified with CMV. Few fruit are produced on infected plants.",
+        "image_id": "bugwood::5411376"
+      },
+      "diagnostic_features": {
+        "value": "The most characteristic symptom of CMV in tomato is filiformity, the development of thin, shoestring-like leaves.",
+        "url": "https://ag.umass.edu/vegetable/fact-sheets/cucumber-mosaic-virus",
+        "quote": "The most characteristic symptom of CMV in tomato is filiformity, or the development of thin, shoestring-like leaves.",
+        "image_id": "bugwood::5411376"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Whole plant"
+        ],
+        "url": "https://veggiescout.ca.uky.edu/cucumber-mosaic-virus-tomato",
+        "quote": "symptoms on tomato are varied but can include stunting and yellow/green mottling (light and dark areas in irregular patterns) on leaves. Leaves may become “strappy” or have a “shoestring” appearance",
+        "image_id": "bugwood::5411376"
+      },
+      "look_alikes": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "__image_ids__": [
+        "bugwood::5411376",
+        "bugwood::5411377",
+        "bugwood::5411378",
+        "bugwood::5411379",
+        "bugwood::5411380"
+      ]
+    },
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "CMV symptoms on tomato are varied but can include stunting and yellow/green mottling on leaves, with leaves sometimes becoming strappy or shoestring-shaped, and few fruit produced on infected plants.",
+        "url": "https://veggiescout.ca.uky.edu/cucumber-mosaic-virus-tomato",
+        "quote": "Cucumber mosaic virus (CMV) symptoms on tomato are varied but can include stunting and yellow/green mottling (light and dark areas in irregular patterns) on leaves. Leaves may become “strappy” or have a “shoestring” appearance; this is the symptom most identified with CMV. Few fruit are produced on infected plants.",
+        "image_id": "bugwood::1568047"
+      },
+      "diagnostic_features": {
+        "value": "Leaves may become strappy or have a shoestring appearance, the symptom most identified with CMV in tomato.",
+        "url": "https://veggiescout.ca.uky.edu/cucumber-mosaic-virus-tomato",
+        "quote": "Leaves may become “strappy” or have a “shoestring” appearance; this is the symptom most identified with CMV.",
+        "image_id": "bugwood::1568047"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "whole plant",
+          "fruit"
+        ],
+        "url": "https://veggiescout.ca.uky.edu/cucumber-mosaic-virus-tomato",
+        "quote": "symptoms on tomato are varied but can include stunting and yellow/green mottling (light and dark areas in irregular patterns) on leaves. Leaves may become “strappy” or have a “shoestring” appearance",
+        "image_id": "bugwood::1568047"
+      },
+      "look_alikes": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "__image_ids__": [
+        "bugwood::1568047",
+        "bugwood::1568048",
+        "bugwood::1568049",
+        "bugwood::1568051",
+        "bugwood::1568052",
+        "bugwood::1568053",
+        "bugwood::1568061",
+        "bugwood::1568047",
+        "bugwood::1568048",
+        "bugwood::1568049",
+        "bugwood::1568051",
+        "bugwood::1568052",
+        "bugwood::1568053",
+        "bugwood::1568061"
+      ]
+    }
+  },
+  "Tomato::Early Blight": {
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "Lesions first develop on lower leaves as small, brownish-black spots which can expand to about 1/4-1/2-inch in diameter with characteristic concentric rings, with surrounding tissue yellowing as the disease progresses.",
+        "url": "https://content.ces.ncsu.edu/early-blight-of-tomato",
+        "quote": "Lesions first develop on lower leaves as small, brownish-black spots which can expand to about 1 ⁄ 4 - 1 ⁄ 2 -inch in diameter with characteristic concentric rings in the darkened area. The area surrounding the lesions may become yellow and, as disease progresses, the entire leaf may turn yellow.",
+        "image_id": "bugwood::1568038"
+      },
+      "diagnostic_features": {
+        "value": "Brownish-black lesions with characteristic concentric rings in the darkened area, primarily on lower leaves.",
+        "url": "https://content.ces.ncsu.edu/early-blight-of-tomato",
+        "quote": "small, brownish-black spots which can expand to about 1 ⁄ 4 - 1 ⁄ 2 -inch in diameter with characteristic concentric rings in the darkened area",
+        "image_id": "bugwood::1568038"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "fruit",
+          "stem"
+        ],
+        "url": "https://content.ces.ncsu.edu/early-blight-of-tomato",
+        "quote": "The leaves, fruit, and stem may be affected by Alternaria linariae .",
+        "image_id": "bugwood::1568038"
+      },
+      "look_alikes": {
+        "value": [
+          "Septoria leaf spot",
+          "Gray leaf spot",
+          "Late blight",
+          "Bacterial spot"
+        ],
+        "url": "https://content.ces.ncsu.edu/early-blight-of-tomato",
+        "quote": "Septoria leaf spot produces smaller lesions with tan or light gray centers. Gray leaf spot also produces smaller and lighter brown lesions than what you would see with early blight... Late blight produces lighter tan colored lesions that typically have a light green halo... Bacterial spot also may be confused with early blight",
+        "image_id": "bugwood::1568038"
+      },
+      "__image_ids__": [
+        "bugwood::1568038",
+        "bugwood::1568038"
+      ]
+    },
+    "Connecticut": {
+      "state": "Connecticut",
+      "state_specific": false,
+      "summary": {
+        "value": "Lesions first develop on lower leaves as small, brownish-black spots which can expand to about 1/4-1/2-inch in diameter with characteristic concentric rings, and as disease progresses the entire leaf may turn yellow.",
+        "url": "https://content.ces.ncsu.edu/early-blight-of-tomato",
+        "quote": "Lesions first develop on lower leaves as small, brownish-black spots which can expand to about 1 ⁄ 4 - 1 ⁄ 2 -inch in diameter with characteristic concentric rings in the darkened area. The area surrounding the lesions may become yellow and, as disease progresses, the entire leaf may turn yellow.",
+        "image_id": "bugwood::5559537"
+      },
+      "diagnostic_features": {
+        "value": "Brownish-black lesions with characteristic concentric rings in the darkened area, primarily on lower leaves.",
+        "url": "https://content.ces.ncsu.edu/early-blight-of-tomato",
+        "quote": "small, brownish-black spots which can expand to about 1 ⁄ 4 - 1 ⁄ 2 -inch in diameter with characteristic concentric rings in the darkened area",
+        "image_id": "bugwood::5559537"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "fruit",
+          "stem"
+        ],
+        "url": "https://content.ces.ncsu.edu/early-blight-of-tomato",
+        "quote": "The leaves, fruit, and stem may be affected by Alternaria linariae .",
+        "image_id": "bugwood::5559537"
+      },
+      "look_alikes": {
+        "value": [
+          "Septoria leaf spot",
+          "Gray leaf spot",
+          "Late blight",
+          "Bacterial spot"
+        ],
+        "url": "https://content.ces.ncsu.edu/early-blight-of-tomato",
+        "quote": "Septoria leaf spot produces smaller lesions with tan or light gray centers. Gray leaf spot also produces smaller and lighter brown lesions than what you would see with early blight... Late blight produces lighter tan colored lesions that typically have a light green halo... Bacterial spot also may be confused with early blight",
+        "image_id": "bugwood::5559537"
+      },
+      "__image_ids__": [
+        "bugwood::5559537"
+      ]
+    }
+  },
+  "Tomato::Gray Mold": {
+    "Kentucky": {
+      "state": "Kentucky",
+      "state_specific": false,
+      "summary": {
+        "value": "In high humidity, fluffy gray spores cover infected plant parts; leaves develop irregular to V-shaped brown blotches often starting at the margin, stems develop brown oval lesions that can girdle them, flowers turn brown, and fruit develop a pale soft watery rot or white rings (ghost spots).",
+        "url": "https://extension.umn.edu/disease-management/gray-mold-tomatoes",
+        "quote": "In high humidity, fluffy gray spores cover infected plant parts. Leaves have irregular to V-shaped brown blotches, often starting at the margin of the leaf.",
+        "image_id": "bugwood::5368609"
+      },
+      "diagnostic_features": {
+        "value": "Tomato plants infected by the gray mold fungus have light tan or gray spots covered with a brown mold on the upper leaf surface, with a cloud of grayish-white spores released when infected leaves or flowers are picked.",
+        "url": "https://hgic.clemson.edu/factsheet/gray-mold-botrytis-blight-2/",
+        "quote": "Tomato plants infected by the gray mold fungus have light tan or gray spots that are covered with a brown mold on the upper leaf surface.",
+        "image_id": "bugwood::5368609"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Whole plant"
+        ],
+        "url": "https://extension.umn.edu/disease-management/gray-mold-tomatoes",
+        "quote": "The fungal pathogen infects all above ground plant parts.",
+        "image_id": "bugwood::5368609"
+      },
+      "look_alikes": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "__image_ids__": [
+        "bugwood::5368609",
+        "bugwood::5368610",
+        "bugwood::5368611",
+        "bugwood::5405263",
+        "bugwood::5405264"
+      ]
+    },
+    "Mississippi": {
+      "state": "Mississippi",
+      "state_specific": false,
+      "summary": {
+        "value": "Gray mold causes a gray, fuzzy coating on aging flower blossoms and soft, ripe fruits, with infections beginning as brown to gray circular spots that later become fuzzy as the fungus produces gray masses of spores.",
+        "url": "https://hgic.clemson.edu/factsheet/gray-mold-botrytis-blight-2/",
+        "quote": "gray mold causes a gray, fuzzy coating on aging flower blossoms and soft, ripe fruits",
+        "image_id": "bugwood::5558707"
+      },
+      "diagnostic_features": {
+        "value": "Tomato plants infected by the gray mold fungus have light tan or gray spots covered with a brown mold on the upper leaf surface.",
+        "url": "https://hgic.clemson.edu/factsheet/gray-mold-botrytis-blight-2/",
+        "quote": "Tomato plants infected by the gray mold fungus have light tan or gray spots that are covered with a brown mold on the upper leaf surface.",
+        "image_id": "bugwood::5558707"
+      },
+      "affected_parts": {
+        "value": [
+          "leaves",
+          "flowers",
+          "fruits",
+          "stems"
+        ],
+        "url": "https://hgic.clemson.edu/factsheet/gray-mold-botrytis-blight-2/",
+        "quote": "The disease can cause spotting and decay of flowers, leaves, fruits, and berries",
+        "image_id": "bugwood::5558707"
+      },
+      "look_alikes": {
+        "value": [],
+        "url": null,
+        "quote": null
+      },
+      "__image_ids__": [
+        "bugwood::5558707"
+      ]
+    }
+  },
+  "Tomato::Sclerotinia Timber Rot": {
+    "Louisiana": {
+      "state": "Louisiana",
+      "state_specific": false,
+      "summary": {
+        "value": "Timber rot causes loss of plant vigor, followed by wilting and eventual death of the plant, with stem lesions showing hollow pith and white moldy growth.",
+        "url": "https://aggie-horticulture.tamu.edu/vegetable/problem-solvers/tomato-problem-solver/stems/timber-rot/",
+        "quote": "Timber rot causes loss of plant vigor, followed by wilting and eventual death of the plant. Lesions on the stem show hollow pith when cut open, and white moldy growth is usually visible at the edges of the lesions.",
+        "image_id": "bugwood::5472861"
+      },
+      "diagnostic_features": {
+        "value": "Stem lesions with hollow pith when cut open, white moldy growth at the edges of lesions, and small black spherical fruiting bodies (sclerotia) in or on the lesion.",
+        "url": "https://aggie-horticulture.tamu.edu/vegetable/problem-solvers/tomato-problem-solver/stems/timber-rot/",
+        "quote": "Lesions on the stem show hollow pith when cut open, and white moldy growth is usually visible at the edges of the lesions. Small black spherical fruiting bodies (sclerotia) are usually observed in or on the lesion.",
+        "image_id": "bugwood::5472861"
+      },
+      "affected_parts": {
+        "value": [
+          "Stem",
+          "Whole plant"
+        ],
+        "url": "https://aggie-horticulture.tamu.edu/vegetable/problem-solvers/tomato-problem-solver/stems/timber-rot/",
+        "quote": "Timber rot causes loss of plant vigor, followed by wilting and eventual death of the plant. Lesions on the stem show hollow pith when cut open",
+        "image_id": "bugwood::5472861"
+      },
+      "look_alikes": {
+        "value": [
+          "Sclerotinia",
+          "white mold"
+        ],
+        "url": "https://extension.psu.edu/frequently-asked-questions-about-timber-rot-on-tomato",
+        "quote": "Timber rot, also known as Sclerotinia or white mold",
+        "image_id": "bugwood::5472861"
+      },
+      "__image_ids__": [
+        "bugwood::5472861",
+        "bugwood::5472862"
+      ]
+    },
+    "Maine": {
+      "state": "Maine",
+      "state_specific": false,
+      "summary": {
+        "value": "Timber rot causes loss of plant vigor, followed by wilting and eventual death of the plant, with stem lesions showing hollow pith and white moldy growth.",
+        "url": "https://aggie-horticulture.tamu.edu/vegetable/problem-solvers/tomato-problem-solver/stems/timber-rot/",
+        "quote": "Timber rot causes loss of plant vigor, followed by wilting and eventual death of the plant. Lesions on the stem show hollow pith when cut open, and white moldy growth is usually visible at the edges of the lesions.",
+        "image_id": "bugwood::5530073"
+      },
+      "diagnostic_features": {
+        "value": "Stem lesions with hollow pith when cut open, white moldy growth at the edges of lesions, and small black spherical fruiting bodies (sclerotia) in or on the lesion.",
+        "url": "https://aggie-horticulture.tamu.edu/vegetable/problem-solvers/tomato-problem-solver/stems/timber-rot/",
+        "quote": "Lesions on the stem show hollow pith when cut open, and white moldy growth is usually visible at the edges of the lesions. Small black spherical fruiting bodies (sclerotia) are usually observed in or on the lesion.",
+        "image_id": "bugwood::5530073"
+      },
+      "affected_parts": {
+        "value": [
+          "stem",
+          "whole plant"
+        ],
+        "url": "https://aggie-horticulture.tamu.edu/vegetable/problem-solvers/tomato-problem-solver/stems/timber-rot/",
+        "quote": "Timber rot causes loss of plant vigor, followed by wilting and eventual death of the plant. Lesions on the stem show hollow pith when cut open",
+        "image_id": "bugwood::5530073"
+      },
+      "look_alikes": {
+        "value": [
+          "Sclerotinia",
+          "white mold"
+        ],
+        "url": "https://extension.psu.edu/frequently-asked-questions-about-timber-rot-on-tomato",
+        "quote": "Timber rot, also known as Sclerotinia or white mold",
+        "image_id": "bugwood::5530073"
+      },
+      "__image_ids__": [
+        "bugwood::5530073",
+        "bugwood::5530074"
+      ]
+    }
+  },
+  "Tomato::Late Blight": {
+    "Connecticut": {
+      "state": "Connecticut",
+      "state_specific": false,
+      "summary": {
+        "value": "Leaves develop large dark brown blotches with green-gray edges that are not confined by major leaf veins, with stem infections being firm and dark brown with rounded edges.",
+        "url": "https://extension.umn.edu/disease-management/late-blight",
+        "quote": "Leaves have large, dark brown blotches with a green gray edge; not confined by major leaf veins.",
+        "image_id": "bugwood::5559539"
+      },
+      "diagnostic_features": {
+        "value": "In high humidity, thin powdery white fungal growth appears on infected leaves, tomato fruit and stems.",
+        "url": "https://extension.umn.edu/disease-management/late-blight",
+        "quote": "In high humidity, thin powdery white fungal growth appears on infected leaves, tomato fruit and stems.",
+        "image_id": "bugwood::5559539"
+      },
+      "affected_parts": {
+        "value": [
+          "leaves",
+          "stems",
+          "tomato fruit",
+          "potato tubers"
+        ],
+        "url": "https://extension.umn.edu/disease-management/late-blight",
+        "quote": "infecting leaves, stems, tomato fruit, and potato tubers",
+        "image_id": "bugwood::5559539"
+      },
+      "look_alikes": {
+        "value": [
+          "other Phytophthora diseases"
+        ],
+        "url": "https://www.apsnet.org/edcenter/pdlessons/Pages/LateBlight.aspx",
+        "quote": "Symptoms of late blight infections on tomato fruit is similar to other Phytophthora diseases",
+        "image_id": "bugwood::5559539"
+      },
+      "__image_ids__": [
+        "bugwood::5559539"
+      ]
+    },
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "Late blight produces large dark brown blotches on leaves with green-gray edges, firm dark brown stem lesions, and dark brown firm spots on tomato fruit, often surrounded by white sporulation under humid conditions.",
+        "url": "https://extension.umn.edu/disease-management/late-blight",
+        "quote": "Leaves have large, dark brown blotches with a green gray edge; not confined by major leaf veins.",
+        "image_id": "bugwood::1568022"
+      },
+      "diagnostic_features": {
+        "value": "Under humid conditions, white sporulation ('fuzz') appears at the margins of dark lesions, particularly on the lower (abaxial) leaf surfaces.",
+        "url": "https://www.vegetables.cornell.edu/crops/tomatoes/late-blight/",
+        "quote": "Both plants display similar symptoms which consist of dark lesions surrounded by white sporulation or 'fuzz' under humid/damp conditions but may appear just as dry dark lesions under dry conditions.",
+        "image_id": "bugwood::1568022"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "stem",
+          "fruit"
+        ],
+        "url": "https://extension.umn.edu/disease-management/late-blight",
+        "quote": "Late blight is a potentially devastating disease of tomato and potato, infecting leaves, stems, tomato fruit, and potato tubers.",
+        "image_id": "bugwood::1568022"
+      },
+      "look_alikes": {
+        "value": [
+          "other Phytophthora diseases"
+        ],
+        "url": "https://www.apsnet.org/edcenter/pdlessons/Pages/LateBlight.aspx",
+        "quote": "Symptoms of late blight infections on tomato fruit is similar to other Phytophthora diseases",
+        "image_id": "bugwood::1568022"
+      },
+      "__image_ids__": [
+        "bugwood::1568022",
+        "bugwood::1568023",
+        "bugwood::1568024",
+        "bugwood::1568026",
+        "bugwood::1568027",
+        "bugwood::1568028",
+        "bugwood::1568029",
+        "bugwood::1568030",
+        "bugwood::1568031",
+        "bugwood::1568032",
+        "bugwood::1568033",
+        "bugwood::1568034",
+        "bugwood::1568035",
+        "bugwood::1568022",
+        "bugwood::1568023",
+        "bugwood::1568024",
+        "bugwood::1568026",
+        "bugwood::1568027",
+        "bugwood::1568028",
+        "bugwood::1568029",
+        "bugwood::1568030",
+        "bugwood::1568031",
+        "bugwood::1568032",
+        "bugwood::1568033",
+        "bugwood::1568034",
+        "bugwood::1568035"
+      ]
+    }
+  },
+  "Tomato::Septoria Leaf Spot": {
+    "Connecticut": {
+      "state": "Connecticut",
+      "state_specific": false,
+      "summary": {
+        "value": "Symptoms appear on leaves as circular, tan-to-gray spots with darker brown margins and dark, raised pycnidia inside the lesion, often surrounded by a yellow halo, typically starting on lower leaves.",
+        "url": "https://vegpath.plantpath.wisc.edu/diseases/tomato-septoria-leaf-spot/",
+        "quote": "Symptoms appear on the leaves as circular, tan-to-gray spots with darker brown margins and dotted with dark, raised pycnidia inside the lesion. These lesions are often surrounded by a yellow halo. The disease typically develops on lower leaves first, moving up to higher leaves as infection progresses.",
+        "image_id": "bugwood::5559543"
+      },
+      "diagnostic_features": {
+        "value": "Mature lesions have a dark margin with a grayish white center that contains tiny, black fruiting (spore-producing) bodies, and heavily diseased leaves turn yellow, wither, and drop starting at the base of the plant.",
+        "url": "https://extension.illinois.edu/plant-problems/septoria-leaf-spot-tomato",
+        "quote": "Mature lesions have a dark margin with a grayish white center that contains tiny, black fruiting (spore-producing) bodies. Heavily diseased leaves turn yellow, wither, and drop in large numbers, starting at the base of the plant.",
+        "image_id": "bugwood::5559543"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "stem",
+          "petiole"
+        ],
+        "url": "https://extension.illinois.edu/plant-problems/septoria-leaf-spot-tomato",
+        "quote": "the disease can appear on tomato leaf petioles, stems, blossoms, and flower stalks, it most commonly is found on the lower leaves",
+        "image_id": "bugwood::5559543"
+      },
+      "look_alikes": {
+        "value": [
+          "Early blight",
+          "Gray leaf spot (Stemphylium spp.)"
+        ],
+        "url": "https://content.ces.ncsu.edu/septoria-leaf-spot-of-tomato",
+        "quote": "Lesions caused by the early blight pathogen will be larger and darker brown than Septoria leaf spots and will have concentric rings. Gray leaf spot, caused by species of Stemphylium , will be very similar to Septoria leaf spots where they are small, circular, with a tan or light brown center, but the center part of the lesion tends to crack open or fall out in gray leaf spot lesions.",
+        "image_id": "bugwood::5559543"
+      },
+      "__image_ids__": [
+        "bugwood::5559543"
+      ]
+    },
+    "Delaware": {
+      "state": "Delaware",
+      "state_specific": false,
+      "summary": {
+        "value": "Circular, tan-to-gray lesions with dark-brown perimeters and a yellow halo develop on the lower leaves and stems, often containing small dark pycnidia in the center.",
+        "url": "https://content.ces.ncsu.edu/septoria-leaf-spot-of-tomato",
+        "quote": "Circular, tan to gray, lesions develop on the lower leaves and stems of the plant.",
+        "image_id": "bugwood::5553629"
+      },
+      "diagnostic_features": {
+        "value": "Lesions have a dark-brown perimeter with a yellow halo and small dark pycnidia (fungal fruiting bodies) visible in their centers.",
+        "url": "https://content.ces.ncsu.edu/septoria-leaf-spot-of-tomato",
+        "quote": "The lesions generally have a dark-brown perimeter and a yellow halo may develop around the leaf lesions.",
+        "image_id": "bugwood::5553629"
+      },
+      "affected_parts": {
+        "value": [
+          "leaf",
+          "stem",
+          "petiole",
+          "calyx"
+        ],
+        "url": "https://content.ces.ncsu.edu/septoria-leaf-spot-of-tomato",
+        "quote": "Lesions also develop on stems, petioles, and calyx, although fruit are rarely affected.",
+        "image_id": "bugwood::5553629"
+      },
+      "look_alikes": {
+        "value": [
+          "Early blight",
+          "Gray leaf spot (Stemphylium spp.)"
+        ],
+        "url": "https://content.ces.ncsu.edu/septoria-leaf-spot-of-tomato",
+        "quote": "Lesions caused by the early blight pathogen will be larger and darker brown than Septoria leaf spots and will have concentric rings.",
+        "image_id": "bugwood::5553629"
+      },
+      "__image_ids__": [
+        "bugwood::5553629"
+      ]
+    }
+  },
+  "Tomato::Southern Bacterial Wilt": {
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "Infected tomato plants initially wilt in the afternoon and recover in the evening, with the disease progressing to permanent wilt and death.",
+        "url": "https://extension.umd.edu/resource/southern-bacterial-wilt-tomato-found",
+        "quote": "Initially, infected plants develop wilt symptoms in the afternoon, and recover in the evening",
+        "image_id": "bugwood::1568041"
+      },
+      "diagnostic_features": {
+        "value": "A freshly cut stem placed in water shows a stream of white slimy bacterial ooze, a strong indicator of Ralstonia in the vascular tissue.",
+        "url": "https://extension.umd.edu/resource/southern-bacterial-wilt-tomato-found",
+        "quote": "A freshly cut stem at the base of the plant placed in water can show a stream of a white slimy substance",
+        "image_id": "bugwood::1568041"
+      },
+      "affected_parts": {
+        "value": [
+          "Stem",
+          "Root",
+          "Vascular",
+          "Whole plant"
+        ],
+        "url": "https://extension.umd.edu/resource/southern-bacterial-wilt-tomato-found",
+        "quote": "the base of the plant may show brown cankers, root rot, and a section of an infected stem may show a brown discoloration of the vascular tissue",
+        "image_id": "bugwood::1568041"
+      },
+      "look_alikes": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "__image_ids__": [
+        "bugwood::1568041",
+        "bugwood::1568041"
+      ]
+    },
+    "Georgia": {
+      "state": "Georgia",
+      "state_specific": false,
+      "summary": {
+        "value": "Initially infected plants wilt in the afternoon and recover in the evening, then progress to brown cankers, root rot, vascular discoloration, and eventual permanent wilt and death.",
+        "url": "https://extension.umd.edu/resource/southern-bacterial-wilt-tomato-found",
+        "quote": "Initially, infected plants develop wilt symptoms in the afternoon, and recover in the evening",
+        "image_id": "bugwood::5472887"
+      },
+      "diagnostic_features": {
+        "value": "A freshly cut stem placed in water exudes a stream of white slimy bacterial ooze, indicating the bacterium in the vascular tissue.",
+        "url": "https://extension.umd.edu/resource/southern-bacterial-wilt-tomato-found",
+        "quote": "A freshly cut stem at the base of the plant placed in water can show a stream of a white slimy substance",
+        "image_id": "bugwood::5472887"
+      },
+      "affected_parts": {
+        "value": [
+          "Stem",
+          "Root",
+          "Vascular",
+          "Whole plant"
+        ],
+        "url": "https://extension.umd.edu/resource/southern-bacterial-wilt-tomato-found",
+        "quote": "the base of the plant may show brown cankers, root rot, and a section of an infected stem may show a brown discoloration of the vascular tissue",
+        "image_id": "bugwood::5472887"
+      },
+      "look_alikes": {
+        "value": null,
+        "url": null,
+        "quote": null
+      },
+      "__image_ids__": [
+        "bugwood::5472887"
+      ]
+    }
+  },
+  "Tomato::Southern Blight": {
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "A brown to black lesion develops on the lower stem near the soil line and rapidly girdles the stem, causing sudden and permanent wilt of all above-ground parts of the tomato.",
+        "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
+        "quote": "Initially, a brown to black lesion usually develops on the stem near the soil line. The lesion will develop rapidly and can completely girdle the stem, which will cause a sudden and permanent wilt of all above ground parts",
+        "image_id": "bugwood::1568115"
+      },
+      "diagnostic_features": {
+        "value": "Tan to reddish-brown, spherical sclerotia (1 to 2 mm in diameter) appear on a mat of white mycelium on stem lesions near the soil line.",
+        "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
+        "quote": "tan to reddish-brown, spherical sclerotia (1 to 2 mm in diameter) can appear on the mat of mycelia",
+        "image_id": "bugwood::1568115"
+      },
+      "affected_parts": {
+        "value": [
+          "Stem",
+          "Whole plant",
+          "Fruit"
+        ],
+        "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
+        "quote": "On tomato and pepper, the most common symptom occurs on the lower stem where it is in contact with the soil",
+        "image_id": "bugwood::1568115"
+      },
+      "look_alikes": {
+        "value": [
+          "Fusarium wilt",
+          "Verticillium wilt",
+          "bacterial wilt"
+        ],
+        "url": "https://www.pubs.ext.vt.edu/SPES/SPES-325/SPES-325.html",
+        "quote": "Fusarium wilt, Verticillium wilt , or bacterial wilt",
+        "image_id": "bugwood::1568115"
+      },
+      "__image_ids__": [
+        "bugwood::1568115",
+        "bugwood::1568116",
+        "bugwood::1568117",
+        "bugwood::1568119",
+        "bugwood::5581640",
+        "bugwood::5581641",
+        "bugwood::5581642",
+        "bugwood::5581643",
+        "bugwood::5581644",
+        "bugwood::1568115",
+        "bugwood::1568116",
+        "bugwood::1568117",
+        "bugwood::1568119",
+        "bugwood::5581640",
+        "bugwood::5581641",
+        "bugwood::5581642",
+        "bugwood::5581643",
+        "bugwood::5581644"
+      ]
+    },
+    "Florida": {
+      "state": "Florida",
+      "state_specific": false,
+      "summary": {
+        "value": "A brown to black lesion develops on the lower tomato stem near the soil line and rapidly girdles the stem, causing sudden and permanent wilt of all above-ground parts.",
+        "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
+        "quote": "The lesion will develop rapidly and can completely girdle the stem, which will cause a sudden and permanent wilt of all above ground parts",
+        "image_id": "bugwood::5429795"
+      },
+      "diagnostic_features": {
+        "value": "Tan to reddish-brown, spherical sclerotia (1 to 2 mm in diameter) appear on a mat of white mycelia at the stem base.",
+        "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
+        "quote": "tan to reddish-brown, spherical sclerotia (1 to 2 mm in diameter) can appear on the mat of mycelia",
+        "image_id": "bugwood::5429795"
+      },
+      "affected_parts": {
+        "value": [
+          "stem",
+          "fruit"
+        ],
+        "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
+        "quote": "On tomato and pepper, the most common symptom occurs on the lower stem where it is in contact with the soil",
+        "image_id": "bugwood::5429795"
+      },
+      "look_alikes": {
+        "value": [
+          "Fusarium wilt",
+          "Verticillium wilt",
+          "bacterial wilt"
+        ],
+        "url": "https://www.pubs.ext.vt.edu/SPES/SPES-325/SPES-325.html",
+        "quote": "Fusarium wilt, Verticillium wilt , or bacterial wilt",
+        "image_id": "bugwood::5429795"
+      },
+      "__image_ids__": [
+        "bugwood::5429795"
+      ]
+    }
+  },
+  "Tomato::Tomato Spotted Wilt Virus": {
+    "Alabama": {
+      "state": "Alabama",
+      "state_specific": false,
+      "summary": {
+        "value": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions, and infected foliage may become covered with so many spots that the entire leaf browns, rolls, and wilts; fruit shows yellow ringspots and brown necrotic sunken areas.",
+        "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+        "quote": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions",
+        "image_id": "bugwood::1568012"
+      },
+      "diagnostic_features": {
+        "value": "Lesions caused by TSWV have blurred margins, distinguishing it from early blight or other leaf spot diseases whose lesion margins are definite.",
+        "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+        "quote": "lesions caused by TSWV have blurred margins, while the margins of lesions caused by other diseases are definite",
+        "image_id": "bugwood::1568012"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Whole plant"
+        ],
+        "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+        "quote": "Infected foliage on both tomatoes and peppers may become covered with so many spots that the entire leaf browns, rolls, and wilts",
+        "image_id": "bugwood::1568012"
+      },
+      "look_alikes": {
+        "value": [
+          "early blight",
+          "other leaf spot diseases"
+        ],
+        "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+        "quote": "Symptoms of TSWV may also resemble symptoms of early blight or other leaf spot diseases",
+        "image_id": "bugwood::1568012"
+      },
+      "__image_ids__": [
+        "bugwood::1568012",
+        "bugwood::1568013",
+        "bugwood::1568014",
+        "bugwood::1568016",
+        "bugwood::1568012",
+        "bugwood::1568013",
+        "bugwood::1568014",
+        "bugwood::1568016"
+      ]
+    },
+    "Delaware": {
+      "state": "Delaware",
+      "state_specific": false,
+      "summary": {
+        "value": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions, and infected foliage may become covered with so many spots that the entire leaf browns, rolls, and wilts.",
+        "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+        "quote": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions",
+        "image_id": "bugwood::5553631"
+      },
+      "diagnostic_features": {
+        "value": "Lesions caused by TSWV have blurred margins, distinguishing them from other leaf spot diseases whose lesion margins are definite.",
+        "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+        "quote": "lesions caused by TSWV have blurred margins, while the margins of lesions caused by other diseases are definite",
+        "image_id": "bugwood::5553631"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Whole plant"
+        ],
+        "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+        "quote": "Infected foliage on both tomatoes and peppers may become covered with so many spots that the entire leaf browns, rolls, and wilts",
+        "image_id": "bugwood::5553631"
+      },
+      "look_alikes": {
+        "value": [
+          "early blight",
+          "other leaf spot diseases"
+        ],
+        "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+        "quote": "Symptoms of TSWV may also resemble symptoms of early blight or other leaf spot diseases",
+        "image_id": "bugwood::5553631"
+      },
+      "__image_ids__": [
+        "bugwood::5553631"
+      ]
+    }
+  }
+}
