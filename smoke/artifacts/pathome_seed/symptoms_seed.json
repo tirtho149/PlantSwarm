@@ -88,7 +88,8 @@
           "margin": "",
           "texture": [
             "dry",
-            "withered",
+            "shriveled",
+            "necrotic",
             "defoliated"
           ],
           "sporulation": [],
@@ -140,16 +141,16 @@
               {
                 "value": "brown; dark brown; blackened",
                 "url": "",
-                "quote": "The foliage across the staked tomato rows has turned almost uniformly dark brown to blackish, in stark contrast to the still-red and orange ripening fruit and the surrounding green grass.",
+                "quote": "The diseased tomato foliage in this Alabama field is overwhelmingly dark brown to blackened across whole plants, with little remaining green tissue and ripening red/orange fruit still hanging on the dying vines.",
                 "image_id": "bugwood::1568038",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "dry; withered; defoliated",
+                "value": "dry; shriveled; necrotic; defoliated",
                 "url": "",
-                "quote": "The canopy looks dry, shriveled, and largely defoliated — only skeletal brown stems remain on the lower and middle portions of the plants, with fruit hanging exposed on bare stakes.",
+                "quote": "The canopy looks dry, shriveled, and largely defoliated — leaves are crispy and collapsed onto the stakes rather than turgid, indicating advanced late-stage necrosis rather than early spotting.",
                 "image_id": "bugwood::1568038",
                 "grounding": "image"
               }
@@ -166,10 +167,18 @@
             "fruit",
             "stem"
           ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
+          "color": [
+            "dark brown",
+            "tan center",
+            "yellow halo"
+          ],
+          "shape": "roughly circular to irregular concentric-ringed spots",
+          "margin": "well-defined dark border with diffuse yellow halo",
+          "texture": [
+            "concentric rings",
+            "dry",
+            "papery"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "Small, brownish-black spots with characteristic concentric rings in the darkened area, primarily on lower leaves."
@@ -214,6 +223,42 @@
                 "quote": "Lesions first develop on lower leaves as small, brownish-black spots which can expand to about 1 ⁄ 4 - 1 ⁄ 2 -inch in diameter with characteristic concentric rings in the darkened area. The area surrounding the lesions may become yellow and, as disease progresses, the entire leaf may turn yellow.",
                 "image_id": "bugwood::5559537"
               }
+            ],
+            "color": [
+              {
+                "value": "dark brown; tan center; yellow halo",
+                "url": "",
+                "quote": "Lesions are dark brown to tan in the center with surrounding chlorotic yellowing of adjacent leaf tissue.",
+                "image_id": "bugwood::5559537",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "roughly circular to irregular concentric-ringed spots",
+                "url": "",
+                "quote": "Spots are roughly circular to slightly irregular with visible concentric rings forming a target-like pattern.",
+                "image_id": "bugwood::5559537",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "well-defined dark border with diffuse yellow halo",
+                "url": "",
+                "quote": "Each lesion has a sharply defined dark brown border surrounded by a diffuse chlorotic yellow halo blending into healthy tissue.",
+                "image_id": "bugwood::5559537",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "concentric rings; dry; papery",
+                "url": "",
+                "quote": "Lesions show characteristic concentric ring (target-spot) patterning with a dry, papery appearance and no visible sporulation or fuzz.",
+                "image_id": "bugwood::5559537",
+                "grounding": "image"
+              }
             ]
           },
           "reference_image_ids": [
@@ -247,65 +292,6 @@
         "reference_image_ids": []
       },
       "regional_visuals": {
-        "Florida": {
-          "plant_parts": [
-            "Stem",
-            "Fruit",
-            "Whole plant"
-          ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
-          "sporulation": [],
-          "distinctive_signs": [
-            "Tan to reddish-brown, spherical sclerotia (1 to 2 mm in diameter) appear on a mat of white mycelia at the stem base."
-          ],
-          "progression": "",
-          "confusion_diseases": [
-            "Fusarium wilt",
-            "Verticillium wilt",
-            "bacterial wilt"
-          ],
-          "notes": "A brown to black lesion develops on the lower stem near the soil line and rapidly girdles the stem, causing sudden and permanent wilt of all above-ground parts.",
-          "sources": {
-            "plant_parts": [
-              {
-                "value": "Stem; Fruit; Whole plant",
-                "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
-                "quote": "the most common symptom occurs on the lower stem where it is in contact with the soil... The fungus can easily infect fruit that are in contact with infested soil",
-                "image_id": "bugwood::5429795"
-              }
-            ],
-            "distinctive_signs": [
-              {
-                "value": "Tan to reddish-brown, spherical sclerotia (1 to 2 mm in diameter) appear on a mat of white mycelia at the stem base.",
-                "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
-                "quote": "tan to reddish-brown, spherical sclerotia (1 to 2 mm in diameter) can appear on the mat of mycelia",
-                "image_id": "bugwood::5429795"
-              }
-            ],
-            "confusion_diseases": [
-              {
-                "value": "Fusarium wilt; Verticillium wilt; bacterial wilt",
-                "url": "https://www.pubs.ext.vt.edu/SPES/SPES-325/SPES-325.html",
-                "quote": "Fusarium wilt, Verticillium wilt , or bacterial wilt",
-                "image_id": "bugwood::5429795"
-              }
-            ],
-            "notes": [
-              {
-                "value": "A brown to black lesion develops on the lower stem near the soil line and rapidly girdles the stem, causing sudden and permanent wilt of all above-ground parts.",
-                "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
-                "quote": "a brown to black lesion usually develops on the stem near the soil line. The lesion will develop rapidly and can completely girdle the stem, which will cause a sudden and permanent wilt of all above ground parts",
-                "image_id": "bugwood::5429795"
-              }
-            ]
-          },
-          "reference_image_ids": [
-            "bugwood::5429795"
-          ]
-        },
         "Alabama": {
           "plant_parts": [
             "Stem",
@@ -313,16 +299,15 @@
             "Fruit"
           ],
           "color": [
-            "brown",
             "tan",
-            "yellow-brown",
-            "green (residual)"
+            "brown",
+            "yellow-green"
           ],
-          "shape": "whole-plant collapse / wilted",
+          "shape": "whole-plant collapse / wilt",
           "margin": "",
           "texture": [
             "desiccated",
-            "shriveled foliage"
+            "papery"
           ],
           "sporulation": [],
           "distinctive_signs": [
@@ -370,27 +355,27 @@
             ],
             "color": [
               {
-                "value": "brown; tan; yellow-brown; green (residual)",
+                "value": "tan; brown; yellow-green",
                 "url": "",
-                "quote": "Three uprooted tomato plants display extensive tan-to-brown discoloration of foliage and stems with only patchy residual green tissue and a few green fruits remaining.",
+                "quote": "The three uprooted tomato plants show tan-to-brown desiccated foliage with patches of remaining yellow-green tissue and a few still-green immature fruits, while the exposed root mass is dark brown with adhering soil.",
                 "image_id": "bugwood::1568115",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "whole-plant collapse / wilted",
+                "value": "whole-plant collapse / wilt",
                 "url": "",
-                "quote": "The image shows whole-plant wilt and collapse rather than discrete lesions, with stems flopped and foliage drooping after being pulled from the soil.",
+                "quote": "The image shows whole uprooted plants that have wilted and died as a unit rather than discrete localized lesions, consistent with girdling at the crown.",
                 "image_id": "bugwood::1568115",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "desiccated; shriveled foliage",
+                "value": "desiccated; papery",
                 "url": "",
-                "quote": "Leaves and stems appear dried and shriveled with a brittle, papery look, but no white mycelium or tan sclerotia are resolvable at this distance.",
+                "quote": "Foliage appears dried, shriveled and papery with curled leaflets; no white mycelial mats or mustard-seed sclerotia are resolvable at this wide-shot scale.",
                 "image_id": "bugwood::1568115",
                 "grounding": "image"
               }
@@ -415,6 +400,112 @@
             "bugwood::5581642",
             "bugwood::5581643",
             "bugwood::5581644"
+          ]
+        },
+        "Florida": {
+          "plant_parts": [
+            "Stem",
+            "Fruit",
+            "Whole plant"
+          ],
+          "color": [
+            "white",
+            "cream",
+            "tan",
+            "light brown",
+            "brown"
+          ],
+          "shape": "small round/spherical sclerotia (mustard-seed-like) embedded in a fan-shaped, radially spreading mycelial mat",
+          "margin": "diffuse, feathery, indistinct mycelial edge with no sharp lesion border",
+          "texture": [
+            "cottony mycelium",
+            "fluffy",
+            "granular sclerotia",
+            "beaded"
+          ],
+          "sporulation": [],
+          "distinctive_signs": [
+            "Tan to reddish-brown, spherical sclerotia (1 to 2 mm in diameter) appear on a mat of white mycelia at the stem base."
+          ],
+          "progression": "",
+          "confusion_diseases": [
+            "Fusarium wilt",
+            "Verticillium wilt",
+            "bacterial wilt"
+          ],
+          "notes": "A brown to black lesion develops on the lower stem near the soil line and rapidly girdles the stem, causing sudden and permanent wilt of all above-ground parts.",
+          "sources": {
+            "plant_parts": [
+              {
+                "value": "Stem; Fruit; Whole plant",
+                "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
+                "quote": "the most common symptom occurs on the lower stem where it is in contact with the soil... The fungus can easily infect fruit that are in contact with infested soil",
+                "image_id": "bugwood::5429795"
+              }
+            ],
+            "distinctive_signs": [
+              {
+                "value": "Tan to reddish-brown, spherical sclerotia (1 to 2 mm in diameter) appear on a mat of white mycelia at the stem base.",
+                "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
+                "quote": "tan to reddish-brown, spherical sclerotia (1 to 2 mm in diameter) can appear on the mat of mycelia",
+                "image_id": "bugwood::5429795"
+              }
+            ],
+            "confusion_diseases": [
+              {
+                "value": "Fusarium wilt; Verticillium wilt; bacterial wilt",
+                "url": "https://www.pubs.ext.vt.edu/SPES/SPES-325/SPES-325.html",
+                "quote": "Fusarium wilt, Verticillium wilt , or bacterial wilt",
+                "image_id": "bugwood::5429795"
+              }
+            ],
+            "notes": [
+              {
+                "value": "A brown to black lesion develops on the lower stem near the soil line and rapidly girdles the stem, causing sudden and permanent wilt of all above-ground parts.",
+                "url": "https://content.ces.ncsu.edu/southern-blight-of-vegetable-crops",
+                "quote": "a brown to black lesion usually develops on the stem near the soil line. The lesion will develop rapidly and can completely girdle the stem, which will cause a sudden and permanent wilt of all above ground parts",
+                "image_id": "bugwood::5429795"
+              }
+            ],
+            "color": [
+              {
+                "value": "white; cream; tan; light brown; brown",
+                "url": "",
+                "quote": "White-to-cream cottony mycelium fans across a brown tissue/substrate surface that is dotted with numerous tan to light-brown, mustard-seed-colored sclerotia.",
+                "image_id": "bugwood::5429795",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "small round/spherical sclerotia (mustard-seed-like) embedded in a fan-shaped, radially spreading mycelial mat",
+                "url": "",
+                "quote": "The image shows tiny uniformly spherical sclerotia scattered in concentrated patches over a fan-shaped, radiating mat of mycelium rather than a discrete leaf lesion.",
+                "image_id": "bugwood::5429795",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "diffuse, feathery, indistinct mycelial edge with no sharp lesion border",
+                "url": "",
+                "quote": "The mycelial growth has a soft, feathery, indistinct edge that fades into the surrounding substrate without a defined lesion margin.",
+                "image_id": "bugwood::5429795",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "cottony mycelium; fluffy; granular sclerotia; beaded",
+                "url": "",
+                "quote": "The surface combines a fluffy, cottony white mycelial mat with a granular, beaded layer of small spherical sclerotia clustered most heavily on the right side of the specimen.",
+                "image_id": "bugwood::5429795",
+                "grounding": "image"
+              }
+            ]
+          },
+          "reference_image_ids": [
+            "bugwood::5429795"
           ]
         }
       },
@@ -496,16 +587,16 @@
             "Whole plant"
           ],
           "color": [
-            "tan",
-            "bleached cream",
+            "bleached tan",
+            "cream",
             "light brown"
           ],
-          "shape": "elongated, girdling lesion at the crown extending vertically up the lower stem",
-          "margin": "diffuse, irregular",
+          "shape": "elongated girdling lesion along lower stem",
+          "margin": "irregular and diffuse",
           "texture": [
             "dry",
             "papery",
-            "weathered"
+            "bleached"
           ],
           "sporulation": [],
           "distinctive_signs": [
@@ -541,36 +632,36 @@
             ],
             "color": [
               {
-                "value": "tan; bleached cream; light brown",
+                "value": "bleached tan; cream; light brown",
                 "url": "",
-                "quote": "The lower stem shows a bleached cream-to-tan discoloration with light brown necrotic patches at the crown, contrasting with the darker brown of the surrounding stem and soil-coated roots.",
+                "quote": "The lower stem at/near the soil line shows a bleached tan-to-cream discoloration with a few small darker brown flecks, contrasting with the normal woody brown of the stem above.",
                 "image_id": "bugwood::5581651",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "elongated, girdling lesion at the crown extending vertically up the lower stem",
+                "value": "elongated girdling lesion along lower stem",
                 "url": "",
-                "quote": "An irregular elongated bleached lesion runs vertically along the lower stem and wraps around the crown region just above the soil line.",
+                "quote": "The affected area forms an elongated, vertically oriented patch wrapping the lower stem just below the root mass, consistent with a crown/stem-base girdling lesion.",
                 "image_id": "bugwood::5581651",
                 "grounding": "image"
               }
             ],
             "margin": [
               {
-                "value": "diffuse, irregular",
+                "value": "irregular and diffuse",
                 "url": "",
-                "quote": "The boundary between the bleached tan lesion and the surrounding healthier stem tissue is diffuse and irregular rather than sharply defined.",
+                "quote": "The boundary between bleached diseased tissue and the darker healthy stem is irregular and somewhat diffuse rather than sharply defined.",
                 "image_id": "bugwood::5581651",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "dry; papery; weathered",
+                "value": "dry; papery; bleached",
                 "url": "",
-                "quote": "The affected lower stem surface appears dry, papery, and weathered, with no clearly visible white mycelial fan or distinct round sclerotia in this view.",
+                "quote": "The lesion surface appears dry, papery, and bleached with a few small dark specks; no clear white mycelial mat or distinct tan sclerotia are visible in this single photo.",
                 "image_id": "bugwood::5581651",
                 "grounding": "image"
               }
@@ -594,10 +685,17 @@
             "Seed",
             "Whole plant"
           ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
+          "color": [
+            "white",
+            "tan",
+            "brown"
+          ],
+          "shape": "girdling band at the stem base extending upward as elongated bleached stem lesions",
+          "margin": "diffuse, feathery boundary between white mycelium and discolored stem tissue",
+          "texture": [
+            "cottony mycelium",
+            "fan-like hyphal mats"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "Conspicuous white, fanlike mats of fungal mycelium on the base of the stem and soil surface, with small round sclerotia about the size of mustard seeds that progress from yellow-tan to reddish-brown to dark brown at maturity."
@@ -628,6 +726,42 @@
                 "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
                 "quote": "entire plants may become yellow and wilt, with leaves turning brown and often remaining attached to the plant. A dark brown lesion that girdles the stem occurs at the soil surface.",
                 "image_id": "bugwood::5625712"
+              }
+            ],
+            "color": [
+              {
+                "value": "white; tan; brown",
+                "url": "",
+                "quote": "The lower stems show conspicuous white mycelial growth at the soil line transitioning into bleached tan and brown necrotic stem tissue above.",
+                "image_id": "bugwood::5625712",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "girdling band at the stem base extending upward as elongated bleached stem lesions",
+                "url": "",
+                "quote": "The lesions appear as elongated girdling bands wrapping the lower stems at and just above the soil line, extending upward as bleached stem cankers.",
+                "image_id": "bugwood::5625712",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "diffuse, feathery boundary between white mycelium and discolored stem tissue",
+                "url": "",
+                "quote": "The boundary between the white fungal growth and the discolored stem tissue is diffuse and feathery rather than sharply defined.",
+                "image_id": "bugwood::5625712",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "cottony mycelium; fan-like hyphal mats",
+                "url": "",
+                "quote": "Dense cottony, fan-like white mycelial mats coat the base of the stems and spread onto adjacent soil and debris.",
+                "image_id": "bugwood::5625712",
+                "grounding": "image"
               }
             ]
           },
@@ -691,68 +825,6 @@
         "reference_image_ids": []
       },
       "regional_visuals": {
-        "Illinois": {
-          "plant_parts": [
-            "Foliar",
-            "Stem",
-            "Pod",
-            "Seed"
-          ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
-          "sporulation": [],
-          "distinctive_signs": [
-            "Reddish purple margins surround the gray centers on mature lesions; on some varieties lesions may have light green to yellow halos; fuzzy, gray sporulation (conidia) can sometimes occur in lesions on the leaf underside."
-          ],
-          "progression": "",
-          "confusion_diseases": [
-            "Cercospora leaf blight"
-          ],
-          "notes": "Leaf lesions are small, irregular to circular, gray with reddish-brown borders, starting as dark, water-soaked spots on the upper leaf surface, and as they age the central area becomes gray to light brown with dark, red-brown margins.",
-          "sources": {
-            "plant_parts": [
-              {
-                "value": "Foliar; Stem; Pod; Seed",
-                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-cercospora-leaf-blight-of-soybean",
-                "quote": "Severe cases lead to premature leaf drop and can spread to stems and pods. The fungus that causes frogeye leaf spot may also cause purple petiole lesions (Figure 9) and infect seed.",
-                "image_id": "bugwood::5609900"
-              }
-            ],
-            "distinctive_signs": [
-              {
-                "value": "Reddish purple margins surround the gray centers on mature lesions; on some varieties lesions may have light green to yellow halos; fuzzy, gray sporulation (conidia) can sometimes occur in lesions on the leaf underside.",
-                "url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
-                "quote": "Reddish purple margins surround the gray centers on mature frogeye leaf spot lesions.",
-                "image_id": "bugwood::5609900"
-              }
-            ],
-            "confusion_diseases": [
-              {
-                "value": "Cercospora leaf blight",
-                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-cercospora-leaf-blight-of-soybean",
-                "quote": "The fungus that causes frogeye leaf spot may also cause purple petiole lesions",
-                "image_id": "bugwood::5609900"
-              }
-            ],
-            "notes": [
-              {
-                "value": "Leaf lesions are small, irregular to circular, gray with reddish-brown borders, starting as dark, water-soaked spots on the upper leaf surface, and as they age the central area becomes gray to light brown with dark, red-brown margins.",
-                "url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
-                "quote": "Leaf lesions are small, irregular to circular in shape, and gray with reddish-brown borders. Most commonly occurring on the upper leaf surface, lesions start as dark, water-soaked spots that vary in size. As lesions age, the central area becomes gray to light brown with dark, red-brown margins.",
-                "image_id": "bugwood::5609900"
-              }
-            ]
-          },
-          "reference_image_ids": [
-            "bugwood::5609900",
-            "bugwood::5609901",
-            "bugwood::5609902",
-            "bugwood::5609903",
-            "bugwood::5609904"
-          ]
-        },
         "Alabama": {
           "plant_parts": [
             "leaves",
@@ -761,14 +833,15 @@
             "seeds"
           ],
           "color": [
-            "tan to light gray center",
-            "reddish-brown to dark purple-brown border"
+            "tan center",
+            "reddish-brown border",
+            "dark purple-brown halo"
           ],
-          "shape": "small circular to subcircular spots, mostly 1-3 mm, scattered densely across the lamina",
-          "margin": "sharply delimited narrow dark reddish-brown to purplish border",
+          "shape": "small circular to subcircular spots",
+          "margin": "well-defined dark border",
           "texture": [
-            "dry, papery sunken centers",
-            "some centers dropped out producing shot-hole appearance"
+            "dry papery centers",
+            "some shot-hole drop-out"
           ],
           "sporulation": [],
           "distinctive_signs": [
@@ -814,36 +887,36 @@
             ],
             "color": [
               {
-                "value": "tan to light gray center; reddish-brown to dark purple-brown border",
+                "value": "tan center; reddish-brown border; dark purple-brown halo",
                 "url": "",
-                "quote": "Numerous small spots with pale tan-to-gray centers ringed by reddish-brown to dark purple-brown borders set against still-green leaf tissue.",
+                "quote": "The lesions show small tan-to-grayish centers ringed by a distinct reddish-brown to dark purple-brown border on a green soybean leaf.",
                 "image_id": "bugwood::5582257",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "small circular to subcircular spots, mostly 1-3 mm, scattered densely across the lamina",
+                "value": "small circular to subcircular spots",
                 "url": "",
-                "quote": "The lesions are small, roughly circular to slightly irregular spots distributed densely and uniformly over the entire upper leaf surface.",
+                "quote": "Numerous small, mostly round to slightly angular spots are scattered densely across the leaf blade.",
                 "image_id": "bugwood::5582257",
                 "grounding": "image"
               }
             ],
             "margin": [
               {
-                "value": "sharply delimited narrow dark reddish-brown to purplish border",
+                "value": "well-defined dark border",
                 "url": "",
-                "quote": "Each spot is bounded by a thin, sharply defined reddish-brown to purplish ring that clearly separates the necrotic center from surrounding green tissue.",
+                "quote": "Each spot has a sharply delimited dark reddish-brown margin separating the pale center from the surrounding green tissue.",
                 "image_id": "bugwood::5582257",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "dry, papery sunken centers; some centers dropped out producing shot-hole appearance",
+                "value": "dry papery centers; some shot-hole drop-out",
                 "url": "",
-                "quote": "Lesion centers look thin, dry and papery, and several have fallen out leaving small shot-holes; no fuzzy sporulation is visible in this photograph.",
+                "quote": "The lesion centers appear thin, dry and papery, and several have fallen out producing shot-hole perforations across the leaf.",
                 "image_id": "bugwood::5582257",
                 "grounding": "image"
               }
@@ -856,6 +929,113 @@
             "bugwood::5582257",
             "bugwood::5582258",
             "bugwood::5582259"
+          ]
+        },
+        "Illinois": {
+          "plant_parts": [
+            "Foliar",
+            "Stem",
+            "Pod",
+            "Seed"
+          ],
+          "color": [
+            "tan",
+            "gray",
+            "reddish-brown",
+            "dark purple-brown"
+          ],
+          "shape": "small circular to subcircular spots",
+          "margin": "narrow dark reddish-brown to purple border",
+          "texture": [
+            "dry",
+            "papery centers",
+            "flat"
+          ],
+          "sporulation": [],
+          "distinctive_signs": [
+            "Reddish purple margins surround the gray centers on mature lesions; on some varieties lesions may have light green to yellow halos; fuzzy, gray sporulation (conidia) can sometimes occur in lesions on the leaf underside."
+          ],
+          "progression": "",
+          "confusion_diseases": [
+            "Cercospora leaf blight"
+          ],
+          "notes": "Leaf lesions are small, irregular to circular, gray with reddish-brown borders, starting as dark, water-soaked spots on the upper leaf surface, and as they age the central area becomes gray to light brown with dark, red-brown margins.",
+          "sources": {
+            "plant_parts": [
+              {
+                "value": "Foliar; Stem; Pod; Seed",
+                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-cercospora-leaf-blight-of-soybean",
+                "quote": "Severe cases lead to premature leaf drop and can spread to stems and pods. The fungus that causes frogeye leaf spot may also cause purple petiole lesions (Figure 9) and infect seed.",
+                "image_id": "bugwood::5609900"
+              }
+            ],
+            "distinctive_signs": [
+              {
+                "value": "Reddish purple margins surround the gray centers on mature lesions; on some varieties lesions may have light green to yellow halos; fuzzy, gray sporulation (conidia) can sometimes occur in lesions on the leaf underside.",
+                "url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
+                "quote": "Reddish purple margins surround the gray centers on mature frogeye leaf spot lesions.",
+                "image_id": "bugwood::5609900"
+              }
+            ],
+            "confusion_diseases": [
+              {
+                "value": "Cercospora leaf blight",
+                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-cercospora-leaf-blight-of-soybean",
+                "quote": "The fungus that causes frogeye leaf spot may also cause purple petiole lesions",
+                "image_id": "bugwood::5609900"
+              }
+            ],
+            "notes": [
+              {
+                "value": "Leaf lesions are small, irregular to circular, gray with reddish-brown borders, starting as dark, water-soaked spots on the upper leaf surface, and as they age the central area becomes gray to light brown with dark, red-brown margins.",
+                "url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
+                "quote": "Leaf lesions are small, irregular to circular in shape, and gray with reddish-brown borders. Most commonly occurring on the upper leaf surface, lesions start as dark, water-soaked spots that vary in size. As lesions age, the central area becomes gray to light brown with dark, red-brown margins.",
+                "image_id": "bugwood::5609900"
+              }
+            ],
+            "color": [
+              {
+                "value": "tan; gray; reddish-brown; dark purple-brown",
+                "url": "",
+                "quote": "Lesion centers are pale tan to gray surrounded by reddish to dark purple-brown narrow rings, set against a chlorotic yellow-green leaf background with dense purple-brown speckling.",
+                "image_id": "bugwood::5609900",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "small circular to subcircular spots",
+                "url": "",
+                "quote": "Spots are small, roughly round to slightly oval, distinct individual lesions scattered across the leaf rather than coalescing.",
+                "image_id": "bugwood::5609900",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "narrow dark reddish-brown to purple border",
+                "url": "",
+                "quote": "Lesion margins are sharply defined with a narrow dark reddish-brown to purple ring bordering the pale tan-gray center, with no diffuse halo.",
+                "image_id": "bugwood::5609900",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "dry; papery centers; flat",
+                "url": "",
+                "quote": "Lesion centers appear dry, flat, and thin-papery against the leaf surface; no visible fuzz, mold, or sporulation can be resolved in this image.",
+                "image_id": "bugwood::5609900",
+                "grounding": "image"
+              }
+            ]
+          },
+          "reference_image_ids": [
+            "bugwood::5609900",
+            "bugwood::5609901",
+            "bugwood::5609902",
+            "bugwood::5609903",
+            "bugwood::5609904"
           ]
         }
       },
@@ -1017,11 +1197,11 @@
             "yellow-green",
             "dark green"
           ],
-          "shape": "irregular mosaic patches",
-          "margin": "diffuse",
+          "shape": "irregular diffuse blotches",
+          "margin": "indistinct, diffuse",
           "texture": [
-            "mottled",
-            "slightly puckered"
+            "mostly flat",
+            "small feeding holes"
           ],
           "sporulation": [],
           "distinctive_signs": [
@@ -1069,34 +1249,34 @@
               {
                 "value": "light green; yellow-green; dark green",
                 "url": "",
-                "quote": "Foliage shows a patchy mottle of light green to yellow-green areas interspersed with normal dark green tissue, producing a mosaic appearance across multiple trifoliate leaves.",
+                "quote": "Affected leaves show a patchy mosaic of light green to yellow-green areas interspersed with normal dark green tissue, with no necrotic browning visible.",
                 "image_id": "bugwood::5581647",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "irregular mosaic patches",
+                "value": "irregular diffuse blotches",
                 "url": "",
-                "quote": "The discoloration forms irregular, diffuse blotches and patches scattered between the veins rather than discrete circular lesions.",
+                "quote": "The discolored areas appear as irregular, diffuse blotches and mottled patches scattered across the leaflets rather than as discrete circular lesions.",
                 "image_id": "bugwood::5581647",
                 "grounding": "image"
               }
             ],
             "margin": [
               {
-                "value": "diffuse",
+                "value": "indistinct, diffuse",
                 "url": "",
-                "quote": "Margins of the chlorotic patches are indistinct and gradually blend into surrounding green tissue with no sharp border or halo.",
+                "quote": "The boundaries between light and dark green areas are indistinct and gradually blend into surrounding tissue without sharply defined borders.",
                 "image_id": "bugwood::5581647",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "mottled; slightly puckered",
+                "value": "mostly flat; small feeding holes",
                 "url": "",
-                "quote": "Affected leaflets appear mottled with subtle puckering or uneven surface between veins, while a few small holes from chewing damage are also visible but not part of the viral symptom.",
+                "quote": "Leaf surfaces look relatively flat without obvious blistering or strong rugosity, though several leaves show small holes consistent with chewing-insect feeding alongside the mottling.",
                 "image_id": "bugwood::5581647",
                 "grounding": "image"
               }
@@ -1120,10 +1300,18 @@
             "Pod",
             "Seed"
           ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
+          "color": [
+            "light green",
+            "yellow-green",
+            "dark green"
+          ],
+          "shape": "irregular mottled patches",
+          "margin": "diffuse",
+          "texture": [
+            "puckered",
+            "blistered",
+            "rugose"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "Green stems after pods have matured, along with seed coat mottling (brown or black depending on hilum color) and smoky seed appearance, with confirmation requiring serological testing (ELISA)."
@@ -1165,6 +1353,42 @@
                 "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
                 "quote": "Symptoms of BPMV are green to yellow mottling (blotchiness) of younger leaves in the upper canopy. In severe cases leaves may show puckering and distortion and plants can be stunted. Pods can be misshapen with mottling and reduced in size. Infected plants may have green stems after the pods have matured. Seed from infected plants may appear smoky in color or have reduced size and quality due to seed coat mottling which will be brown or black depending on hilum color.",
                 "image_id": "bugwood::5623785"
+              }
+            ],
+            "color": [
+              {
+                "value": "light green; yellow-green; dark green",
+                "url": "",
+                "quote": "The trifoliate leaves show a mottled pattern of light green to yellowish patches alternating with darker green areas, with no distinct necrotic browning.",
+                "image_id": "bugwood::5623785",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "irregular mottled patches",
+                "url": "",
+                "quote": "Symptoms appear as diffuse, irregularly shaped chlorotic patches scattered across the leaf blade rather than discrete circular lesions.",
+                "image_id": "bugwood::5623785",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "diffuse",
+                "url": "",
+                "quote": "The boundaries between light and dark green tissue are gradual and blurred with no defined edge or halo.",
+                "image_id": "bugwood::5623785",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "puckered; blistered; rugose",
+                "url": "",
+                "quote": "The leaf surface is noticeably puckered and rugose, with raised dark-green blistered areas and sunken lighter zones giving a crinkled appearance.",
+                "image_id": "bugwood::5623785",
+                "grounding": "image"
               }
             ]
           },
@@ -1249,71 +1473,17 @@
         "reference_image_ids": []
       },
       "regional_visuals": {
-        "Virginia": {
-          "plant_parts": [
-            "Foliar",
-            "Whole plant"
-          ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
-          "sporulation": [],
-          "distinctive_signs": [
-            "Leaves may become strappy or have a shoestring appearance; this is the symptom most identified with CMV."
-          ],
-          "progression": "",
-          "confusion_diseases": [],
-          "notes": "CMV symptoms on tomato vary but can include stunting and yellow/green mottling on leaves, with leaves sometimes becoming strappy or shoestring-like, and few fruit produced on infected plants.",
-          "sources": {
-            "plant_parts": [
-              {
-                "value": "Foliar; Whole plant",
-                "url": "https://veggiescout.ca.uky.edu/cucumber-mosaic-virus-tomato",
-                "quote": "symptoms on tomato are varied but can include stunting and yellow/green mottling (light and dark areas in irregular patterns) on leaves. Leaves may become “strappy” or have a “shoestring” appearance",
-                "image_id": "bugwood::5411376"
-              }
-            ],
-            "distinctive_signs": [
-              {
-                "value": "Leaves may become strappy or have a shoestring appearance; this is the symptom most identified with CMV.",
-                "url": "https://veggiescout.ca.uky.edu/cucumber-mosaic-virus-tomato",
-                "quote": "Leaves may become “strappy” or have a “shoestring” appearance; this is the symptom most identified with CMV.",
-                "image_id": "bugwood::5411376"
-              }
-            ],
-            "notes": [
-              {
-                "value": "CMV symptoms on tomato vary but can include stunting and yellow/green mottling on leaves, with leaves sometimes becoming strappy or shoestring-like, and few fruit produced on infected plants.",
-                "url": "https://veggiescout.ca.uky.edu/cucumber-mosaic-virus-tomato",
-                "quote": "Cucumber mosaic virus (CMV) symptoms on tomato are varied but can include stunting and yellow/green mottling (light and dark areas in irregular patterns) on leaves. Leaves may become “strappy” or have a “shoestring” appearance; this is the symptom most identified with CMV. Few fruit are produced on infected plants.",
-                "image_id": "bugwood::5411376"
-              }
-            ]
-          },
-          "reference_image_ids": [
-            "bugwood::5411376",
-            "bugwood::5411377",
-            "bugwood::5411378",
-            "bugwood::5411379",
-            "bugwood::5411380"
-          ]
-        },
         "Alabama": {
           "plant_parts": [
             "Foliar",
             "Whole plant"
           ],
           "color": [
-            "dark green",
-            "dull green-grey"
+            "green"
           ],
-          "shape": "stunted plants with narrowed drooping leaflets",
-          "margin": "downward-curled and inrolled",
-          "texture": [
-            "limp",
-            "wilted-drooping"
-          ],
+          "shape": "stunted, drooping plants with an uneven canopy",
+          "margin": "",
+          "texture": [],
           "sporulation": [],
           "distinctive_signs": [
             "Leaves may become strappy or have a shoestring appearance, the symptom most identified with CMV in tomato."
@@ -1348,36 +1518,18 @@
             ],
             "color": [
               {
-                "value": "dark green; dull green-grey",
+                "value": "green",
                 "url": "",
-                "quote": "From this wide field view the affected tomato canopy reads as a uniformly dull dark green with no resolvable mosaic mottling or bright chlorotic patches at this distance.",
+                "quote": "From this wide field-distance shot the foliage reads as a uniform dull green with no resolvable mosaic mottling, yellowing, or chlorotic patterning visible on individual leaves.",
                 "image_id": "bugwood::1568047",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "stunted plants with narrowed drooping leaflets",
+                "value": "stunted, drooping plants with an uneven canopy",
                 "url": "",
-                "quote": "Plants between the stakes are noticeably stunted and compact with narrowed, drooping leaflets giving a shoestring-like silhouette compared to the fuller plants further down the row.",
-                "image_id": "bugwood::1568047",
-                "grounding": "image"
-              }
-            ],
-            "margin": [
-              {
-                "value": "downward-curled and inrolled",
-                "url": "",
-                "quote": "Leaflet edges appear curled and rolled downward along the affected plants, but discrete lesion margins cannot be resolved at this field-scale distance.",
-                "image_id": "bugwood::1568047",
-                "grounding": "image"
-              }
-            ],
-            "texture": [
-              {
-                "value": "limp; wilted-drooping",
-                "url": "",
-                "quote": "The foliage on the affected plants looks limp and collapsed over the stake strings with a wilted, drooping texture; fine surface detail such as rugosity, blistering, or sporulation is not visible at this scale.",
+                "quote": "The staked tomato plants are conspicuously short and uneven in height with a limp, drooping habit, several rows failing to reach the tops of their wooden stakes.",
                 "image_id": "bugwood::1568047",
                 "grounding": "image"
               }
@@ -1398,6 +1550,99 @@
             "bugwood::1568052",
             "bugwood::1568053",
             "bugwood::1568061"
+          ]
+        },
+        "Virginia": {
+          "plant_parts": [
+            "Foliar",
+            "Whole plant"
+          ],
+          "color": [
+            "green",
+            "dark green"
+          ],
+          "shape": "narrow strap-like / shoestring (filiform) leaflets",
+          "margin": "irregular, deeply lobed and puckered, reduced nearly to the midrib",
+          "texture": [
+            "distorted",
+            "crinkled",
+            "rugose"
+          ],
+          "sporulation": [],
+          "distinctive_signs": [
+            "Leaves may become strappy or have a shoestring appearance; this is the symptom most identified with CMV."
+          ],
+          "progression": "",
+          "confusion_diseases": [],
+          "notes": "CMV symptoms on tomato vary but can include stunting and yellow/green mottling on leaves, with leaves sometimes becoming strappy or shoestring-like, and few fruit produced on infected plants.",
+          "sources": {
+            "plant_parts": [
+              {
+                "value": "Foliar; Whole plant",
+                "url": "https://veggiescout.ca.uky.edu/cucumber-mosaic-virus-tomato",
+                "quote": "symptoms on tomato are varied but can include stunting and yellow/green mottling (light and dark areas in irregular patterns) on leaves. Leaves may become “strappy” or have a “shoestring” appearance",
+                "image_id": "bugwood::5411376"
+              }
+            ],
+            "distinctive_signs": [
+              {
+                "value": "Leaves may become strappy or have a shoestring appearance; this is the symptom most identified with CMV.",
+                "url": "https://veggiescout.ca.uky.edu/cucumber-mosaic-virus-tomato",
+                "quote": "Leaves may become “strappy” or have a “shoestring” appearance; this is the symptom most identified with CMV.",
+                "image_id": "bugwood::5411376"
+              }
+            ],
+            "notes": [
+              {
+                "value": "CMV symptoms on tomato vary but can include stunting and yellow/green mottling on leaves, with leaves sometimes becoming strappy or shoestring-like, and few fruit produced on infected plants.",
+                "url": "https://veggiescout.ca.uky.edu/cucumber-mosaic-virus-tomato",
+                "quote": "Cucumber mosaic virus (CMV) symptoms on tomato are varied but can include stunting and yellow/green mottling (light and dark areas in irregular patterns) on leaves. Leaves may become “strappy” or have a “shoestring” appearance; this is the symptom most identified with CMV. Few fruit are produced on infected plants.",
+                "image_id": "bugwood::5411376"
+              }
+            ],
+            "color": [
+              {
+                "value": "green; dark green",
+                "url": "",
+                "quote": "The foliage shows uniform green to dark-green coloration with no obvious chlorotic mottle or yellowing visible in this studio shot.",
+                "image_id": "bugwood::5411376",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "narrow strap-like / shoestring (filiform) leaflets",
+                "url": "",
+                "quote": "Leaflets are dramatically reduced to narrow, strap-like, shoestring/fern-like blades on bare elongated stems, characteristic of CMV shoestring-type distortion.",
+                "image_id": "bugwood::5411376",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "irregular, deeply lobed and puckered, reduced nearly to the midrib",
+                "url": "",
+                "quote": "Leaf margins are highly irregular, deeply incised and puckered, with the laminae reduced almost to the midrib in many leaflets.",
+                "image_id": "bugwood::5411376",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "distorted; crinkled; rugose",
+                "url": "",
+                "quote": "Foliage is crinkled, rugose and twisted with stunted, malformed leaflets clustered along thin stems.",
+                "image_id": "bugwood::5411376",
+                "grounding": "image"
+              }
+            ]
+          },
+          "reference_image_ids": [
+            "bugwood::5411376",
+            "bugwood::5411377",
+            "bugwood::5411378",
+            "bugwood::5411379",
+            "bugwood::5411380"
           ]
         }
       },
@@ -1495,74 +1740,6 @@
         "reference_image_ids": []
       },
       "regional_visuals": {
-        "Georgia": {
-          "plant_parts": [
-            "Root",
-            "Stem",
-            "Seed",
-            "Vascular",
-            "Foliar"
-          ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
-          "sporulation": [],
-          "distinctive_signs": [
-            "Microsclerotia less than 1 mm in size embedded in the taproot and lower stem tissue, making the root or stem appear peppered with black spots, with light gray or silver discoloration in cross-section."
-          ],
-          "progression": "",
-          "confusion_diseases": [
-            "Pod and Stem Blight (Diaporthe/Phomopsis spp.)",
-            "Phytophthora Root and Stem Rot (Phytophthora sojae)",
-            "Saprophytic Fungi",
-            "White Mold / Sclerotinia stem rot (Sclerotinia sclerotiorum)",
-            "Soybean Cyst Nematode (Heterodera glycines)",
-            "Stem Canker (Diaporthe spp.)",
-            "Sudden Death Syndrome (Fusarium virguliforme)",
-            "Red Crown Rot (Calonectria ilicicola)",
-            "general drought stress"
-          ],
-          "notes": "Premature death with leaves still attached is the most common symptom, with gray/silver discoloration of the lower stem and numerous microsclerotia giving the lower stem and taproot a charcoal-like appearance.",
-          "sources": {
-            "plant_parts": [
-              {
-                "value": "Root; Stem; Seed; Vascular; Foliar",
-                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
-                "quote": "the charcoal rot fungus can infect seed, seedlings, or mature plants... The fungus grows within the roots and stem and interferes with water uptake by clogging vascular tissue",
-                "image_id": "bugwood::5472515"
-              }
-            ],
-            "distinctive_signs": [
-              {
-                "value": "Microsclerotia less than 1 mm in size embedded in the taproot and lower stem tissue, making the root or stem appear peppered with black spots, with light gray or silver discoloration in cross-section.",
-                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
-                "quote": "Microsclerotia are less than 1/25 of an inch (1 mm) in size. To the naked eye, it will look as if the root or stem has been \"peppered\" with black spots",
-                "image_id": "bugwood::5472515"
-              }
-            ],
-            "confusion_diseases": [
-              {
-                "value": "Pod and Stem Blight (Diaporthe/Phomopsis spp.); Phytophthora Root and Stem Rot (Phytophthora sojae); Saprophytic Fungi; White Mold / Sclerotinia stem rot (Sclerotinia sclerotiorum); Soybean Cyst Nematode (Heterodera glycines); Stem Canker (Diaporthe spp.); Sudden Death Syndrome (Fusarium virguliforme); Red Crown Rot (Calonectria ilicicola); general drought stress",
-                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
-                "quote": "Diseases With Similar Symptoms... Pod and Stem Blight (Diaporthe/Phomopsis spp.)... Phytophthora Root and Stem Rot (PRR — Phytophthora sojae)... Saprophytic Fungi... White Mold (Sclerotinia stem rot — Sclerotinia sclerotiorum)... Soybean Cyst Nematode (SCN — Heterodera glycines)... Stem Canker (Diaporthe spp.)... Sudden Death Syndrome (SDS — Fusarium virguliforme)... Red Crown Rot (RCR - Calonectria ilicicola)... Charcoal rot is hard to diagnose in dry years, as it is difficult to distinguish its symptoms from those of general drought stress",
-                "image_id": "bugwood::5472515"
-              }
-            ],
-            "notes": [
-              {
-                "value": "Premature death with leaves still attached is the most common symptom, with gray/silver discoloration of the lower stem and numerous microsclerotia giving the lower stem and taproot a charcoal-like appearance.",
-                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
-                "quote": "Premature death with leaves still attached to the plant is the most common symptom",
-                "image_id": "bugwood::5472515"
-              }
-            ]
-          },
-          "reference_image_ids": [
-            "bugwood::5472515",
-            "bugwood::5472516"
-          ]
-        },
         "Alabama": {
           "plant_parts": [
             "Root",
@@ -1571,10 +1748,18 @@
             "Vascular",
             "Foliar"
           ],
-          "color": [],
+          "color": [
+            "tan",
+            "golden-brown",
+            "yellow-brown"
+          ],
           "shape": "",
           "margin": "",
-          "texture": [],
+          "texture": [
+            "wilted",
+            "desiccated",
+            "dried-down"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "Microsclerotia less than 1 mm in size embedded in taproot and lower stem tissue make the root or stem appear peppered with black spots, with light gray/silver discoloration and black streaks visible in cross-section."
@@ -1624,11 +1809,143 @@
                 "quote": "Premature death with leaves still attached to the plant is the most common symptom",
                 "image_id": "bugwood::5591031"
               }
+            ],
+            "color": [
+              {
+                "value": "tan; golden-brown; yellow-brown",
+                "url": "",
+                "quote": "Affected foreground rows along the field edge show a uniform tan to golden-brown canopy of prematurely senescent plants, contrasting sharply with the still-green plants further into the field.",
+                "image_id": "bugwood::5591031",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "wilted; desiccated; dried-down",
+                "url": "",
+                "quote": "Plants in the affected rows appear dry, wilted, and prematurely dried-down, with foliage collapsed and brittle in appearance rather than turgid and green.",
+                "image_id": "bugwood::5591031",
+                "grounding": "image"
+              }
             ]
           },
           "reference_image_ids": [
             "bugwood::5591031",
             "bugwood::5591031"
+          ]
+        },
+        "Georgia": {
+          "plant_parts": [
+            "Root",
+            "Stem",
+            "Seed",
+            "Vascular",
+            "Foliar"
+          ],
+          "color": [
+            "silvery gray",
+            "ashy gray",
+            "reddish brown bark",
+            "black specks"
+          ],
+          "shape": "elongated lens-shaped lesion along the stem axis",
+          "margin": "fairly distinct but irregular",
+          "texture": [
+            "dry",
+            "ashy",
+            "peppered with microsclerotia",
+            "fibrous split bark"
+          ],
+          "sporulation": [],
+          "distinctive_signs": [
+            "Microsclerotia less than 1 mm in size embedded in the taproot and lower stem tissue, making the root or stem appear peppered with black spots, with light gray or silver discoloration in cross-section."
+          ],
+          "progression": "",
+          "confusion_diseases": [
+            "Pod and Stem Blight (Diaporthe/Phomopsis spp.)",
+            "Phytophthora Root and Stem Rot (Phytophthora sojae)",
+            "Saprophytic Fungi",
+            "White Mold / Sclerotinia stem rot (Sclerotinia sclerotiorum)",
+            "Soybean Cyst Nematode (Heterodera glycines)",
+            "Stem Canker (Diaporthe spp.)",
+            "Sudden Death Syndrome (Fusarium virguliforme)",
+            "Red Crown Rot (Calonectria ilicicola)",
+            "general drought stress"
+          ],
+          "notes": "Premature death with leaves still attached is the most common symptom, with gray/silver discoloration of the lower stem and numerous microsclerotia giving the lower stem and taproot a charcoal-like appearance.",
+          "sources": {
+            "plant_parts": [
+              {
+                "value": "Root; Stem; Seed; Vascular; Foliar",
+                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+                "quote": "the charcoal rot fungus can infect seed, seedlings, or mature plants... The fungus grows within the roots and stem and interferes with water uptake by clogging vascular tissue",
+                "image_id": "bugwood::5472515"
+              }
+            ],
+            "distinctive_signs": [
+              {
+                "value": "Microsclerotia less than 1 mm in size embedded in the taproot and lower stem tissue, making the root or stem appear peppered with black spots, with light gray or silver discoloration in cross-section.",
+                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+                "quote": "Microsclerotia are less than 1/25 of an inch (1 mm) in size. To the naked eye, it will look as if the root or stem has been \"peppered\" with black spots",
+                "image_id": "bugwood::5472515"
+              }
+            ],
+            "confusion_diseases": [
+              {
+                "value": "Pod and Stem Blight (Diaporthe/Phomopsis spp.); Phytophthora Root and Stem Rot (Phytophthora sojae); Saprophytic Fungi; White Mold / Sclerotinia stem rot (Sclerotinia sclerotiorum); Soybean Cyst Nematode (Heterodera glycines); Stem Canker (Diaporthe spp.); Sudden Death Syndrome (Fusarium virguliforme); Red Crown Rot (Calonectria ilicicola); general drought stress",
+                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+                "quote": "Diseases With Similar Symptoms... Pod and Stem Blight (Diaporthe/Phomopsis spp.)... Phytophthora Root and Stem Rot (PRR — Phytophthora sojae)... Saprophytic Fungi... White Mold (Sclerotinia stem rot — Sclerotinia sclerotiorum)... Soybean Cyst Nematode (SCN — Heterodera glycines)... Stem Canker (Diaporthe spp.)... Sudden Death Syndrome (SDS — Fusarium virguliforme)... Red Crown Rot (RCR - Calonectria ilicicola)... Charcoal rot is hard to diagnose in dry years, as it is difficult to distinguish its symptoms from those of general drought stress",
+                "image_id": "bugwood::5472515"
+              }
+            ],
+            "notes": [
+              {
+                "value": "Premature death with leaves still attached is the most common symptom, with gray/silver discoloration of the lower stem and numerous microsclerotia giving the lower stem and taproot a charcoal-like appearance.",
+                "url": "https://cropprotectionnetwork.org/publications/an-overview-of-charcoal-rot-of-soybean",
+                "quote": "Premature death with leaves still attached to the plant is the most common symptom",
+                "image_id": "bugwood::5472515"
+              }
+            ],
+            "color": [
+              {
+                "value": "silvery gray; ashy gray; reddish brown bark; black specks",
+                "url": "",
+                "quote": "The exposed inner stem tissue is a silvery to ashy gray, peppered with fine black microsclerotia, set against the surrounding reddish-brown outer bark.",
+                "image_id": "bugwood::5472515",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "elongated lens-shaped lesion along the stem axis",
+                "url": "",
+                "quote": "The discolored area forms an elongated, oval to lens-shaped patch running lengthwise along the stem where the bark has been peeled back.",
+                "image_id": "bugwood::5472515",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "fairly distinct but irregular",
+                "url": "",
+                "quote": "The boundary between the ashy gray inner tissue and the surrounding brown bark is reasonably well-defined but irregular and slightly diffuse along its edges.",
+                "image_id": "bugwood::5472515",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "dry; ashy; peppered with microsclerotia; fibrous split bark",
+                "url": "",
+                "quote": "The lesion surface appears dry and ashy with a fine peppered stippling of black microsclerotia, while the adjacent stem shows splitting and exposed pale fibrous tissue.",
+                "image_id": "bugwood::5472515",
+                "grounding": "image"
+              }
+            ]
+          },
+          "reference_image_ids": [
+            "bugwood::5472515",
+            "bugwood::5472516"
           ]
         }
       },
@@ -1667,15 +1984,15 @@
           ],
           "color": [
             "tan",
-            "rust-orange",
-            "reddish-brown"
+            "orange-brown",
+            "rust"
           ],
-          "shape": "small pinpoint to angular pustules",
-          "margin": "diffuse, indistinct",
+          "shape": "small round pinpoint pustules",
+          "margin": "diffuse and indistinct",
           "texture": [
-            "powdery",
+            "raised",
             "granular",
-            "raised pustules"
+            "powdery"
           ],
           "sporulation": [],
           "distinctive_signs": [
@@ -1721,36 +2038,36 @@
             ],
             "color": [
               {
-                "value": "tan; rust-orange; reddish-brown",
+                "value": "tan; orange-brown; rust",
                 "url": "",
-                "quote": "The underside of the leaf is densely peppered with small tan to rust-orange pustules against a pale green background, with a few darker brown necrotic flecks interspersed.",
+                "quote": "Dense tan to orange-brown rust-colored pustules cover the pale green abaxial leaf surface, with a few darker brown necrotic flecks scattered among them.",
                 "image_id": "bugwood::5202010",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "small pinpoint to angular pustules",
+                "value": "small round pinpoint pustules",
                 "url": "",
-                "quote": "Lesions appear as numerous tiny pinpoint to slightly angular raised pustules, individually small but covering most of the abaxial leaf surface.",
+                "quote": "Lesions appear as numerous small, roughly circular pinpoint pustules scattered across the leaf underside rather than large coalesced spots.",
                 "image_id": "bugwood::5202010",
                 "grounding": "image"
               }
             ],
             "margin": [
               {
-                "value": "diffuse, indistinct",
+                "value": "diffuse and indistinct",
                 "url": "",
-                "quote": "Individual pustules have diffuse, indistinct margins that blend into the surrounding leaf tissue rather than forming sharply bordered spots.",
+                "quote": "Individual pustules have diffuse, indistinct edges that blend into the surrounding leaf tissue without a sharp chlorotic halo.",
                 "image_id": "bugwood::5202010",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "powdery; granular; raised pustules",
+                "value": "raised; granular; powdery",
                 "url": "",
-                "quote": "The leaf underside shows a granular, powdery texture from densely clustered raised uredinial pustules releasing rust-colored spore masses.",
+                "quote": "The lesions present as raised granular pustules giving the leaf surface a finely powdery, dusty appearance characteristic of active rust sporulation.",
                 "image_id": "bugwood::5202010",
                 "grounding": "image"
               }
@@ -1777,10 +2094,18 @@
             "pods",
             "stems"
           ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
+          "color": [
+            "tan",
+            "reddish-brown",
+            "yellow-brown",
+            "chlorotic yellow background"
+          ],
+          "shape": "small angular polygonal vein-limited flecks",
+          "margin": "diffuse and indistinct, vein-delimited",
+          "texture": [
+            "dusty/speckled appearance",
+            "fine stippling"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "Urediniospore masses can be seen within pustules on the underside of leaves using a 20x hand lens."
@@ -1821,6 +2146,42 @@
                 "url": "https://content.ces.ncsu.edu/asian-soybean-rust",
                 "quote": "A common symptom of soybean rust is the formation of gray-green, tan to dark-brown, or reddish-brown lesions that may become erumpant under the lesions on leaflets.",
                 "image_id": "bugwood::5440185"
+              }
+            ],
+            "color": [
+              {
+                "value": "tan; reddish-brown; yellow-brown; chlorotic yellow background",
+                "url": "",
+                "quote": "Numerous small tan to reddish-brown flecks are scattered across both leaves on a background that ranges from chlorotic yellow-green on the right leaf to an advanced uniform yellow-tan on the left leaf.",
+                "image_id": "bugwood::5440185",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "small angular polygonal vein-limited flecks",
+                "url": "",
+                "quote": "Lesions appear as very small, angular to polygonal flecks confined between leaf veins, densely peppered across the lamina rather than forming large discrete spots.",
+                "image_id": "bugwood::5440185",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "diffuse and indistinct, vein-delimited",
+                "url": "",
+                "quote": "Individual lesion margins are diffuse and blur into the surrounding chlorotic tissue, with their outer edges effectively bounded by minor veins rather than by a sharp halo.",
+                "image_id": "bugwood::5440185",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "dusty/speckled appearance; fine stippling",
+                "url": "",
+                "quote": "The leaf surfaces show a fine dusty stippled texture from coalescing flecks, though individual pustules and sporulation cannot be clearly resolved at this image scale.",
+                "image_id": "bugwood::5440185",
+                "grounding": "image"
               }
             ]
           },
@@ -1918,24 +2279,22 @@
       "regional_visuals": {
         "Alabama": {
           "plant_parts": [
-            "fruit (immature/green)"
+            "fruit"
           ],
           "color": [
+            "olive-brown",
+            "grayish-green",
             "dark chocolate brown",
-            "olive-grey to greyish-green",
-            "pale green (healthy fruit background)",
-            "tan/cream (cracked necrotic patch)"
+            "tan"
           ],
-          "shape": "Large, irregular, diffuse blotches with poorly defined margins covering 30–60% of each fruit's surface; not concentric or ringed, and one lesion shows a sunken cracked center.",
+          "shape": "Large, irregular, diffuse blotches with indistinct margins covering the upper shoulders and sides of the fruit, roughly oval to amorphous and somewhat sunken/leathery in appearance.",
           "margin": "",
           "texture": [],
           "sporulation": [],
           "distinctive_signs": [
-            "firm greasy-looking lesions",
-            "large irregular dark blotches covering much of the fruit surface",
-            "leathery brown-to-olive discoloration",
-            "cracked tan/cream necrotic patch within one lesion",
-            "no visible white sporulation in this photo"
+            "large greasy/oily-looking dark blotches on fruit surface",
+            "firm, leathery brown lesion with sunken cracked area",
+            "no visible white sporulation on these fruits"
           ],
           "progression": "",
           "confusion_diseases": [],
@@ -1943,36 +2302,36 @@
           "sources": {
             "distinctive_signs": [
               {
-                "value": "firm greasy-looking lesions; large irregular dark blotches covering much of the fruit surface; leathery brown-to-olive discoloration; cracked tan/cream necrotic patch within one lesion; no visible white sporulation in this photo",
+                "value": "large greasy/oily-looking dark blotches on fruit surface; firm, leathery brown lesion with sunken cracked area; no visible white sporulation on these fruits",
                 "url": "",
-                "quote": "Three immature green tomato fruits each show large, firm, greasy-leathery dark blotches; the right fruit also has a sunken cracked tan area within the lesion, and no white mold/sporulation is visible.",
+                "quote": "Three green tomatoes show large greasy, dark olive-brown to grayish blotches covering significant portions of the fruit surface, with one fruit displaying a sunken, cracked tan area at the lesion margin.",
                 "image_id": "bugwood::1568022",
                 "grounding": "image"
               }
             ],
             "plant_parts": [
               {
-                "value": "fruit (immature/green)",
+                "value": "fruit",
                 "url": "",
-                "quote": "Only immature green tomato fruits with attached calyx/stem are shown — no leaves or stems are pictured.",
+                "quote": "Only immature green tomato fruits are shown, with attached calyx/stem on two of them; no foliage is visible.",
                 "image_id": "bugwood::1568022",
                 "grounding": "image"
               }
             ],
             "color": [
               {
-                "value": "dark chocolate brown; olive-grey to greyish-green; pale green (healthy fruit background); tan/cream (cracked necrotic patch)",
+                "value": "olive-brown; grayish-green; dark chocolate brown; tan",
                 "url": "",
-                "quote": "Lesions are a greasy dark chocolate-brown to olive-grey blending into the pale green unaffected fruit, with a tan/cream cracked spot on the rightmost tomato.",
+                "quote": "Lesions appear as olive-brown to grayish-green discolored patches blending into darker chocolate-brown zones, with a tan/cream cracked area on the right fruit, against the otherwise pale yellow-green unripe fruit.",
                 "image_id": "bugwood::1568022",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "Large, irregular, diffuse blotches with poorly defined margins covering 30–60% of each fruit's surface; not concentric or ringed, and one lesion shows a sunken cracked center.",
+                "value": "Large, irregular, diffuse blotches with indistinct margins covering the upper shoulders and sides of the fruit, roughly oval to amorphous and somewhat sunken/leathery in appearance.",
                 "url": "",
-                "quote": "The lesions are broad, irregularly shaped diffuse blotches with feathered edges rather than sharp circular spots, often wrapping over the shoulder of the fruit.",
+                "quote": "Lesions are large, irregularly shaped diffuse patches with poorly defined edges that cover much of the fruit shoulder and side, appearing slightly sunken and leathery.",
                 "image_id": "bugwood::1568022",
                 "grounding": "image"
               }
@@ -2014,10 +2373,19 @@
             "fruit",
             "tuber"
           ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
+          "color": [
+            "tan",
+            "brown",
+            "grey-brown"
+          ],
+          "shape": "large irregular blotches expanding from leaf tips and margins",
+          "margin": "irregular, diffuse, pale water-soaked transition into green tissue",
+          "texture": [
+            "dry",
+            "papery",
+            "necrotic",
+            "slightly curled"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "Dark lesions are surrounded by white sporulation or 'fuzz' under humid/damp conditions, but may appear as dry dark lesions under dry conditions."
@@ -2058,6 +2426,42 @@
                 "url": "https://extension.umn.edu/disease-management/late-blight",
                 "quote": "Leaves have large, dark brown blotches with a green gray edge; not confined by major leaf veins.",
                 "image_id": "bugwood::5559539"
+              }
+            ],
+            "color": [
+              {
+                "value": "tan; brown; grey-brown",
+                "url": "",
+                "quote": "Affected leaf tissue shows large tan-to-brown necrotic patches with a slightly greyish cast, contrasting against the surrounding green foliage.",
+                "image_id": "bugwood::5559539",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "large irregular blotches expanding from leaf tips and margins",
+                "url": "",
+                "quote": "Lesions are broad, irregular blotches that have expanded inward from the leaf tips and margins rather than forming small discrete spots.",
+                "image_id": "bugwood::5559539",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "irregular, diffuse, pale water-soaked transition into green tissue",
+                "url": "",
+                "quote": "The boundary between dead tan tissue and healthy green tissue is irregular and somewhat diffuse, with a faint pale/water-soaked-looking transition zone but no sharp dark border.",
+                "image_id": "bugwood::5559539",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "dry; papery; necrotic; slightly curled",
+                "url": "",
+                "quote": "The necrotic areas appear dry and papery with some curling and tearing of the dead tissue, and no obvious white sporulation fuzz is visible in this sunlit photo.",
+                "image_id": "bugwood::5559539",
+                "grounding": "image"
               }
             ]
           },
@@ -2209,10 +2613,10 @@
             "yellow"
           ],
           "shape": "small punctate specks",
-          "margin": "diffuse with surrounding chlorotic halo",
+          "margin": "diffuse with chlorotic halos",
           "texture": [
-            "flat speckled",
-            "necrotic"
+            "flat",
+            "dry"
           ],
           "sporulation": [],
           "distinctive_signs": [
@@ -2263,7 +2667,7 @@
               {
                 "value": "dark brown; black; yellow",
                 "url": "",
-                "quote": "Numerous small dark brown to black lesions are scattered across the green leaflets, with surrounding tissue showing yellow chlorotic patches especially on the upper leaflet.",
+                "quote": "Numerous tiny dark brown to black specks are scattered across the green leaflets, with patches of yellow chlorosis surrounding clusters of lesions, particularly on the central leaflet.",
                 "image_id": "bugwood::1568046",
                 "grounding": "image"
               }
@@ -2272,25 +2676,25 @@
               {
                 "value": "small punctate specks",
                 "url": "",
-                "quote": "The lesions appear as tiny pinpoint to small punctate specks, mostly circular and less than a few millimeters in diameter.",
+                "quote": "Lesions appear as very small, roughly circular pinpoint specks rather than large angular or irregular blotches.",
                 "image_id": "bugwood::1568046",
                 "grounding": "image"
               }
             ],
             "margin": [
               {
-                "value": "diffuse with surrounding chlorotic halo",
+                "value": "diffuse with chlorotic halos",
                 "url": "",
-                "quote": "The dark specks have somewhat diffuse edges and many are surrounded by faint yellow chlorotic halos rather than sharply defined borders.",
+                "quote": "Individual specks have indistinct edges and coalesce into chlorotic yellow zones, giving the affected areas a diffuse rather than sharply bordered appearance.",
                 "image_id": "bugwood::1568046",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "flat speckled; necrotic",
+                "value": "flat; dry",
                 "url": "",
-                "quote": "The lesions appear flat and embedded in the leaf surface as dry necrotic flecks, with no visible fuzzy growth, ooze, or sporulation.",
+                "quote": "The lesions appear flat and dry against the leaf surface with no visible sporulation, ooze, or raised pustules.",
                 "image_id": "bugwood::1568046",
                 "grounding": "image"
               }
@@ -2314,13 +2718,14 @@
           "color": [
             "dark brown",
             "black",
-            "yellow halo"
+            "purple-brown halo"
           ],
           "shape": "circular to irregular",
-          "margin": "diffuse with chlorotic halo",
+          "margin": "diffuse with faint halo",
           "texture": [
             "necrotic",
-            "sunken"
+            "tattered",
+            "dry"
           ],
           "sporulation": [],
           "distinctive_signs": [
@@ -2369,9 +2774,9 @@
             ],
             "color": [
               {
-                "value": "dark brown; black; yellow halo",
+                "value": "dark brown; black; purple-brown halo",
                 "url": "",
-                "quote": "Numerous small dark brown to black specks are scattered across the leaf surface, several surrounded by faint yellowish chlorotic halos against the green leaf tissue.",
+                "quote": "Numerous small lesions appear dark brown to black with subtle purplish-brown halos scattered across a dull green leaf surface.",
                 "image_id": "bugwood::1573569",
                 "grounding": "image"
               }
@@ -2380,25 +2785,25 @@
               {
                 "value": "circular to irregular",
                 "url": "",
-                "quote": "Most lesions are tiny and roughly circular pinpoint specks, though some have coalesced into larger irregular dark blotches.",
+                "quote": "Lesions are mostly small and roughly circular, with some coalescing into larger irregular blotches as they merge.",
                 "image_id": "bugwood::1573569",
                 "grounding": "image"
               }
             ],
             "margin": [
               {
-                "value": "diffuse with chlorotic halo",
+                "value": "diffuse with faint halo",
                 "url": "",
-                "quote": "Lesion margins appear slightly diffuse with thin pale-yellow chlorotic halos surrounding many of the dark specks.",
+                "quote": "Spot edges are not sharply defined; each dark center fades into a faint purplish-brown halo against the surrounding leaf tissue.",
                 "image_id": "bugwood::1573569",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "necrotic; sunken",
+                "value": "necrotic; tattered; dry",
                 "url": "",
-                "quote": "The dark specks appear dry and necrotic, with some advanced lesions looking slightly sunken and causing leaf curling and tearing.",
+                "quote": "Affected tissue looks dry and necrotic, with the leaf curled and torn where lesions have coalesced and the blade has split.",
                 "image_id": "bugwood::1573569",
                 "grounding": "image"
               }
@@ -2502,42 +2907,26 @@
         "reference_image_ids": []
       },
       "regional_visuals": {
-        "Georgia": {
-          "plant_parts": [],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
-          "sporulation": [],
-          "distinctive_signs": [],
-          "progression": "",
-          "confusion_diseases": [],
-          "notes": "",
-          "sources": {},
-          "reference_image_ids": [
-            "bugwood::5472887"
-          ]
-        },
         "Alabama": {
           "plant_parts": [
             "stem (longitudinal section)",
-            "pith",
-            "vascular tissue",
-            "lateral branch / side shoot"
+            "internal vascular tissue / pith",
+            "branch junction / node",
+            "lateral shoot"
           ],
           "color": [
-            "tan to medium brown internal pith",
-            "darker brown streaking along the vascular ring",
-            "bright green outer stem rind"
+            "tan to medium brown (interior pith/vascular tissue)",
+            "darker chocolate-brown patches near the node",
+            "bright green (outer stem rind and edges)"
           ],
-          "shape": "Elongated linear streak of brown discoloration running the full length of the split stem and continuing into the branching node, with no discrete spots or lesions on the exterior.",
+          "shape": "Continuous, elongated longitudinal streak of internal browning following the central axis of the stem and branching with it at the node; no discrete spots or lesions on the outer surface.",
           "margin": "",
           "texture": [],
           "sporulation": [],
           "distinctive_signs": [
-            "brown vascular and pith discoloration revealed by longitudinal stem split",
-            "internal browning extends continuously along the stem and into a side branch",
-            "outer epidermis remains green while inner tissues are necrotic"
+            "brown vascular discoloration extending continuously along the length of a longitudinally split stem",
+            "darkened/decayed pith tissue contrasting with intact green outer stem walls",
+            "discoloration continues through the branch junction into the side shoot"
           ],
           "progression": "",
           "confusion_diseases": [],
@@ -2545,36 +2934,36 @@
           "sources": {
             "distinctive_signs": [
               {
-                "value": "brown vascular and pith discoloration revealed by longitudinal stem split; internal browning extends continuously along the stem and into a side branch; outer epidermis remains green while inner tissues are necrotic",
+                "value": "brown vascular discoloration extending continuously along the length of a longitudinally split stem; darkened/decayed pith tissue contrasting with intact green outer stem walls; discoloration continues through the branch junction into the side shoot",
                 "url": "",
-                "quote": "The longitudinally split stem reveals a continuous brown discoloration of the pith and vascular tissue running the length of the stem and into a lateral branch, while the outer rind stays green.",
+                "quote": "A longitudinally split tomato stem reveals an unbroken brown internal discoloration of the vascular and pith tissues running the full length of the main stem and continuing into a lateral branch, while the thin outer green rind remains intact.",
                 "image_id": "bugwood::1568041",
                 "grounding": "image"
               }
             ],
             "plant_parts": [
               {
-                "value": "stem (longitudinal section); pith; vascular tissue; lateral branch / side shoot",
+                "value": "stem (longitudinal section); internal vascular tissue / pith; branch junction / node; lateral shoot",
                 "url": "",
-                "quote": "A tomato stem has been split lengthwise to expose the pith and vascular cylinder, including the junction where a side branch diverges.",
+                "quote": "The image shows a dissected tomato stem split lengthwise, exposing the internal vascular tissue and pith from the lower stem up through a node and into a lateral branch.",
                 "image_id": "bugwood::1568041",
                 "grounding": "image"
               }
             ],
             "color": [
               {
-                "value": "tan to medium brown internal pith; darker brown streaking along the vascular ring; bright green outer stem rind",
+                "value": "tan to medium brown (interior pith/vascular tissue); darker chocolate-brown patches near the node; bright green (outer stem rind and edges)",
                 "url": "",
-                "quote": "Internal pith and vascular tissue are uniformly tan-brown with darker brown streaks, contrasting sharply with the still-green outer stem walls.",
+                "quote": "The split-open interior is a fairly uniform tan-to-medium-brown with slightly darker brown zones near the branch junction, framed by the bright green of the intact outer stem walls.",
                 "image_id": "bugwood::1568041",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "Elongated linear streak of brown discoloration running the full length of the split stem and continuing into the branching node, with no discrete spots or lesions on the exterior.",
+                "value": "Continuous, elongated longitudinal streak of internal browning following the central axis of the stem and branching with it at the node; no discrete spots or lesions on the outer surface.",
                 "url": "",
-                "quote": "The discoloration takes the form of an unbroken longitudinal brown streak through the central pith rather than discrete external lesions.",
+                "quote": "The discoloration is a single continuous longitudinal streak filling the central pith along the entire stem axis and tracking into the side branch, rather than a localized spot or ring.",
                 "image_id": "bugwood::1568041",
                 "grounding": "image"
               }
@@ -2583,6 +2972,69 @@
           "reference_image_ids": [
             "bugwood::1568041",
             "bugwood::1568041"
+          ]
+        },
+        "Georgia": {
+          "plant_parts": [
+            "stem (cut section)",
+            "vascular tissue at cut surface"
+          ],
+          "color": [
+            "green stem",
+            "tan-brown vascular discoloration at cut end"
+          ],
+          "shape": "short cylindrical stem segment with a clean transverse cut, showing a roughly circular cross-section with a discolored vascular ring and threads of ooze trailing downward into the water",
+          "margin": "",
+          "texture": [],
+          "sporulation": [],
+          "distinctive_signs": [
+            "bacterial ooze streaming from cut stem suspended in water",
+            "milky/cloudy threads and fine droplets visible in the water column",
+            "vascular browning at the cut end"
+          ],
+          "progression": "",
+          "confusion_diseases": [],
+          "notes": "",
+          "sources": {
+            "color": [
+              {
+                "value": "green stem; tan-brown vascular discoloration at cut end",
+                "url": "",
+                "quote": "The stem itself is bright green while the freshly exposed cut surface shows a tan-to-brown ring of discolored vascular tissue.",
+                "image_id": "bugwood::5472887",
+                "grounding": "image"
+              }
+            ],
+            "distinctive_signs": [
+              {
+                "value": "bacterial ooze streaming from cut stem suspended in water; milky/cloudy threads and fine droplets visible in the water column; vascular browning at the cut end",
+                "url": "",
+                "quote": "A cut tomato stem is suspended in a clear container of water and is releasing fine milky droplets and streams — the classic ooze/streaming diagnostic for Ralstonia solanacearum.",
+                "image_id": "bugwood::5472887",
+                "grounding": "image"
+              }
+            ],
+            "plant_parts": [
+              {
+                "value": "stem (cut section); vascular tissue at cut surface",
+                "url": "",
+                "quote": "Only a severed length of tomato stem is shown, with its cut basal end exposed and dangling into water; no leaves, fruit, or roots are visible.",
+                "image_id": "bugwood::5472887",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "short cylindrical stem segment with a clean transverse cut, showing a roughly circular cross-section with a discolored vascular ring and threads of ooze trailing downward into the water",
+                "url": "",
+                "quote": "The diagnostic structure is the cylindrical cut-stem cross-section with a ring of browned vascular tissue and fine ooze threads trailing into the water below.",
+                "image_id": "bugwood::5472887",
+                "grounding": "image"
+              }
+            ]
+          },
+          "reference_image_ids": [
+            "bugwood::5472887"
           ]
         }
       },
@@ -2654,64 +3106,6 @@
         "reference_image_ids": []
       },
       "regional_visuals": {
-        "Delaware": {
-          "plant_parts": [
-            "Foliar",
-            "Whole plant"
-          ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
-          "sporulation": [],
-          "distinctive_signs": [
-            "Lesions caused by TSWV have blurred margins, while the margins of lesions caused by other diseases are definite."
-          ],
-          "progression": "",
-          "confusion_diseases": [
-            "early blight",
-            "other leaf spot diseases",
-            "other plant viruses"
-          ],
-          "notes": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions, foliage may brown, roll, and wilt, infected seedlings form a \"shepherd's crook\" appearance and die, and fruit shows yellow ringspots and brown necrotic sunken areas.",
-          "sources": {
-            "plant_parts": [
-              {
-                "value": "Foliar; Whole plant",
-                "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
-                "quote": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions (Figure 1). Infected peppers form small brown necrotic spots and/or chlorotic ring spots on the foliage (Figure 2). Infected foliage on both tomatoes and peppers may become covered with so many spots that the entire leaf browns, rolls, and wilts. Infected seedlings form a \"shepherd's crook\" appearance and die (Figure 3). Early infection results in total loss of fruit. Established plants that become infected are stunted with decreased yields. Symptoms on the fruit of both tomatoes and peppers typically include yellow ringspots and brown necrotic sunken areas (Figures 4 and 5).",
-                "image_id": "bugwood::5553631"
-              }
-            ],
-            "distinctive_signs": [
-              {
-                "value": "Lesions caused by TSWV have blurred margins, while the margins of lesions caused by other diseases are definite.",
-                "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
-                "quote": "Symptoms of TSWV may also resemble symptoms of early blight or other leaf spot diseases; however, lesions caused by TSWV have blurred margins, while the margins of lesions caused by other diseases are definite.",
-                "image_id": "bugwood::5553631"
-              }
-            ],
-            "confusion_diseases": [
-              {
-                "value": "early blight; other leaf spot diseases; other plant viruses",
-                "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
-                "quote": "Symptoms of TSWV may also resemble symptoms of early blight or other leaf spot diseases... Keep in mind that some of these symptoms overlap with other plant viruses so it is important to get an accurate diagnosis for effective management.",
-                "image_id": "bugwood::5553631"
-              }
-            ],
-            "notes": [
-              {
-                "value": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions, foliage may brown, roll, and wilt, infected seedlings form a \"shepherd's crook\" appearance and die, and fruit shows yellow ringspots and brown necrotic sunken areas.",
-                "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
-                "quote": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions (Figure 1). Infected peppers form small brown necrotic spots and/or chlorotic ring spots on the foliage (Figure 2). Infected foliage on both tomatoes and peppers may become covered with so many spots that the entire leaf browns, rolls, and wilts. Infected seedlings form a \"shepherd's crook\" appearance and die (Figure 3).",
-                "image_id": "bugwood::5553631"
-              }
-            ]
-          },
-          "reference_image_ids": [
-            "bugwood::5553631"
-          ]
-        },
         "Alabama": {
           "plant_parts": [
             "Foliar",
@@ -2721,14 +3115,13 @@
             "bronze",
             "dark brown",
             "purplish-brown",
-            "green"
+            "dull green"
           ],
-          "shape": "small irregular specks and scattered flecks",
-          "margin": "diffuse and indistinct",
+          "shape": "small irregular flecks and pinpoint spots with faint ring-like markings",
+          "margin": "diffuse and irregular, poorly defined",
           "texture": [
-            "matte",
+            "bronzed",
             "puckered",
-            "slightly cupped",
             "rugose"
           ],
           "sporulation": [],
@@ -2777,36 +3170,36 @@
             ],
             "color": [
               {
-                "value": "bronze; dark brown; purplish-brown; green",
+                "value": "bronze; dark brown; purplish-brown; dull green",
                 "url": "",
-                "quote": "The leaflet shows a dull green background overlaid with numerous small bronze to dark purplish-brown flecks, with subtle bronzing concentrated between veins.",
+                "quote": "The leaflets show a dull bronze-green cast with scattered small dark brown to purplish-brown flecks distributed across the upper surface.",
                 "image_id": "bugwood::1568012",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "small irregular specks and scattered flecks",
+                "value": "small irregular flecks and pinpoint spots with faint ring-like markings",
                 "url": "",
-                "quote": "Symptoms appear as tiny irregular specks and flecks scattered across the leaf blade rather than discrete circular lesions.",
+                "quote": "Symptoms appear as numerous small irregular flecks and pinpoint spots, with a few faint concentric ring-like markings on the leaf surface.",
                 "image_id": "bugwood::1568012",
                 "grounding": "image"
               }
             ],
             "margin": [
               {
-                "value": "diffuse and indistinct",
+                "value": "diffuse and irregular, poorly defined",
                 "url": "",
-                "quote": "The flecks have diffuse, poorly defined edges that blend into the surrounding leaf tissue without a sharp halo or border.",
+                "quote": "The flecks have diffuse, poorly defined margins that blend gradually into the surrounding bronzed leaf tissue rather than forming sharp borders.",
                 "image_id": "bugwood::1568012",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "matte; puckered; slightly cupped; rugose",
+                "value": "bronzed; puckered; rugose",
                 "url": "",
-                "quote": "The leaf surface looks dull and matte with a faintly puckered, rugose appearance and slight cupping/distortion of the leaflet.",
+                "quote": "The leaf surface looks bronzed and slightly puckered/rugose between the veins, with no visible sporulation or fuzzy growth.",
                 "image_id": "bugwood::1568012",
                 "grounding": "image"
               }
@@ -2821,6 +3214,109 @@
             "bugwood::1568013",
             "bugwood::1568014",
             "bugwood::1568016"
+          ]
+        },
+        "Delaware": {
+          "plant_parts": [
+            "Foliar",
+            "Whole plant"
+          ],
+          "color": [
+            "bronze",
+            "brown",
+            "dark brown",
+            "green"
+          ],
+          "shape": "irregular blotchy patches",
+          "margin": "diffuse and indistinct",
+          "texture": [
+            "puckered",
+            "cupped/curled leaflets",
+            "papery necrotic patches"
+          ],
+          "sporulation": [],
+          "distinctive_signs": [
+            "Lesions caused by TSWV have blurred margins, while the margins of lesions caused by other diseases are definite."
+          ],
+          "progression": "",
+          "confusion_diseases": [
+            "early blight",
+            "other leaf spot diseases",
+            "other plant viruses"
+          ],
+          "notes": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions, foliage may brown, roll, and wilt, infected seedlings form a \"shepherd's crook\" appearance and die, and fruit shows yellow ringspots and brown necrotic sunken areas.",
+          "sources": {
+            "plant_parts": [
+              {
+                "value": "Foliar; Whole plant",
+                "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+                "quote": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions (Figure 1). Infected peppers form small brown necrotic spots and/or chlorotic ring spots on the foliage (Figure 2). Infected foliage on both tomatoes and peppers may become covered with so many spots that the entire leaf browns, rolls, and wilts. Infected seedlings form a \"shepherd's crook\" appearance and die (Figure 3). Early infection results in total loss of fruit. Established plants that become infected are stunted with decreased yields. Symptoms on the fruit of both tomatoes and peppers typically include yellow ringspots and brown necrotic sunken areas (Figures 4 and 5).",
+                "image_id": "bugwood::5553631"
+              }
+            ],
+            "distinctive_signs": [
+              {
+                "value": "Lesions caused by TSWV have blurred margins, while the margins of lesions caused by other diseases are definite.",
+                "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+                "quote": "Symptoms of TSWV may also resemble symptoms of early blight or other leaf spot diseases; however, lesions caused by TSWV have blurred margins, while the margins of lesions caused by other diseases are definite.",
+                "image_id": "bugwood::5553631"
+              }
+            ],
+            "confusion_diseases": [
+              {
+                "value": "early blight; other leaf spot diseases; other plant viruses",
+                "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+                "quote": "Symptoms of TSWV may also resemble symptoms of early blight or other leaf spot diseases... Keep in mind that some of these symptoms overlap with other plant viruses so it is important to get an accurate diagnosis for effective management.",
+                "image_id": "bugwood::5553631"
+              }
+            ],
+            "notes": [
+              {
+                "value": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions, foliage may brown, roll, and wilt, infected seedlings form a \"shepherd's crook\" appearance and die, and fruit shows yellow ringspots and brown necrotic sunken areas.",
+                "url": "https://content.ces.ncsu.edu/tomato-spotted-wilt-virus-on-tomato-and-pepper",
+                "quote": "On tomatoes infected with TSWV, the uppermost leaves appear bronzed with small brown lesions (Figure 1). Infected peppers form small brown necrotic spots and/or chlorotic ring spots on the foliage (Figure 2). Infected foliage on both tomatoes and peppers may become covered with so many spots that the entire leaf browns, rolls, and wilts. Infected seedlings form a \"shepherd's crook\" appearance and die (Figure 3).",
+                "image_id": "bugwood::5553631"
+              }
+            ],
+            "color": [
+              {
+                "value": "bronze; brown; dark brown; green",
+                "url": "",
+                "quote": "Healthy tissue is medium green, with diffuse bronze-to-brown discoloration across the upper leaflets and darker brown-to-near-black necrotic patches concentrated on the smaller left leaf.",
+                "image_id": "bugwood::5553631",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "irregular blotchy patches",
+                "url": "",
+                "quote": "Symptoms appear as irregular, blotchy necrotic patches and diffuse bronzed areas rather than discrete circular spots or concentric ringspots.",
+                "image_id": "bugwood::5553631",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "diffuse and indistinct",
+                "url": "",
+                "quote": "Lesion edges fade gradually into surrounding green tissue with no sharp or haloed border between necrotic and healthy areas.",
+                "image_id": "bugwood::5553631",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "puckered; cupped/curled leaflets; papery necrotic patches",
+                "url": "",
+                "quote": "Leaflets are distorted with downward cupping and puckering, and the darker necrotic zones on the left leaf appear dry and papery while the bronzed areas remain flat against the leaf surface.",
+                "image_id": "bugwood::5553631",
+                "grounding": "image"
+              }
+            ]
+          },
+          "reference_image_ids": [
+            "bugwood::5553631"
           ]
         }
       },
@@ -2901,6 +3397,72 @@
         "reference_image_ids": []
       },
       "regional_visuals": {
+        "Connecticut": {
+          "plant_parts": [
+            "leaflet (upper surface)",
+            "leaf margin"
+          ],
+          "color": [
+            "greyish-brown to dark brown spot margins",
+            "tan/grey lesion centers",
+            "yellow chlorotic halos and marginal yellowing",
+            "green healthy leaf tissue"
+          ],
+          "shape": "small circular to roughly round spots, 1–3 mm in diameter, fairly uniform in size and densely scattered across the blade",
+          "margin": "",
+          "texture": [],
+          "sporulation": [],
+          "distinctive_signs": [
+            "numerous small circular spots scattered across leaf blade",
+            "spots with darker brown/grey margins and paler tan centers",
+            "yellow chlorotic halos and yellowing along leaf margins",
+            "small necrotic perforation/hole where lesion tissue has dropped out"
+          ],
+          "progression": "",
+          "confusion_diseases": [],
+          "notes": "",
+          "sources": {
+            "distinctive_signs": [
+              {
+                "value": "numerous small circular spots scattered across leaf blade; spots with darker brown/grey margins and paler tan centers; yellow chlorotic halos and yellowing along leaf margins; small necrotic perforation/hole where lesion tissue has dropped out",
+                "url": "",
+                "quote": "The leaf shows many small circular spots with darker rims and paler centers, surrounded by yellowing tissue and one tear/hole where necrotic tissue has fallen out.",
+                "image_id": "bugwood::5559543",
+                "grounding": "image"
+              }
+            ],
+            "plant_parts": [
+              {
+                "value": "leaflet (upper surface); leaf margin",
+                "url": "",
+                "quote": "A single detached tomato leaflet is shown upper-surface up against a red background, with lesions across the blade and along the margins.",
+                "image_id": "bugwood::5559543",
+                "grounding": "image"
+              }
+            ],
+            "color": [
+              {
+                "value": "greyish-brown to dark brown spot margins; tan/grey lesion centers; yellow chlorotic halos and marginal yellowing; green healthy leaf tissue",
+                "url": "",
+                "quote": "Lesions are tan-grey at the center with darker brown borders and yellow halos, set against an otherwise green leaf with yellowing along the edges.",
+                "image_id": "bugwood::5559543",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "small circular to roughly round spots, 1–3 mm in diameter, fairly uniform in size and densely scattered across the blade",
+                "url": "",
+                "quote": "The lesions are small, round, and uniform in size, peppered densely across the leaflet rather than coalescing into large blotches.",
+                "image_id": "bugwood::5559543",
+                "grounding": "image"
+              }
+            ]
+          },
+          "reference_image_ids": [
+            "bugwood::5559543"
+          ]
+        },
         "Delaware": {
           "plant_parts": [
             "leaf",
@@ -2908,10 +3470,18 @@
             "petiole",
             "calyx"
           ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
+          "color": [
+            "dark brown",
+            "tan",
+            "grayish-tan center",
+            "yellow halo (faint)"
+          ],
+          "shape": "circular to subcircular small spots, with some coalescing into irregular necrotic patches",
+          "margin": "well-defined dark brown border, sometimes with a narrow chlorotic halo",
+          "texture": [
+            "dry necrotic centers",
+            "tiny dark specks (possible pycnidia) within centers"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "Mature lesions have a dark margin with a grayish white center that contains tiny, black fruiting (spore-producing) bodies, with defoliation starting at the base of the plant."
@@ -2954,26 +3524,46 @@
                 "quote": "Symptoms appear on the leaves as circular, tan-to-gray spots with darker brown margins and dotted with dark, raised pycnidia inside the lesion. These lesions are often surrounded by a yellow halo. The disease typically develops on lower leaves first, moving up to higher leaves as infection progresses.",
                 "image_id": "bugwood::5553629"
               }
+            ],
+            "color": [
+              {
+                "value": "dark brown; tan; grayish-tan center; yellow halo (faint)",
+                "url": "",
+                "quote": "Lesions appear as small dark brown spots, many with paler tan or grayish-tan centers, scattered across green leaflets with some surrounding tissue showing faint yellowing and larger necrotic tan-brown patches near leaf margins.",
+                "image_id": "bugwood::5553629",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "circular to subcircular small spots, with some coalescing into irregular necrotic patches",
+                "url": "",
+                "quote": "Most lesions are small, roughly circular pinpoint-to-pea-sized spots; where multiple spots have merged near the leaf edges they form larger irregular necrotic blotches.",
+                "image_id": "bugwood::5553629",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "well-defined dark brown border, sometimes with a narrow chlorotic halo",
+                "url": "",
+                "quote": "Individual spots show a sharply defined darker brown rim around a slightly paler center, and edge lesions transition into brown necrotic tissue with a thin yellowed margin.",
+                "image_id": "bugwood::5553629",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "dry necrotic centers; tiny dark specks (possible pycnidia) within centers",
+                "url": "",
+                "quote": "Lesion centers look dry and papery, and several spots contain very fine dark pinpoint specks consistent with pycnidia, while heavily infected leaflet margins are shriveled and crisped.",
+                "image_id": "bugwood::5553629",
+                "grounding": "image"
+              }
             ]
           },
           "reference_image_ids": [
             "bugwood::5553629"
-          ]
-        },
-        "Connecticut": {
-          "plant_parts": [],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
-          "sporulation": [],
-          "distinctive_signs": [],
-          "progression": "",
-          "confusion_diseases": [],
-          "notes": "",
-          "sources": {},
-          "reference_image_ids": [
-            "bugwood::5559543"
           ]
         }
       },
@@ -3010,10 +3600,17 @@
             "Seed",
             "Whole plant"
           ],
-          "color": [],
-          "shape": "",
+          "color": [
+            "tan",
+            "brown",
+            "yellow-green"
+          ],
+          "shape": "linear strips of stunted and dead plants running along entire crop rows, producing patchy gaps in the stand",
           "margin": "",
-          "texture": [],
+          "texture": [
+            "wilted/collapsed plants",
+            "thinned stand exposing bare soil"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "A dark chocolate-brown discoloration of the stem extending from below the soil line upward, with leaves that turn yellow, wilt, and remain attached to the plant after death."
@@ -3056,6 +3653,33 @@
                 "quote": "Early season symptoms include seed rot and pre- and postemergence damping off. The most characteristic symptom of Phytophthora root and stem rot is a dark brown lesion on the lower stem that extends up from the taproot of the plant.",
                 "image_id": "bugwood::5626218"
               }
+            ],
+            "color": [
+              {
+                "value": "tan; brown; yellow-green",
+                "url": "",
+                "quote": "Affected rows show collapsed, tan-to-brown dead and dying plants standing out against the surrounding healthy green canopy, with some chlorotic yellow-green tissue at the transition zones.",
+                "image_id": "bugwood::5626218",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "linear strips of stunted and dead plants running along entire crop rows, producing patchy gaps in the stand",
+                "url": "",
+                "quote": "Damage appears as elongated linear strips of stunted and dead plants running along entire crop rows, producing patchy gaps within the otherwise uniform soybean stand.",
+                "image_id": "bugwood::5626218",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "wilted/collapsed plants; thinned stand exposing bare soil",
+                "url": "",
+                "quote": "Diseased rows look wilted and collapsed with shriveled foliage, leaving a thinned, sparse canopy that exposes the bare brown soil between the rows.",
+                "image_id": "bugwood::5626218",
+                "grounding": "image"
+              }
             ]
           },
           "reference_image_ids": [
@@ -3069,10 +3693,18 @@
             "Seed",
             "Whole plant"
           ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
+          "color": [
+            "dark brown",
+            "reddish-brown",
+            "grayish-brown"
+          ],
+          "shape": "elongated lesion along stem",
+          "margin": "diffuse, gradient transition",
+          "texture": [
+            "dry",
+            "shriveled",
+            "pubescent (trichomes still visible)"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "A dark chocolate-brown discoloration of the stem extending from below the soil line upward, with leaves that turn yellow, wilt, and remain attached after plant death."
@@ -3115,6 +3747,42 @@
                 "quote": "The most characteristic symptom of Phytophthora root and stem rot is a dark brown lesion on the lower stem that extends up from the taproot of the plant. The lesion often reaches as high as several nodes and will girdle soybean stems",
                 "image_id": "bugwood::5626213"
               }
+            ],
+            "color": [
+              {
+                "value": "dark brown; reddish-brown; grayish-brown",
+                "url": "",
+                "quote": "The lower stem shows extensive dark brown to reddish-brown discoloration extending up from the base, contrasting with the still-green upper stem and petioles.",
+                "image_id": "bugwood::5626213",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "elongated lesion along stem",
+                "url": "",
+                "quote": "The lesion is an elongated, diffuse band of discoloration running longitudinally along the main stem rather than a discrete spot, extending well above the soil line.",
+                "image_id": "bugwood::5626213",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "diffuse, gradient transition",
+                "url": "",
+                "quote": "The boundary between the diseased dark-brown tissue and the healthy green stem above is gradual and indistinct, fading rather than forming a sharp edge.",
+                "image_id": "bugwood::5626213",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "dry; shriveled; pubescent (trichomes still visible)",
+                "url": "",
+                "quote": "The affected stem appears dry and slightly shrunken with the characteristic soybean trichomes still present, and surrounding leaves are wilted and brown but no fungal sporulation or fruiting bodies are clearly visible on the stem surface.",
+                "image_id": "bugwood::5626213",
+                "grounding": "image"
+              }
             ]
           },
           "reference_image_ids": [
@@ -3150,6 +3818,110 @@
         "reference_image_ids": []
       },
       "regional_visuals": {
+        "Illinois": {
+          "plant_parts": [
+            "leaves",
+            "pods",
+            "stems"
+          ],
+          "color": [
+            "dark brown",
+            "reddish-brown",
+            "tan",
+            "yellow halo"
+          ],
+          "shape": "small angular to irregular spots, often coalescing into larger blotches with shot-holes where centers have dropped out",
+          "margin": "sharply defined dark brown border surrounded by a narrow chlorotic yellow halo, no visible water-soaking",
+          "texture": [
+            "necrotic",
+            "dry",
+            "shot-hole",
+            "tattered"
+          ],
+          "sporulation": [],
+          "distinctive_signs": [
+            "Bacterial blight lesions are distinguished from look-alikes by the presence of a yellowish-green halo around the lesions."
+          ],
+          "progression": "",
+          "confusion_diseases": [
+            "Septoria brown spot"
+          ],
+          "notes": "Bacterial blight infections begin as small, angular, water-soaked spots on leaves that turn yellow then brown as tissue dies, surrounded by yellowish-green halos.",
+          "sources": {
+            "plant_parts": [
+              {
+                "value": "leaves; pods; stems",
+                "url": "https://u.osu.edu/osusoybeandisease/foliar-diseases/bacterial-blight/extended-version/",
+                "quote": "Symptoms caused by P. savastanoi pv . glycinea can be observed on the leaves, pods, and stems of the plant",
+                "image_id": "bugwood::5609905"
+              }
+            ],
+            "distinctive_signs": [
+              {
+                "value": "Bacterial blight lesions are distinguished from look-alikes by the presence of a yellowish-green halo around the lesions.",
+                "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
+                "quote": "The two diseases can be distinguished by the presence of a halo around bacterial blight lesions.",
+                "image_id": "bugwood::5609905"
+              }
+            ],
+            "confusion_diseases": [
+              {
+                "value": "Septoria brown spot",
+                "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
+                "quote": "Bacterial blight can be mistaken for Septoria brown spot.",
+                "image_id": "bugwood::5609905"
+              }
+            ],
+            "notes": [
+              {
+                "value": "Bacterial blight infections begin as small, angular, water-soaked spots on leaves that turn yellow then brown as tissue dies, surrounded by yellowish-green halos.",
+                "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
+                "quote": "Infections begin as small, angular, water-soaked spots that turn yellow and then brown as the tissue dies.",
+                "image_id": "bugwood::5609905"
+              }
+            ],
+            "color": [
+              {
+                "value": "dark brown; reddish-brown; tan; yellow halo",
+                "url": "",
+                "quote": "Lesions are dark reddish-brown to nearly black with paler tan centers and faint yellow chlorotic halos surrounding many spots on a green leaf background.",
+                "image_id": "bugwood::5609905",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "small angular to irregular spots, often coalescing into larger blotches with shot-holes where centers have dropped out",
+                "url": "",
+                "quote": "Spots are small and angular where confined by leaf veins, with several lesions coalescing into larger irregular blotches and tattered holes where necrotic tissue has fallen out.",
+                "image_id": "bugwood::5609905",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "sharply defined dark brown border surrounded by a narrow chlorotic yellow halo, no visible water-soaking",
+                "url": "",
+                "quote": "Lesion margins are sharply defined by a dark brown border surrounded by a narrow chlorotic yellow halo, with no visible water-soaking at this advanced stage.",
+                "image_id": "bugwood::5609905",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "necrotic; dry; shot-hole; tattered",
+                "url": "",
+                "quote": "Affected tissue is dry and necrotic, with the centers of older lesions having dropped out to leave shot-hole and ragged tears across the leaf blade.",
+                "image_id": "bugwood::5609905",
+                "grounding": "image"
+              }
+            ]
+          },
+          "reference_image_ids": [
+            "bugwood::5609905",
+            "bugwood::5609906"
+          ]
+        },
         "Indiana": {
           "plant_parts": [
             "leaves",
@@ -3158,15 +3930,15 @@
             "seeds"
           ],
           "color": [
-            "dark brown",
             "reddish-brown",
+            "dark brown",
             "yellow halo"
           ],
-          "shape": "small angular to irregular spots, some coalescing into larger blotches",
-          "margin": "sharp dark brown border with diffuse yellow chlorotic halo",
+          "shape": "angular to irregular small spots, some coalescing",
+          "margin": "yellow chlorotic halo around dark necrotic center",
           "texture": [
             "dry necrotic centers",
-            "shot-hole tearing"
+            "shot-hole / tattered tissue loss"
           ],
           "sporulation": [],
           "distinctive_signs": [
@@ -3212,36 +3984,36 @@
             ],
             "color": [
               {
-                "value": "dark brown; reddish-brown; yellow halo",
+                "value": "reddish-brown; dark brown; yellow halo",
                 "url": "",
-                "quote": "Numerous small dark reddish-brown to nearly black lesions are scattered across the green leaf, many surrounded by diffuse yellow chlorotic halos.",
+                "quote": "Numerous small lesions appear as dark reddish-brown to nearly black flecks surrounded by diffuse yellow chlorotic halos on a green leaf, with some larger necrotic patches that have torn out leaving holes.",
                 "image_id": "bugwood::5607299",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "small angular to irregular spots, some coalescing into larger blotches",
+                "value": "angular to irregular small spots, some coalescing",
                 "url": "",
-                "quote": "The lesions are small angular to irregular flecks, with several merging into larger ragged blotches and a few holes where necrotic tissue has dropped out.",
+                "quote": "Lesions are mostly small, angular to irregular flecks scattered across the leaf, with several merging into larger blotches and a few that have dropped out as ragged holes.",
                 "image_id": "bugwood::5607299",
                 "grounding": "image"
               }
             ],
             "margin": [
               {
-                "value": "sharp dark brown border with diffuse yellow chlorotic halo",
+                "value": "yellow chlorotic halo around dark necrotic center",
                 "url": "",
-                "quote": "Lesion edges are sharply defined dark brown borders surrounded by diffuse yellow chlorotic halos that fade gradually into healthy green tissue.",
+                "quote": "Each spot has a sharply defined dark necrotic center bordered by a noticeable yellow chlorotic halo, and the larger coalesced lesions show ragged, torn edges where tissue has fallen out.",
                 "image_id": "bugwood::5607299",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "dry necrotic centers; shot-hole tearing",
+                "value": "dry necrotic centers; shot-hole / tattered tissue loss",
                 "url": "",
-                "quote": "Lesion centers appear dry and necrotic, with several spots torn out leaving shot-hole gaps in the leaf blade; no fungal sporulation or fuzzy growth is visible.",
+                "quote": "The lesion centers look dry and papery and several have fallen out leaving shot-hole tears; no fuzzy growth, ooze, or sporulation is visible on the leaf surface.",
                 "image_id": "bugwood::5607299",
                 "grounding": "image"
               }
@@ -3249,64 +4021,6 @@
           },
           "reference_image_ids": [
             "bugwood::5607299"
-          ]
-        },
-        "Illinois": {
-          "plant_parts": [
-            "leaves",
-            "pods",
-            "stems"
-          ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
-          "sporulation": [],
-          "distinctive_signs": [
-            "Bacterial blight lesions are distinguished from look-alikes by the presence of a yellowish-green halo around the lesions."
-          ],
-          "progression": "",
-          "confusion_diseases": [
-            "Septoria brown spot"
-          ],
-          "notes": "Bacterial blight infections begin as small, angular, water-soaked spots on leaves that turn yellow then brown as tissue dies, surrounded by yellowish-green halos.",
-          "sources": {
-            "plant_parts": [
-              {
-                "value": "leaves; pods; stems",
-                "url": "https://u.osu.edu/osusoybeandisease/foliar-diseases/bacterial-blight/extended-version/",
-                "quote": "Symptoms caused by P. savastanoi pv . glycinea can be observed on the leaves, pods, and stems of the plant",
-                "image_id": "bugwood::5609905"
-              }
-            ],
-            "distinctive_signs": [
-              {
-                "value": "Bacterial blight lesions are distinguished from look-alikes by the presence of a yellowish-green halo around the lesions.",
-                "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
-                "quote": "The two diseases can be distinguished by the presence of a halo around bacterial blight lesions.",
-                "image_id": "bugwood::5609905"
-              }
-            ],
-            "confusion_diseases": [
-              {
-                "value": "Septoria brown spot",
-                "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
-                "quote": "Bacterial blight can be mistaken for Septoria brown spot.",
-                "image_id": "bugwood::5609905"
-              }
-            ],
-            "notes": [
-              {
-                "value": "Bacterial blight infections begin as small, angular, water-soaked spots on leaves that turn yellow then brown as tissue dies, surrounded by yellowish-green halos.",
-                "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
-                "quote": "Infections begin as small, angular, water-soaked spots that turn yellow and then brown as the tissue dies.",
-                "image_id": "bugwood::5609905"
-              }
-            ]
-          },
-          "reference_image_ids": [
-            "bugwood::5609905",
-            "bugwood::5609906"
           ]
         }
       },
@@ -3423,16 +4137,14 @@
           ],
           "color": [
             "pale tan",
-            "light brown",
-            "greyish-tan centers",
-            "yellow chlorotic halos"
+            "light grayish-brown",
+            "chlorotic yellow-green"
           ],
-          "shape": "irregular, somewhat angular spots of varying size, occasionally bounded by minor veins",
-          "margin": "diffuse, fading gradually into a faint yellow chlorotic halo",
+          "shape": "irregular angular blotches",
+          "margin": "diffuse, indistinct",
           "texture": [
-            "dry papery necrotic centers",
-            "shot-hole tearing in some lesions",
-            "no visible sporulation on this upper surface"
+            "flat to slightly sunken",
+            "no sporulation visible from upper surface"
           ],
           "sporulation": [],
           "distinctive_signs": [
@@ -3479,36 +4191,36 @@
             ],
             "color": [
               {
-                "value": "pale tan; light brown; greyish-tan centers; yellow chlorotic halos",
+                "value": "pale tan; light grayish-brown; chlorotic yellow-green",
                 "url": "",
-                "quote": "Lesions appear as pale tan to light brown spots with slightly greyish necrotic centers, set against green leaf tissue with faint yellowish chlorotic mottling around them.",
+                "quote": "Numerous small lesions on the upper leaf surface appear as pale tan to light grayish-brown patches set against medium-green healthy tissue, with some surrounding chlorotic yellow-green halos.",
                 "image_id": "bugwood::5368994",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "irregular, somewhat angular spots of varying size, occasionally bounded by minor veins",
+                "value": "irregular angular blotches",
                 "url": "",
-                "quote": "The spots are irregular and somewhat angular in outline, scattered across the leaflets in varying sizes and sometimes constrained by small veins.",
+                "quote": "Lesions are small, irregularly shaped angular blotches scattered densely across the leaflets, varying in size from pinpoint flecks to coalescing patches a few millimeters across.",
                 "image_id": "bugwood::5368994",
                 "grounding": "image"
               }
             ],
             "margin": [
               {
-                "value": "diffuse, fading gradually into a faint yellow chlorotic halo",
+                "value": "diffuse, indistinct",
                 "url": "",
-                "quote": "Lesion margins are diffuse rather than sharp, blending into the surrounding green tissue through a faint yellow chlorotic halo.",
+                "quote": "Lesion edges are diffuse and poorly defined, fading gradually into the surrounding green tissue without a sharp dark border.",
                 "image_id": "bugwood::5368994",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "dry papery necrotic centers; shot-hole tearing in some lesions; no visible sporulation on this upper surface",
+                "value": "flat to slightly sunken; no sporulation visible from upper surface",
                 "url": "",
-                "quote": "Necrotic centers look dry and papery, with a few lesions having torn out to leave small shot-holes; no downy sporulation is visible from this upper-surface view.",
+                "quote": "From the upper-surface view shown, the lesions appear flat to slightly sunken and dry; the characteristic downy sporulation on the lower leaf surface cannot be assessed in this image.",
                 "image_id": "bugwood::5368994",
                 "grounding": "image"
               }
@@ -3527,9 +4239,12 @@
             "pod",
             "seed"
           ],
-          "color": [],
-          "shape": "",
-          "margin": "",
+          "color": [
+            "pale yellow",
+            "light green"
+          ],
+          "shape": "irregular small flecks/spots",
+          "margin": "diffuse",
           "texture": [],
           "sporulation": [],
           "distinctive_signs": [
@@ -3572,6 +4287,33 @@
                 "url": "https://cropprotectionnetwork.org/encyclopedia/downy-mildew-of-soybean",
                 "quote": "Lesions occur on upper leaf surfaces as irregularly shaped, pale green to light yellow spots that enlarge into pale to bright yellow spots. Older lesions turn brown with yellow-green margins.",
                 "image_id": "bugwood::5624664"
+              }
+            ],
+            "color": [
+              {
+                "value": "pale yellow; light green",
+                "url": "",
+                "quote": "Numerous pale yellow to light green chlorotic flecks scattered across the otherwise green soybean leaflet.",
+                "image_id": "bugwood::5624664",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "irregular small flecks/spots",
+                "url": "",
+                "quote": "Lesions appear as small, irregular angular flecks and blotches, many roughly star- or branch-shaped rather than perfectly round.",
+                "image_id": "bugwood::5624664",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "diffuse",
+                "url": "",
+                "quote": "Spot edges fade gradually into surrounding green tissue with no sharp dark border or halo.",
+                "image_id": "bugwood::5624664",
+                "grounding": "image"
               }
             ]
           },
@@ -3663,6 +4405,84 @@
         "reference_image_ids": []
       },
       "regional_visuals": {
+        "Iowa": {
+          "plant_parts": [
+            "Foliar",
+            "Pod"
+          ],
+          "color": [
+            "green",
+            "yellow"
+          ],
+          "shape": "",
+          "margin": "",
+          "texture": [],
+          "sporulation": [],
+          "distinctive_signs": [
+            "Bacterial pustules differ from soybean rust pustules because they lack a natural opening in the pustule and do not produce masses of spores like soybean rust."
+          ],
+          "progression": "",
+          "confusion_diseases": [
+            "soybean rust",
+            "bacterial blight"
+          ],
+          "notes": "Symptoms begin as small, light green spots without water-soaking, with light-colored raised blisters (pustules) developing in the center of lesions on both upper and lower leaf surfaces; lesions can merge into large irregular patches of dead tissue and small raised spots may also develop on pods.",
+          "sources": {
+            "plant_parts": [
+              {
+                "value": "Foliar; Pod",
+                "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+                "quote": "Light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. ... Small raised spots may also develop on pods.",
+                "image_id": "bugwood::5623579"
+              }
+            ],
+            "distinctive_signs": [
+              {
+                "value": "Bacterial pustules differ from soybean rust pustules because they lack a natural opening in the pustule and do not produce masses of spores like soybean rust.",
+                "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+                "quote": "Bacterial pustules will differ from those of soybean rust, however, because they will not have a natural opening in the pustule, or masses of spores like those of soybean rust.",
+                "image_id": "bugwood::5623579"
+              }
+            ],
+            "confusion_diseases": [
+              {
+                "value": "soybean rust; bacterial blight",
+                "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+                "quote": "Because this pathogen produces a pustule, it can easily be confused with soybean rust, a much more serious disease. ... Loss of tissue in the infected areas may give the leaves a ragged appearance like bacterial blight.",
+                "image_id": "bugwood::5623579"
+              }
+            ],
+            "notes": [
+              {
+                "value": "Symptoms begin as small, light green spots without water-soaking, with light-colored raised blisters (pustules) developing in the center of lesions on both upper and lower leaf surfaces; lesions can merge into large irregular patches of dead tissue and small raised spots may also develop on pods.",
+                "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+                "quote": "Symptoms begin as small, light green spots (without water-soaking). Light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. The lesions can grow together into large, irregular patches of dead tissue. Loss of tissue in the infected areas may give the leaves a ragged appearance like bacterial blight. Small raised spots may also develop on pods.",
+                "image_id": "bugwood::5623579"
+              }
+            ],
+            "color": [
+              {
+                "value": "green; yellow",
+                "url": "",
+                "quote": "The image shows a soybean field with mostly green canopy and a patch of pale yellow/chlorotic plants in the right-center foreground, with no individual lesion colors clearly resolvable at this distance.",
+                "image_id": "bugwood::5623579",
+                "grounding": "image"
+              }
+            ]
+          },
+          "reference_image_ids": [
+            "bugwood::5623579",
+            "bugwood::5623580",
+            "bugwood::5623581",
+            "bugwood::5623582",
+            "bugwood::5623583",
+            "bugwood::5623584",
+            "bugwood::5623585",
+            "bugwood::5623586",
+            "bugwood::5623587",
+            "bugwood::5623588"
+          ]
+        },
         "Kentucky": {
           "plant_parts": [
             "leaf",
@@ -3671,15 +4491,16 @@
           "color": [
             "green",
             "yellow-brown",
-            "tan",
-            "reddish-brown"
+            "reddish-brown",
+            "tan"
           ],
-          "shape": "small angular to irregular flecks coalescing into larger irregular necrotic blotches",
-          "margin": "indistinct, diffuse with faint chlorotic halo",
+          "shape": "small irregular angular specks coalescing into larger irregular blotches",
+          "margin": "indistinct, irregular, slightly diffuse",
           "texture": [
-            "puckered/crinkled lamina",
-            "necrotic tissue dropout (shot-hole)",
-            "dry papery necrosis"
+            "puckered",
+            "crinkled",
+            "necrotic",
+            "tattered with holes"
           ],
           "sporulation": [],
           "distinctive_signs": [
@@ -3726,36 +4547,36 @@
             ],
             "color": [
               {
-                "value": "green; yellow-brown; tan; reddish-brown",
+                "value": "green; yellow-brown; reddish-brown; tan",
                 "url": "",
-                "quote": "The leaves are predominantly green with scattered small yellow-brown to tan flecks and larger reddish-brown necrotic patches, especially on the rightmost leaf.",
+                "quote": "Lesions appear as small yellow-brown to reddish-brown specks and patches scattered across otherwise green leaves, with the rightmost leaf showing larger coalesced tan-brown necrotic areas.",
                 "image_id": "bugwood::5368281",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "small angular to irregular flecks coalescing into larger irregular necrotic blotches",
+                "value": "small irregular angular specks coalescing into larger irregular blotches",
                 "url": "",
-                "quote": "Lesions appear as small angular to irregular pinpoint flecks scattered across the laminae that coalesce into larger irregular necrotic blotches and tattered holes on the more advanced leaves.",
+                "quote": "Individual lesions are tiny irregular flecks distributed across the leaf surface that merge into larger irregular necrotic patches on the more advanced leaf at right.",
                 "image_id": "bugwood::5368281",
                 "grounding": "image"
               }
             ],
             "margin": [
               {
-                "value": "indistinct, diffuse with faint chlorotic halo",
+                "value": "indistinct, irregular, slightly diffuse",
                 "url": "",
-                "quote": "Lesion margins are mostly indistinct and diffuse, with a faint chlorotic yellowing bordering the larger brown necrotic areas.",
+                "quote": "Lesion edges are irregular and somewhat diffuse rather than sharply defined, blending into surrounding tissue without a strong halo visible at this resolution.",
                 "image_id": "bugwood::5368281",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "puckered/crinkled lamina; necrotic tissue dropout (shot-hole); dry papery necrosis",
+                "value": "puckered; crinkled; necrotic; tattered with holes",
                 "url": "",
-                "quote": "The leaves show a puckered, crinkled surface with dry papery necrotic patches and several torn-out (shot-hole) areas where dead tissue has fallen away.",
+                "quote": "The leaves show puckered and crinkled surfaces with necrotic dry patches and several torn holes where dead tissue has dropped out, consistent with advanced bacterial pustule damage.",
                 "image_id": "bugwood::5368281",
                 "grounding": "image"
               }
@@ -3772,72 +4593,6 @@
             "bugwood::5368288",
             "bugwood::5368289",
             "bugwood::5368290"
-          ]
-        },
-        "Iowa": {
-          "plant_parts": [
-            "Foliar",
-            "Pod"
-          ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
-          "sporulation": [],
-          "distinctive_signs": [
-            "Bacterial pustules differ from soybean rust pustules because they lack a natural opening in the pustule and do not produce masses of spores like soybean rust."
-          ],
-          "progression": "",
-          "confusion_diseases": [
-            "soybean rust",
-            "bacterial blight"
-          ],
-          "notes": "Symptoms begin as small, light green spots without water-soaking, with light-colored raised blisters (pustules) developing in the center of lesions on both upper and lower leaf surfaces; lesions can merge into large irregular patches of dead tissue and small raised spots may also develop on pods.",
-          "sources": {
-            "plant_parts": [
-              {
-                "value": "Foliar; Pod",
-                "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
-                "quote": "Light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. ... Small raised spots may also develop on pods.",
-                "image_id": "bugwood::5623579"
-              }
-            ],
-            "distinctive_signs": [
-              {
-                "value": "Bacterial pustules differ from soybean rust pustules because they lack a natural opening in the pustule and do not produce masses of spores like soybean rust.",
-                "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
-                "quote": "Bacterial pustules will differ from those of soybean rust, however, because they will not have a natural opening in the pustule, or masses of spores like those of soybean rust.",
-                "image_id": "bugwood::5623579"
-              }
-            ],
-            "confusion_diseases": [
-              {
-                "value": "soybean rust; bacterial blight",
-                "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
-                "quote": "Because this pathogen produces a pustule, it can easily be confused with soybean rust, a much more serious disease. ... Loss of tissue in the infected areas may give the leaves a ragged appearance like bacterial blight.",
-                "image_id": "bugwood::5623579"
-              }
-            ],
-            "notes": [
-              {
-                "value": "Symptoms begin as small, light green spots without water-soaking, with light-colored raised blisters (pustules) developing in the center of lesions on both upper and lower leaf surfaces; lesions can merge into large irregular patches of dead tissue and small raised spots may also develop on pods.",
-                "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
-                "quote": "Symptoms begin as small, light green spots (without water-soaking). Light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. The lesions can grow together into large, irregular patches of dead tissue. Loss of tissue in the infected areas may give the leaves a ragged appearance like bacterial blight. Small raised spots may also develop on pods.",
-                "image_id": "bugwood::5623579"
-              }
-            ]
-          },
-          "reference_image_ids": [
-            "bugwood::5623579",
-            "bugwood::5623580",
-            "bugwood::5623581",
-            "bugwood::5623582",
-            "bugwood::5623583",
-            "bugwood::5623584",
-            "bugwood::5623585",
-            "bugwood::5623586",
-            "bugwood::5623587",
-            "bugwood::5623588"
           ]
         }
       },
@@ -3918,15 +4673,17 @@
           ],
           "color": [
             "white",
+            "gray",
             "tan",
-            "pale green"
+            "pale-green"
           ],
-          "shape": "roughly circular sunken lesion with radial cracks",
-          "margin": "irregular, jagged tan border",
+          "shape": "roughly circular sunken lesion with a star-shaped radial cracking pattern",
+          "margin": "irregular, jagged, cracked border between papery tan necrotic tissue and the green fruit surface",
           "texture": [
-            "fluffy white mycelium",
-            "sunken",
-            "cracked"
+            "dense white mycelial mat",
+            "felty/cottony fungal growth",
+            "papery cracked necrotic tissue",
+            "sunken lesion surface"
           ],
           "sporulation": [],
           "distinctive_signs": [
@@ -3962,36 +4719,36 @@
             ],
             "color": [
               {
-                "value": "white; tan; pale green",
+                "value": "white; gray; tan; pale-green",
                 "url": "",
-                "quote": "The lesion shows a central white-to-grayish fungal mass surrounded by tan/beige necrotic tissue on an otherwise pale green unripe tomato fruit.",
+                "quote": "A green tomato fruit shows a sunken central lesion with a dense white-to-gray fungal mass surrounded by tan, papery, bleached tissue against the otherwise pale-green fruit surface.",
                 "image_id": "bugwood::5368609",
                 "grounding": "image"
               }
             ],
             "shape": [
               {
-                "value": "roughly circular sunken lesion with radial cracks",
+                "value": "roughly circular sunken lesion with a star-shaped radial cracking pattern",
                 "url": "",
-                "quote": "A roughly circular sunken lesion sits at the stem-end of the fruit with star-like radial cracks splitting outward through the surrounding tan tissue.",
+                "quote": "The lesion is a roughly round, sunken depression at the stem-end region with star-like radial splits extending outward from the central fungal colony.",
                 "image_id": "bugwood::5368609",
                 "grounding": "image"
               }
             ],
             "margin": [
               {
-                "value": "irregular, jagged tan border",
+                "value": "irregular, jagged, cracked border between papery tan necrotic tissue and the green fruit surface",
                 "url": "",
-                "quote": "The lesion margin is irregular and jagged where the tan necrotic tissue meets the surrounding pale green fruit surface, with no sharp halo.",
+                "quote": "The lesion margin is irregular and jagged, defined by cracked, peeling tan papery tissue that transitions abruptly to the firm green fruit skin.",
                 "image_id": "bugwood::5368609",
                 "grounding": "image"
               }
             ],
             "texture": [
               {
-                "value": "fluffy white mycelium; sunken; cracked",
+                "value": "dense white mycelial mat; felty/cottony fungal growth; papery cracked necrotic tissue; sunken lesion surface",
                 "url": "",
-                "quote": "The center shows fluffy white mycelial growth within a sunken, collapsed area, while the surrounding necrotic tissue is dry, papery, and cracked.",
+                "quote": "The center shows a dense, felty white-gray mycelial cushion ringed by dry, papery, cracked necrotic tissue, with the overall lesion surface sunken below the surrounding firm fruit skin; no distinct dusty gray spore powder is clearly visible in this single image.",
                 "image_id": "bugwood::5368609",
                 "grounding": "image"
               }
@@ -4011,10 +4768,18 @@
             "Stem",
             "Whole plant"
           ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
+          "color": [
+            "tan",
+            "light brown",
+            "beige"
+          ],
+          "shape": "V-shaped wedge extending inward from the leaflet tip",
+          "margin": "fairly distinct and slightly irregular boundary between tan dead tissue and green healthy tissue, no obvious yellow halo or water-soaked zone",
+          "texture": [
+            "dry",
+            "papery",
+            "crinkled"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "Tomato plants infected by the gray mold fungus have light tan or gray spots that are covered with a brown mold on the upper leaf surface."
@@ -4045,6 +4810,42 @@
                 "url": "https://extension.umn.edu/disease-management/gray-mold-tomatoes",
                 "quote": "In high humidity, fluffy gray spores cover infected plant parts. Leaves have irregular to V-shaped brown blotches, often starting at the margin of the leaf.",
                 "image_id": "bugwood::5558707"
+              }
+            ],
+            "color": [
+              {
+                "value": "tan; light brown; beige",
+                "url": "",
+                "quote": "The lesion is a uniform tan-to-light-brown / beige color, with a fully necrotic background leaflet that has dried to a darker straw-brown.",
+                "image_id": "bugwood::5558707",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "V-shaped wedge extending inward from the leaflet tip",
+                "url": "",
+                "quote": "Necrosis forms a broad V-shaped wedge that begins at the distal tip of the leaflet and expands back toward the midrib, rather than appearing as discrete spots.",
+                "image_id": "bugwood::5558707",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "fairly distinct and slightly irregular boundary between tan dead tissue and green healthy tissue, no obvious yellow halo or water-soaked zone",
+                "url": "",
+                "quote": "The boundary between the tan dead tissue and the surrounding green leaflet is fairly distinct and slightly irregular, without an obvious yellow halo or water-soaked zone.",
+                "image_id": "bugwood::5558707",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "dry; papery; crinkled",
+                "url": "",
+                "quote": "The affected tissue looks dry, papery and slightly crinkled, with no fluffy gray sporulation clearly visible on the lesion surface in this single field photograph.",
+                "image_id": "bugwood::5558707",
+                "grounding": "image"
               }
             ]
           },
@@ -4192,10 +4993,19 @@
             "stem",
             "whole plant"
           ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
+          "color": [
+            "tan",
+            "light brown",
+            "bleached"
+          ],
+          "shape": "elongated stem lesion girdling the main stem with collapsed wilted foliage above",
+          "margin": "diffuse",
+          "texture": [
+            "dry",
+            "papery",
+            "shriveled",
+            "desiccated"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "Stem lesions with hollow pith when cut open, white moldy growth at the edges of lesions, and small black spherical fruiting bodies (sclerotia) in or on the lesion."
@@ -4238,6 +5048,42 @@
                 "quote": "Timber rot causes loss of plant vigor, followed by wilting and eventual death of the plant. Lesions on the stem show hollow pith when cut open, and white moldy growth is usually visible at the edges of the lesions.",
                 "image_id": "bugwood::5472861"
               }
+            ],
+            "color": [
+              {
+                "value": "tan; light brown; bleached",
+                "url": "",
+                "quote": "The affected stem and wilted foliage show a bleached tan to light-brown coloration that contrasts sharply with the surrounding healthy green leaves.",
+                "image_id": "bugwood::5472861",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "elongated stem lesion girdling the main stem with collapsed wilted foliage above",
+                "url": "",
+                "quote": "The lesion appears as an elongated, girdling discoloration along the main stem, with the entire upper portion of the plant collapsed and hanging in a wilted, desiccated mass.",
+                "image_id": "bugwood::5472861",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "diffuse",
+                "url": "",
+                "quote": "The boundary between the bleached, dead tissue and adjacent green tissue is gradual and diffuse rather than sharply outlined.",
+                "image_id": "bugwood::5472861",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "dry; papery; shriveled; desiccated",
+                "url": "",
+                "quote": "The dead leaves and stem segments appear dry, papery, and shriveled, with no visible white mycelium or black sclerotia clearly evident in this single field view.",
+                "image_id": "bugwood::5472861",
+                "grounding": "image"
+              }
             ]
           },
           "reference_image_ids": [
@@ -4250,10 +5096,19 @@
             "Stem",
             "Whole plant"
           ],
-          "color": [],
-          "shape": "",
-          "margin": "",
-          "texture": [],
+          "color": [
+            "white",
+            "tan",
+            "bleached straw",
+            "green"
+          ],
+          "shape": "stem-girdling lesion at branch crotch with cottony mycelial mass",
+          "margin": "diffuse transition from green healthy tissue to bleached necrotic tissue",
+          "texture": [
+            "cottony white mycelium",
+            "shredded fibrous bleached stem",
+            "dry papery"
+          ],
           "sporulation": [],
           "distinctive_signs": [
             "Stem lesions with hollow pith when cut open, white moldy growth at the edges of lesions, and small black spherical fruiting bodies (sclerotia) in or on the lesion."
@@ -4295,6 +5150,42 @@
                 "url": "https://aggie-horticulture.tamu.edu/vegetable/problem-solvers/tomato-problem-solver/stems/timber-rot/",
                 "quote": "Timber rot causes loss of plant vigor, followed by wilting and eventual death of the plant. Lesions on the stem show hollow pith when cut open, and white moldy growth is usually visible at the edges of the lesions.",
                 "image_id": "bugwood::5530073"
+              }
+            ],
+            "color": [
+              {
+                "value": "white; tan; bleached straw; green",
+                "url": "",
+                "quote": "A dense white cottony fungal growth sits at the stem junction transitioning into a bleached tan/straw-colored shredded stem section, contrasting with the still-green upper stem tissue.",
+                "image_id": "bugwood::5530073",
+                "grounding": "image"
+              }
+            ],
+            "shape": [
+              {
+                "value": "stem-girdling lesion at branch crotch with cottony mycelial mass",
+                "url": "",
+                "quote": "The lesion girdles the main stem at a branch junction, with a cushion-like cottony mycelial mass on one side and a collapsed, hollowed stem section extending outward.",
+                "image_id": "bugwood::5530073",
+                "grounding": "image"
+              }
+            ],
+            "margin": [
+              {
+                "value": "diffuse transition from green healthy tissue to bleached necrotic tissue",
+                "url": "",
+                "quote": "The boundary between green healthy stem and bleached tan diseased tissue is irregular and diffuse rather than sharply defined, with the white mycelium overlapping the transition zone.",
+                "image_id": "bugwood::5530073",
+                "grounding": "image"
+              }
+            ],
+            "texture": [
+              {
+                "value": "cottony white mycelium; shredded fibrous bleached stem; dry papery",
+                "url": "",
+                "quote": "The infected zone shows fluffy cotton-like white mycelium at the stem base and a dry, shredded, fibrous straw-colored texture where the stem has been hollowed and bleached.",
+                "image_id": "bugwood::5530073",
+                "grounding": "image"
               }
             ]
           },
