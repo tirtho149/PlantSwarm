@@ -1,0 +1,157 @@
+# bugwood_pathome_smoke.yaml
+# ===========================
+# Smoke-test config for the full Pathome pipeline. Mirrors
+# configs/bugwood_pathome.yaml but with smaller budgets so every phase
+# completes in minutes-to-an-hour instead of days. The intent is to
+# exercise every code path with as little compute as possible.
+#
+# Two crops only (Tomato + Soybean) — the smoke CSV is filtered upstream
+# by smoke/run_smoke.sh.
+#
+# All output goes under smoke/results/ + smoke/artifacts/ so a smoke run
+# never touches the production directories.
+
+data:
+  csv_path: "smoke/BugWood_Diseases_smoke_usable.csv"
+  image_cache_dir: "smoke/.bugwood_cache"
+  per_class: 4              # 3 trace + 1 reference (was 10/7/3)
+  trace_split: 3
+  min_per_class: 3
+  download:
+    enabled: true
+    timeout: 20
+    retries: 2
+  quality_filters:
+    min_side: 256
+    require_state: true
+    require_disease_label: true
+
+  label_cols:
+    T1: "symptom_type"
+    T2: "pathogen_class"
+    T3: "disease_name"
+    T4: "severity_class"
+    T5: "crop_species"
+  calibration_split_size: 50
+
+# T3 stays null — auto-derived. T1/T2/T4/T5 unchanged from production.
+labels:
+  T1:
+    - "Lesion"
+    - "Blight"
+    - "Mosaic"
+    - "Wilt"
+    - "Rot"
+    - "Canker"
+    - "Rust"
+    - "Powdery mildew"
+  T2:
+    - "Fungal"
+    - "Bacterial"
+    - "Viral"
+    - "Nutrient deficiency"
+    - "Pest damage"
+  T3: null
+  T4:
+    - "Healthy"
+    - "Early"
+    - "Moderate"
+    - "Severe"
+  T5:
+    - "Tomato"
+    - "Soybean"
+
+model:
+  backbone: "Qwen/Qwen2.5-VL-7B-Instruct"
+  replica_backbones:
+    - "Qwen/Qwen2.5-VL-7B-Instruct"
+  temperature: 0.9
+  seed: 42
+  max_new_tokens: 256        # halved from 512 for speed
+  image_size: 448
+  vllm_base_url: "http://localhost:8000/v1"
+  logprobs: true
+  guided_choice: true
+  prefer_structured_outputs: true
+  strict_server_model: false
+  top_logprobs: 10           # halved from 20
+
+routing:
+  orchestrator: "autogen_swarm"
+  Tmax: 8                    # halved from 15
+  confidence_levels: ["high", "medium", "low"]
+  confidence_weights:
+    high: 3
+    medium: 2
+    low: 1
+  allow_backtrack: true
+  max_backtracks: 1
+  runs_per_image: 3          # paper used 30; smoke uses 3 → ~10× faster
+
+pathome:
+  load_dir: "smoke/artifacts/pathome_v1_seed"
+  out_dir: "smoke/artifacts/pathome_v1_seed"
+  symptoms_path: "smoke/artifacts/pathome_seed/symptoms_seed.json"
+  layer3:
+    min_observations: 2
+  layer5:
+    top_k: 3
+
+observe:
+  backbone: "Qwen/Qwen2.5-VL-7B-Instruct"
+  lora:
+    r: 8                     # halved
+    alpha: 16                # halved
+    dropout: 0.05
+    target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"]
+  oc_threshold: 0.55
+
+  loss_weights:
+    routing: 1.0
+    calibration: 0.4
+    consistency: 0.2
+    belief: 0.2
+    overconfidence: 0.3
+
+  decision_transformer:
+    lr: 1.0e-4
+    warmup_steps: 50         # was 500
+    epochs: 3                # was 50
+    patience: 1
+    batch_size: 4
+    grad_accum_steps: 2
+    target_return_mean: 0.85
+
+  grpo:
+    lr: 5.0e-5
+    epochs: 1                # was 10
+    rollouts_per_instance: 4 # was 8
+    clip_eps: 0.2
+    beta_kl: 0.04
+    f1_weight: 1.0
+    ece_weight: 0.4
+    bt_delta_weight: 0.3
+    length_penalty_weight: 0.05
+    epsilon_match_weight: 0.2
+
+  active_learning:
+    iterations: 1
+    label_budget_per_iter: 50
+    epsilon_min: 0.4
+    aleatoric_max: 0.7
+
+calibration:
+  ece_bins: 10
+  conformal_alpha: 0.1
+  temperature_scaling: true
+
+eval:
+  bootstrap_n: 100           # was 1000
+  mcnemar_alpha: 0.05
+  bonferroni_correct: true
+
+output:
+  results_dir: "smoke/results"
+  traces_dir: "smoke/results/traces"
+  save_traces: true
+  save_probs: true

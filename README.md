@@ -133,6 +133,18 @@ Add this to your `~/.bashrc` so it's picked up by every SLURM allocation. Withou
 
 ---
 
+## Smoke test first (recommended)
+
+Before kicking off the multi-day full run, validate every code path on a 2-crop / ~25-class subset (~60–90 min on a single A100):
+
+```bash
+sbatch smoke/submit_smoke.sh
+# or, on a CUDA workstation / interactive Nova allocation:
+bash smoke/run_smoke.sh
+```
+
+See [`smoke/README.md`](smoke/README.md) for what's downscaled, skip/resume knobs, and the expected outputs.
+
 ## Quick start (chain everything)
 
 ```bash
