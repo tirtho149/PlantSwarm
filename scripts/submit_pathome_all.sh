@@ -3,8 +3,9 @@
 # submit_pathome_all.sh
 # ============================================================================
 # Master submission script for the symptom-centric Pathome pipeline.
-# Queues all six Pathome phases on Nova with sbatch dependency chains:
+# Queues every step on Nova with sbatch dependency chains:
 #
+#   Setup   (CPU)       → filter BugWood_Diseases.csv → 484 classes
 #   Phase 0 (CPU)       → seed PathomeDB visual blocks via `claude -p`
 #   Phase 1 (CPU+net)   → build PathomeDB v1_seed (Claude visuals + geo + refs)
 #   Phase 2 (A100+vLLM) → 101,640 PlantSwarm routing traces (seed DB)
@@ -17,8 +18,9 @@
 #
 # Override per-phase tunables via environment variables (see each script's
 # header). The chain-script itself accepts:
-#   PATHOME_SKIP="0,1"           # skip phase 0 + 1 (e.g. seed file already on disk)
-#   PATHOME_FROM_PHASE=2         # start from phase 2
+#   PATHOME_SKIP="setup,0"       # skip the listed steps
+#   PATHOME_FROM_PHASE=2         # start from phase 2 (skip setup, 0, 1)
+# Step IDs accepted in PATHOME_SKIP: setup, 0, 1, 2, 3, 4, 5
 # ============================================================================
 
 set -e
@@ -33,11 +35,21 @@ phase_in_skip() {
   [[ ",$skip," == *",$phase,"* ]]
 }
 
+# Phase ordering for the FROM_PHASE gate. setup runs before 0; 'from=N'
+# means skip everything before N (and skip setup).
+phase_index() {
+  case "$1" in
+    setup) echo "-1" ;;
+    *)     echo "$1" ;;
+  esac
+}
+
 phase_active() {
   local phase="$1"
   if phase_in_skip "$phase"; then return 1; fi
-  if [ -n "${PATHOME_FROM_PHASE:-}" ] && [ "$phase" -lt "$PATHOME_FROM_PHASE" ]; then
-    return 1
+  if [ -n "${PATHOME_FROM_PHASE:-}" ]; then
+    local idx; idx=$(phase_index "$phase")
+    if [ "$idx" -lt "$PATHOME_FROM_PHASE" ]; then return 1; fi
   fi
   return 0
 }
@@ -49,16 +61,21 @@ submit() {
   [ -n "$dep" ] && dep_arg="--dependency=afterok:$dep"
   local jid
   jid=$(sbatch $dep_arg "$script" 2>&1 | grep "Submitted batch job" | awk '{print $NF}')
-  echo "✓ $name submitted: $jid${dep:+  (depends on $dep)}"
+  echo "✓ $name submitted: $jid${dep:+  (depends on $dep)}" >&2
   echo "$jid"
 }
 
-chmod +x scripts/submit_pathome_phase*.sh
+chmod +x scripts/submit_pathome_*.sh
 
 PREV=""
 
+if phase_active setup; then
+  echo "── Setup: filter Bugwood CSV (~30 s, CPU) ──"
+  PREV=$(submit "Setup"   scripts/submit_pathome_setup_filter.sh "$PREV")
+fi
+
 if phase_active 0; then
-  echo "── Phase 0: Claude headless seed (~15 min, CPU) ──"
+  echo "── Phase 0: Claude headless seed (~15-30 min, CPU) ──"
   PREV=$(submit "Phase 0" scripts/submit_pathome_phase0_seed.sh "$PREV")
 fi
 
@@ -93,6 +110,6 @@ echo "║                    Pipeline Submitted ✓                       ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 echo
 echo "Monitor:    squeue -u \$USER"
-echo "Live logs:  tail -f logs/pathome_phase*-*.out"
+echo "Live logs:  tail -f logs/pathome_*-*.out"
 echo "Final out:  results/pathome_compare/comparison.md"
 echo "Submitted at: $(date)"
