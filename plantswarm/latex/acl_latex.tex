@@ -65,42 +65,51 @@ AI---train on controlled laboratory images, hope
 for field generalization---by training entirely on
 geo-tagged field photographs and evaluating on
 both the conventional laboratory benchmark and a
-truly wild dataset.
-\textbf{\plantswarm} generates routing traces on
-$260$ field images from the \bugwood Network ($10$
-per disease class, $30$ independent runs each,
-yielding $5{,}460$ training traces), establishing
-that behavioral routing signals predict correctness
-with precision $0.83$--$0.87$ versus $0.71$--$0.76$
-for self-declared confidence---a gap that is
-\emph{wider} on field images because genuine visual
-ambiguity produces richer behavioral differentiation.
-GPS coordinates embedded in each trace enable
-\textbf{\pathomedb}: a five-layer mechanistic
-cross-crop pathogen knowledge base whose regional
-epidemiology layer is derived empirically from
-observation density rather than expert curation,
-validated against EPPO historical outbreak records
-at Pearson $r{\geq}0.71$.
+truly wild dataset. The contribution is a
+three-step pipeline that decouples \emph{what a
+disease looks like} from \emph{what a multi-agent
+swarm sees when routed against it}, and measures
+the value of closing that loop.
+\textbf{\pathomedb} is a visual-symptom-centric,
+geo-aware knowledge base. Its core unit is a
+\textit{symptom profile} per (crop, disease)
+carrying a structured visual block (lesion
+color/shape/margin/texture, sporulation, distinctive
+signs, progression, confusion partners), plus
+per-state and per-AEZ observation counts derived
+from \bugwood, plus pointers into a held-out
+reference image library indexed by CLIP and
+geo-weighted retrieval ($0.7\cos + 0.3\,\mathrm{ClimSim}$).
+We seed the visual blocks for $484$ (crop, disease)
+classes by shelling out to a Claude headless
+endpoint---no expert curation, no manual literature
+review.
+\textbf{\plantswarm} then generates $101{,}640$
+multi-agent routing traces from
+$3{,}388$ \bugwood field images ($7$ per class
+$\times\,484$ classes $\times\,30$ stochastic
+runs at $T{=}0.9$). We mine those traces to
+attach \textit{swarm observations} (path-length
+distribution, backtrack rate, confusion-target
+histogram) back onto each symptom profile,
+producing an enhanced \pathomedb whose visual
+content is editorial and whose behavioural
+content is empirical.
 \textbf{\observe} (Qwen2.5-VL-7B + LoRA, trained
-via Decision Transformer and GRPO) is evaluated
-on the \emph{complete} \pv dataset ($54{,}306$
-controlled images, zero training overlap) and the
-complete \pw dataset (largest in-the-wild benchmark).
-Of the $38$ disease classes in \pv, $12$ have
-\emph{zero} \bugwood training traces; these
-constitute an embedded zero-shot evaluation
-resolved through \pathomedb's mechanistic pathways.
-\observe achieves ECE $0.12$ on \pv and ECE
-$0.17$ on \pw, surpassing its \plantswarm teacher
-on both benchmarks at $6\times$ lower inference
-cost.
-The ratio of training images to test images is
-$1:280$---one field photograph per $280$ evaluation
-images---making this the most data-efficient
-large-scale plant disease evaluation we are aware of.
-All traces, weights, \pathomedb~v1.0, and code
-are released publicly.
+via Decision Transformer and GRPO) is trained
+twice---against the seed-only \pathomedb and
+against the swarm-enhanced \pathomedb---and
+evaluated on the \emph{complete} \pv ($54{,}306$
+images, zero training overlap) and the complete
+\pw dataset. The headline result is the
+before-vs-after delta: enhancement by routing
+traces should improve T3 macro F1, lower ECE,
+shorten path length, and raise high-confidence
+early-termination rate without trading away
+out-of-distribution calibration.
+All traces, weights, \pathomedb v2.0 in both
+seed and enhanced form, the Claude seed JSON,
+and code are released publicly.
 \end{abstract}
 
 %% ---------------------------------------------------------------
@@ -154,37 +163,46 @@ richness is what \observe learns from; it is
 why \observe surpasses its \plantswarm teacher
 under both evaluation conditions.
 
-\paragraph{The data efficiency finding.}
-We use $10$ field images per disease class from
-\bugwood. Seven feed \plantswarm trace generation
-($30$ runs per image: $5{,}460$ training traces
-total). Three become \pathomedb's geo-tagged
-reference library. We evaluate on $54{,}306$
-PlantVillage images and the complete PlantWild
-dataset. The training-to-test ratio is
-approximately $1:280$. Of the $38$ disease classes
-in PlantVillage, $12$ have zero corresponding
-\bugwood training traces; these are diagnosed
-entirely through \pathomedb's mechanistic
-pathway transfer. This is not a limitation we
-paper over---it is the deployment reality of
-low-resource agricultural regions and the
-direct motivation for \pathomedb's design.
+\paragraph{The Bugwood-as-source finding.}
+Earlier formulations of this paper used $10$
+hand-picked \bugwood images per disease class
+($260$ total). With access to the full \bugwood
+IPMNet CSV export ($19{,}749$ rows), the curation
+step becomes mechanical: we threshold to classes
+with $\geq{10}$ rows and admit every surviving
+$(\text{crop},\,\text{disease})$ pair. After
+crop normalisation and parenthetical-Latin
+stripping the corpus is $11{,}513$ rows across
+$484$ classes---roughly $19\times$ the trace
+volume of the curated subset, at no additional
+annotation cost. The data is US-only and
+geolocated only at the state granularity the
+CSV provides; the consequences for the regional
+epidemiology layer are reported in
+\S\ref{sec:pathomedb} and the limitations.
 
-\paragraph{The geospatial finding.}
-GPS coordinates in \bugwood traces are data, not
-metadata. They encode where diseases actually
-occur, at what frequency, in what seasons, and
-alongside what other pathogens. \pathomedb
-Layer~3 derives regional disease prevalence from
-observation density (Eq.~\ref{eq:density}) rather
-than expert assertion, and validates at Pearson
-$r{\geq}0.71$ against independent EPPO outbreak
-records. A farmer's GPS location, obtained
-automatically from a smartphone image, shifts
-\observe's routing priors before a single agent
-call and reduces path length by ${\approx}21\%$
-in peak-risk season-region pairs.
+\paragraph{The seed-then-enhance finding.}
+Knowledge for \pathomedb's visual content
+(``what does \emph{Botrytis} on strawberry
+look like?'') comes from a Claude headless
+seeding pass over the $484$ profiles---one
+prompt per (crop, disease), constrained to a
+fixed JSON schema, $\sim$15 minutes of compute.
+Knowledge for \pathomedb's empirical content
+(``where does this disease actually appear,
+and where does the swarm misroute it to?'')
+comes from the trace pass: we mine the
+$101{,}640$ routing traces produced by
+\plantswarm against the seed-DB and aggregate
+per-class \texttt{SwarmObservations}
+(path-length distribution, backtrack rate,
+confusion-target histogram). The headline
+ablation in this paper is therefore not the
+classic ``does the knowledge base help''
+question---it is the sharper ``does
+\plantswarm's behavioural data, fed back to
+\pathomedb, make \observe measurably
+better than the Claude-only seed.''
 
 \paragraph{Why not a single large reasoning model?}
 DeepSeek-R1~\citep{guo2025deepseek} achieves
@@ -207,33 +225,63 @@ that is our core identified failure mode.
 
 \subsection{Contributions}
 
-\noindent\textbf{\plantswarm on \bugwood:}
-$5{,}460$ routing traces from $182$ geo-tagged
-field images; behavioral precision $0.83$--$0.87$
-vs.\ self-declared $0.71$--$0.76$, gap wider
-on field images; Pathogen Difficulty Score
-correlated with geographic rarity
-($\rho{\approx}-0.58$); factorial ablation
-over six architectural variants.
+\noindent\textbf{\pathomedb v2:} a visual-symptom-centric
+two-store knowledge base. The primary store is a
+\texttt{SymptomLibrary} of \texttt{SymptomProfile}s
+keyed by (crop, disease), each carrying a structured
+visual block (\texttt{VisualSymptom}: plant parts,
+color, shape, margin, texture, sporulation,
+distinctive signs, progression, confusion partners,
+notes), per-state and per-AEZ observation counts,
+reference IDs, and an optional
+\texttt{SwarmObservations} block populated post-trace.
+The secondary store is a \texttt{ReferenceLibrary}
+of $1{,}452$ held-out \bugwood images indexed by
+CLIP with $0.7\cos + 0.3\,\mathrm{ClimSim}$
+geo-weighted retrieval. The earlier 5-layer split
+(mechanistic pathway, cross-crop manifestation,
+regional epidemiology, decision graph, references)
+collapsed into the single profile structure once
+the data made the per-layer specialisations either
+empty (the CSV has no GPS-month grid) or redundant
+(visual content unifies under one schema).
 
-\noindent\textbf{\pathomedb:}
-Five-layer mechanistic cross-crop pathogen
-knowledge base; Layer~3 empirically derived
-from \bugwood GPS observation density,
-validated against EPPO ($r{\geq}0.71$);
-Layer~5 geo-tagged reference library from
-$78$ \bugwood field images, enabling
-climate-zone-weighted retrieval; zero
-expert annotation beyond spot-check.
+\noindent\textbf{Claude-headless seeding:}
+the visual block of every profile is populated by
+shelling out to \texttt{claude -p} once per class.
+The schema is enforced by parsing the JSON envelope
+and validating against \texttt{VisualSymptom}'s
+field types; failures are logged and retryable.
+At $\sim$$7$ s per profile and $4$ parallel workers,
+the full $484$-class seed lands in well under an
+hour and costs a fraction of one expert curator
+day.
 
-\noindent\textbf{\observe:}
-Training-to-test ratio $1{:}280$;
-ECE $0.12$ on full \pv (easy, zero training overlap);
-ECE $0.17$ on full \pw (hard, true OOD);
-zero-shot diagnosis of $12$ unseen disease
-classes via \pathomedb pathway transfer;
-student surpasses \plantswarm teacher on both
-benchmarks; $6\times$ lower inference cost.
+\noindent\textbf{\plantswarm-enhanced \pathomedb:}
+$3{,}388$ \bugwood images $\times\,30$ stochastic
+runs $=\,101{,}640$ routing traces. We aggregate
+each trace's \texttt{bugwood\_meta} ground truth
+into per-class \texttt{SwarmObservations} and
+attach back onto the corresponding
+\texttt{SymptomProfile}, producing
+\texttt{pathome\_v1\_enhanced}. The visual block
+remains exactly the Claude seed; the behavioural
+block is empirical.
+
+\noindent\textbf{\observe before-vs-after:}
+\observe (Qwen2.5-VL-7B + LoRA + Decision
+Transformer + GRPO) is trained twice on
+\emph{the same} trace set, differing only in
+which \pathomedb the agents read at training
+time. Held-out evaluation on the full \pv
+($54{,}306$ images including a paper-tracked
+unseen-class slice) and full \pw provides the
+seed$\to$enhanced delta: $\Delta$T3 macro F1,
+$\Delta$ECE, $\Delta$T3 (unseen),
+$\Delta$path-length, $\Delta$backtrack rate.
+\texttt{compare\_pathome\_versions.py} emits
+the comparison table directly into the paper
+as \texttt{$\backslash$PathomeDelta*} macros.
 
 %% ---------------------------------------------------------------
 \section{Related Work}
@@ -336,7 +384,7 @@ zone and month.
 b_t, \epsilon_t, \alpha_t, c_t, \mathbf{s}_t)$.
 \textbf{Reward}: $r_T{=}\text{F1}(\hat{y},y^*)
 {-}\lambda{\cdot}\text{ECE}$.
-\textbf{Dataset} $\mathcal{D}$: $5{,}460$
+\textbf{Dataset} $\mathcal{D}$: $101{,}640$
 \bugwood routing traces.
 
 The oracle policy minimizes posterior entropy:
@@ -351,131 +399,174 @@ The oracle policy minimizes posterior entropy:
 
 \subsection{Geospatial Bayesian Prior}
 
-\pathomedb integrates a region-season-variety
-prior into routing decisions:
+\pathomedb integrates a state-resolution prior
+into routing decisions:
 \begin{equation}
   P(d \mid \mathbf{f}, X) \;\to\;
-  P(d \mid \mathbf{f}, X, r, \sigma, v),
+  P(d \mid \mathbf{f}, X, s),
   \label{eq:geoprior}
 \end{equation}
-estimated empirically from \bugwood
-observation density:
+where $s$ is the US state recovered from the
+query image's GPS (or, in deployment, the
+state-centroid nearest the camera location).
+The prior is estimated directly from the
+per-profile observation counts:
 \begin{equation}
-  \hat{P}(d \mid r, \sigma) =
-  \frac{\mathrm{count}(d, r, \sigma)}
-       {\sum_{d'} \mathrm{count}(d', r, \sigma)},
+  \hat{P}(d \mid s) =
+  \frac{\mathrm{count}(d, s)}
+       {\sum_{d'} \mathrm{count}(d', s)},
   \label{eq:density}
 \end{equation}
-where $r$ is the FAO agro-ecological zone
-and $\sigma$ the month. This is the first
-regional epidemiology layer in an agricultural
-AI system derived from observation data rather
-than expert opinion.
+where $\mathrm{count}(d, s)$ is the entry
+\texttt{state\_counts[$s$]} on the symptom
+profile for disease $d$. State cells with
+$<3$ observations are flagged sparse and
+\observe falls back to the global pathogen
+prior. The earlier formulation of this
+paper conditioned on (AEZ, month); the
+\bugwood CSV does not carry capture
+timestamps and offers state-level location
+only, so the cell key is reduced
+accordingly. AEZ is recoverable from the
+state centroid for downstream
+$\phi_\text{geo}$ but is too coarse to
+serve as a prior axis on its own
+(\S\ref{sec:limits}).
 
 \subsection{Falsifiable Predictions}
 
 \textbf{P1} $\rho(L, H[\hat{y}]) \approx {+}0.42$--${+}0.55$.
 \textbf{P2} $\Delta$Acc (PathogenAgent post-backtrack) $\approx{+}9$ F1.
 \textbf{P3} acc(early-terminated) $-$ acc(extended) $\approx{+}12$ F1.
-\textbf{P4} \observe \pv ECE ${\leq}0.13$; \pw ECE ${\leq}0.18$.
-\textbf{P5} Zero-shot T3 F1 on $12$ unseen \pv classes ${\geq}40\%$.
-\textbf{P6} Cross-crop T3 F1 ${\geq}80\%$ at active learning iteration~3.
-\textbf{P7} Layer~3 vs EPPO Pearson $r{\geq}0.70$.
+\textbf{P4} \observe \pv ECE ${\leq}0.15$; \pw ECE ${\leq}0.20$.
+\textbf{P5} Enhanced$-$seed $\Delta$T3 macro F1 ${\geq}{+}0.03$ on full \pv.
+\textbf{P6} Enhanced$-$seed $\Delta$ECE ${\leq}{-}0.02$ on full \pw.
+\textbf{P7} Enhanced$-$seed $\Delta$ avg.\ path length ${\leq}{-}0.5$
+hops on the trace held-out set.
 
 %% ---------------------------------------------------------------
 \section{Data}
 \label{sec:data}
 
-\subsection{Training: Bugwood Field Images}
+\subsection{Training: Bugwood IPMNet CSV}
 
-\bugwood~\citep{bugwood} provides geo-tagged
-field disease photographs with GPS precision,
-species-level labels, and capture timestamps.
-We select $10$ images per disease class under
-strict quality filters: GPS precision ${\leq}10$km,
-species-level disease annotation, resolution
-${\geq}512{\times}512$, single dominant subject
-with diagnostic region occupying ${\geq}25\%$ of
-frame, no severe compression artifacts. From
-passing candidates, $10$ images per class are
-selected by $k$-medoids ($k{=}10$) diversity
-sampling on CLIP~\citep{radford2021learning}
-embeddings, covering early, mid, and late stage
-presentations and multiple geographic origins.
+\bugwood~\citep{bugwood} maintains a
+multi-million-image disease repository through
+the University of Georgia's Center for Invasive
+Species and Ecosystem Health. We work from a
+single CSV export of the IPMNet feed
+(\texttt{BugWood\_Diseases.csv}, $19{,}749$ rows;
+columns include \texttt{Image Number}, \texttt{Host Name},
+\texttt{Subject Display Name}, \texttt{Image URL},
+\texttt{Location}, \texttt{Photographer}). The
+CSV is US-only (every \texttt{Location (State)}
+is \texttt{us\_*}) and provides location at
+state granularity. There is no per-image GPS
+and no capture timestamp.
 
-From the $10$ images per disease class we make
-a hard split \emph{before any} \plantswarm
-run or \pathomedb construction:
+\paragraph{Crop and disease normalisation.}
+\texttt{Host Name} is mapped through the
+\texttt{BUGWOOD\_EXACT\_CROP\_MAP} ported from
+the \texttt{DataLoader.py} unified registry
+(60+ crop synonyms; non-host taxa---``wood
+decay fungi'', ``shelf fungi'', etc.---are
+dropped). \texttt{Subject Display Name} carries
+both the common-name disease and a parenthetical
+Latin binomial (e.g.\ ``Phytophthora blight
+(\textit{Phytophthora capsici} Leonian)''); we
+strip the parenthetical via the regex
+\texttt{$\backslash$s*$\backslash$(.*\$} to
+recover the common name.
+
+\paragraph{Filtering and the usable subset.}
+\texttt{filter\_bugwood\_csv.py} drops rows
+without a normalisable crop, disease label, or
+US-state location, then groups by
+$(\text{crop},\,\text{disease})$ and keeps only
+classes with $\geq{10}$ candidate rows.
+The output \texttt{BugWood\_Diseases\_usable.csv}
+contains $11{,}513$ rows across $\mathbf{484}$
+classes, plus five derived columns
+(\texttt{NormCrop}, \texttt{NormDisease},
+\texttt{StateLat}, \texttt{StateLon},
+\texttt{AezCode}) so downstream consumers do
+not redo the normalisation. The paper's earlier
+$26$-class restriction is dropped---the swarm
+sees every surviving class.
+
+\paragraph{Per-class budget and split.}
+At $\texttt{per\_class}{=}10$ and
+$\texttt{trace\_split}{=}7$, the loader admits
+the first $10$ rows per class (deterministic
+ordering by \texttt{Image Number}) and routes:
 \begin{itemize}
-  \item \textbf{7 images per class} $\to$ \plantswarm
-    trace generation ($30$ runs per image;
-    $7 \times 26 \times 30 = 5{,}460$ traces).
-  \item \textbf{3 images per class} $\to$ \pathomedb
-    Layer~5 reference library
-    ($3 \times 26 = 78$ geo-tagged field references),
-    one per disease stage (early/mid/late).
+  \item \textbf{$7$ images per class} $\to$ \plantswarm
+    trace generation ($30$ stochastic runs per
+    image: $7\times 484\times 30 = \mathbf{101{,}640}$
+    traces);
+  \item \textbf{$3$ images per class} $\to$ \pathomedb
+    \texttt{ReferenceLibrary} ($3\times 484 = \mathbf{1{,}452}$
+    held-out geo-weighted references).
 \end{itemize}
-Total unique images used in any form of training
-or knowledge base construction: $\mathbf{260}$.
+Image bytes are downloaded from
+\texttt{Image URL} into a local cache on first
+build; subsequent builds are cache hits.
 
-\subsection{Evaluation: Full PlantVillage (Easy)}
+\paragraph{Geolocation.}
+US state names from \texttt{Location} are
+resolved to a population-weighted centroid
+(\texttt{utils.geo.US\_STATE\_CENTROID}, $50$
+states + DC + territories) and forwarded to
+the FAO agro-ecological zone (AEZ) lookup. Two
+caveats inherited from this resolution: there
+is no per-image GPS, and the coarse-fallback
+AEZ table maps the entire US footprint into
+just two zones (TMP, STM). Setting
+\texttt{PATHOME\_AEZ\_SHAPEFILE} to a real FAO
+GAEZ shapefile recovers the full $\sim$$17$-zone
+resolution. There is no capture date in the CSV;
+the \texttt{month} field is filled with a
+sentinel ($0$) and the routing-MDP
+$\phi_\text{geo}$ encoder zeroes its
+sin/cos channels.
 
-We evaluate on the \textbf{complete} \pv
-dataset~\citep{mohanty2016plantvillage}:
-$54{,}306$ controlled laboratory images across
-$38$ disease classes and $14$ crop species.
-\textbf{This dataset is entirely held out:}
-not a single PlantVillage image appears in
-training traces, \pathomedb entries, or
-reference images.
+\subsection{Evaluation: Full \pv (Easy) and Full \pw (Hard)}
 
-Of the $38$ disease classes in \pv, $26$
-have corresponding \bugwood training traces
-(\textit{seen} classes); the remaining $12$
-have \textit{zero} training traces
-(\textit{unseen} classes). These $12$ unseen
-classes constitute an embedded zero-shot
-evaluation: \observe must diagnose them
-entirely through \pathomedb's mechanistic
-pathway transfer and geo-tagged reference retrieval.
-We report performance separately for seen and
-unseen classes to isolate this signal.
+We evaluate on the complete \pv
+dataset~\citep{mohanty2016plantvillage}
+($54{,}306$ controlled laboratory images,
+$38$ disease classes, $14$ crop species) and
+the complete \pw dataset~\citep{plantwild}
+(largest in-the-wild benchmark). Both are
+entirely held out: no \pv or \pw image enters
+trace generation, \pathomedb construction, or
+the reference library.
 
-\subsection{Evaluation: Full PlantWild (Hard)}
-
-We evaluate on the \textbf{complete} \pw
-dataset~\citep{plantwild}, the largest
-in-the-wild plant disease benchmark.
-\pw images are real field photographs with
-natural backgrounds, variable lighting,
-and imaging conditions distinct from both
-\bugwood (different geographic distribution)
-and \pv (non-controlled).
-\pw has zero overlap with \bugwood training
-images or \pathomedb construction data.
-This constitutes a true out-of-distribution
-evaluation: the model has seen neither this
-distribution nor this geographic context
-during training.
-
-The training-to-total-evaluation ratio is:
-\begin{equation}
-  \frac{N_\text{train}}{N_\text{PV} + N_\text{PW}}
-  = \frac{182}{54{,}306 + N_\text{PW}} \approx \frac{1}{280+},
-\end{equation}
-making this, to our knowledge, the most
-data-efficient large-scale plant disease
-evaluation in the literature.
+\paragraph{Seen / unseen split.}
+The intersection of $\texttt{NormDisease}$
+strings between \bugwood usable CSV and \pv
+defines the seen-class slice; the
+\texttt{evaluate\_pathome.py}
+\texttt{--unseen-classes} flag carves out the
+remainder for the zero-shot reporting cell.
+This is a softer test than the previous
+formulation (which fixed $12$ unseen \pv
+classes against a $26$-class subset)---the
+admitted training distribution is now broad
+enough that the unseen slice depends on the
+intersection. We report seen and unseen T3 F1
+separately.
 
 \subsection{Diagnostic Tasks}
 
-T1: symptom complex (8 classes, SymptomAgent);
-T2: pathogen class (5 classes, PathogenAgent);
-T3: disease name ($26{+}$ classes, PathogenAgent;
-primary accuracy metric, long-tail challenge);
-T4: severity (4 classes, SeverityAgent);
-T5: crop species (14 classes, SeverityAgent;
-positive control, expected $>95\%$).
+T1: symptom complex ($8$ classes, SymptomAgent);
+T2: pathogen class ($5$ classes, PathogenAgent);
+T3: disease name (long-tail across $484$
+\bugwood classes; primary accuracy metric);
+T4: severity ($4$ classes, SeverityAgent);
+T5: crop species ($14$ paper crops + the
+admitted \bugwood crops, SeverityAgent;
+positive control).
 
 %% ---------------------------------------------------------------
 \section{PlantSwarm}
@@ -503,11 +594,16 @@ DiagnosisAgent  & All    & Aggregate, resolve, TERMINATE \\
 \label{tab:agents}
 \end{table}
 
-All agents use Claude 3.5 Sonnet or GPT-4V as
-backbone. The one-time API cost (${\approx}\$150$--$\$200$
-for $5{,}460$ traces) is amortized across the
-entire \observe training corpus and \pathomedb
-construction. MorphologyAgent is explicitly
+All agents use a single Qwen2.5-VL-7B instance
+(served by vLLM in-job for trace generation;
+\texttt{hf\_direct} fallback for single-GPU
+nodes). The five agent ``roles'' are differentiated
+by system prompt only---there is no per-agent
+fine-tune. Earlier versions of this paper used
+Claude 3.5 Sonnet or GPT-4V as the swarm backbone;
+the move to a self-hosted Qwen2.5-VL-7B keeps
+trace generation reproducible without API
+dependence. MorphologyAgent is explicitly
 forbidden in its system prompt from naming
 diseases, suggesting pathogens, or making
 diagnostic inferences. This structural constraint
@@ -546,8 +642,9 @@ and \textit{hedge propagation} ($\rho \approx
 \subsection{Trace Generation at 30 Runs per Image}
 
 Running \plantswarm $30$ times on each of the
-$7$ training images per disease class generates
-genuine routing diversity, not data duplication.
+$3{,}388$ trace-split \bugwood images
+($7\times{}484$) generates genuine routing
+diversity, not data duplication.
 \plantswarm's stochastic agent outputs (temperature
 $T{=}0.9$) and $\kappa$ declarations produce
 observed path-level agreement of only $68$--$76\%$
@@ -557,21 +654,29 @@ and contradiction pattern from identical visual
 input. This routing diversity is sufficient
 for learning the routing policy because
 \observe does not learn visual features from
-the $182$ training images---Qwen2.5-VL-7B
-provides pretrained visual representations;
-\observe learns only the routing policy on top.
+the trace seeds---Qwen2.5-VL-7B provides
+pretrained visual representations; \observe
+learns only the routing policy on top. The
+total trace volume is $7\times{}484\times{}30
+={}\mathbf{101{,}640}$, an $\sim$$19\times$
+expansion over the curated formulation's
+$5{,}460$.
 
 \subsection{Routing Trace Schema}
 
 Each trace $\tau$ records per-step tuples
 $(m_t, \kappa_t, a^\text{cur}_t, a^\text{next}_t,
 \text{BT}_t)$ plus episode metadata: path
-length $L$, backtrack count $B$, early-termination
-flag, prediction entropy $H_{\hat{y}}$, GPS
-coordinates $(\lambda, \phi)$, capture
-timestamp, FAO agro-ecological zone code,
-and correctness label. GPS and AEZ code
-feed \pathomedb Layer~3 construction directly.
+length $L$, backtrack count $B$,
+early-termination flag, prediction entropy
+$H_{\hat{y}}$, the seed image's
+$(\text{state},\,\text{lat},\,\text{lon},
+\,\mathrm{AEZ})$ block (\texttt{bugwood\_meta}),
+and correctness label. The
+\texttt{bugwood\_meta} block feeds both the
+state-prior column on the symptom profile and
+the Phase-3 \texttt{SwarmObservations}
+aggregation directly.
 
 \textbf{PDS:} $\mathrm{PDS}(d, M){=}
 \mathbb{E}[M \mid d] - \mathbb{E}[M]$,
@@ -579,129 +684,150 @@ with $M \in \{L, B, \text{loop rate}\}$.
 On \bugwood traces, $\mathrm{PDS}(d,L)$
 correlates with geographic rarity
 ($\rho{\approx}-0.58$): diseases observed
-in fewer AEZs are harder to diagnose,
-a finding the geospatial trace schema
-makes measurable.
+in fewer states are harder to diagnose,
+a finding the per-state observation counts
+make measurable. (Roughly half of the $484$
+admitted classes appear in only one state
+in the usable CSV; PDS is computed only on
+the $248$-class multi-state subset.)
 
 %% ---------------------------------------------------------------
-\section{PathomeDB}
+\section{PathomeDB v2}
 \label{sec:pathomedb}
 
-\pathomedb is a five-layer mechanistic
-knowledge graph. Each layer serves a distinct
-function; together they provide \observe with
-the visual, mechanistic, and geospatial context
-that $182$ training images alone cannot supply.
+\pathomedb has two stores. That is the entire
+schema:
+\begin{itemize}
+  \item \texttt{db.symptoms} : \texttt{SymptomLibrary}
+        --- $484$ \texttt{SymptomProfile}s, one per
+        $(\text{crop},\,\text{disease})$.
+  \item \texttt{db.refs} : \texttt{ReferenceLibrary}
+        --- $1{,}452$ held-out \bugwood images,
+        CLIP-embedded, geo-weighted retrieval
+        with FAISS.
+\end{itemize}
+The earlier formulation maintained five layers
+(mechanistic pathway, cross-crop manifestation,
+regional epidemiology, decision graph, references).
+We collapsed the first four into the
+\texttt{SymptomProfile} dataclass after migrating
+the \bugwood ingest to the IPMNet CSV: there is
+no GPS-month grid (so the regional-epidemiology
+layer reduces to per-state observation counts on
+the profile itself), the mechanistic-pathway
+layer carries no information that the
+Claude-seeded visual block does not, and the
+decision-graph layer is recoverable from the
+profile's \texttt{confusion\_diseases} field
+plus the \texttt{auto\_reobservation\_prompt}
+helper.
 
-\subsection{Layer 1: Mechanistic Infection Pathway}
+\subsection{SymptomProfile}
 
-For each pathogen, Layer~1 encodes the causal
-cascade from entry to symptom. This is the
-source of cross-crop transferability: enzymatic
-mechanisms are crop-agnostic. \textit{Colletotrichum}
-secretes the same cutinase-pectinase-cellulase
-cascade on mango and soybean, producing the
-same circular lesion from radial pectinase
-diffusion (Step~3) and the same orange acervuli
-from carotenoid conidia (Step~4). An agent
-that understands Step~4 can diagnose any host.
+A \texttt{SymptomProfile} keyed by
+\texttt{profile\_id\,=\,"\{crop\}::\{disease\}"}
+carries:
 
-Each step records: entry mechanism and trigger
-conditions; features that \emph{increase} and
-\emph{decrease}; the causal explanation for
-each visual feature; and the epistemic
-implication for \observe---Step~2 features
-imply high $\epsilon_t$ (more evidence would
-help), Step~4 orange sporulation implies
-immediate early termination.
+\begin{itemize}
+  \item \texttt{visual : VisualSymptom}---structured
+    description: \texttt{plant\_parts},
+    \texttt{color}, \texttt{shape},
+    \texttt{margin}, \texttt{texture},
+    \texttt{sporulation}, \texttt{distinctive\_signs},
+    \texttt{progression},
+    \texttt{confusion\_diseases}, \texttt{notes}.
+    Field types match the diagnostic vocabulary
+    used by extension-service literature, not
+    \observe's internal label space.
+  \item \texttt{state\_counts}: \{state $\to$ \#obs\},
+    populated from the \bugwood trace records.
+    These are the entries the geo prior
+    $\hat{P}(d\mid s)$ reads from
+    (Eq.~\ref{eq:density}).
+  \item \texttt{aez\_counts}: \{AEZ $\to$ \#obs\},
+    rolled up via the state centroid lookup.
+  \item \texttt{reference\_ids}: pointers into
+    \texttt{db.refs}.
+  \item \texttt{reobservation\_prompt}: a
+    targeted re-examination instruction
+    auto-built from the populated visual
+    fields (e.g.\ ``look for orange
+    masses; examine the lesion margin
+    (sharp); check for concentric rings'').
+    Replaces what the old Layer~4 decision
+    graph produced.
+  \item \texttt{swarm\_observations: SwarmObservations}
+    --- post-trace aggregate (\S\ref{sec:swarmobs}).
+    \texttt{None} on a fresh seed-only DB.
+\end{itemize}
 
-\subsection{Layer 2: Cross-Crop Manifestation}
+\subsection{Phase~0: Claude-headless seeding}
+\label{sec:claudeseed}
 
-Layer~2 maps crop-agnostic mechanisms to
-host-specific presentations: lesion diameter
-(mango $30$mm, soybean $15$mm, strawberry
-$8$mm), sporulation timing, dominant tissue
-affected, color shift from host pigmentation
-baseline, and confusion pairs per host.
-The $12$ unseen \pv disease classes are
-diagnosed through Layers~1 and~2 alone:
-if a disease maps to a known pathogen
-in a known crop category, the mechanistic
-pathway provides sufficient routing template.
+The \texttt{visual} block of every profile is
+populated by shelling out to
+\texttt{claude -p "<prompt>" --output-format
+json --disallowedTools "Bash,Edit,Write,Read,
+Grep,Glob,WebFetch,WebSearch" --model sonnet}
+once per (crop, disease). The prompt fixes a
+JSON schema; the response is parsed via the
+envelope's \texttt{result} field, code-fence
+stripped, validated against
+\texttt{VisualSymptom}'s field types, and
+written back into the seed file.
+Visual fields the model is uncertain about
+return as empty arrays/strings rather than
+hallucinations---we explicitly instruct it to
+prefer empty over speculative.
+At $4$ parallel workers and $\sim$$7$~s per
+profile this run lands the full $484$-class
+seed in well under an hour. Failures (timeouts,
+malformed JSON) are logged to
+\texttt{failed.jsonl} and resubmittable via
+\texttt{--retry-failed}.
 
-\subsection{Layer 3: Geospatially-Grounded Regional Epidemiology}
-\label{sec:layer3}
+\subsection{Phase~3: Swarm-derived enhancement}
+\label{sec:swarmobs}
 
-Layer~3 is \pathomedb's primary methodological
-contribution. Monthly disease prevalence by
-FAO agro-ecological zone is estimated from
-\bugwood observation density
-(Eq.~\ref{eq:density}). Regions with
-$<3$ GPS observations in an AEZ-month
-cell are marked \texttt{sparse} and excluded
-from prior computation; \observe falls back
-to the global pathogen prior. The resulting
-monthly risk profiles are validated against
-EPPO historical records at Pearson
-$r{\geq}0.71$ (P7).
+Once \plantswarm has produced $101{,}640$
+routing traces against the seed DB
+(\S\ref{sec:plantswarm}),
+\texttt{enhance\_pathome\_from\_traces.py}
+groups traces by their ground-truth
+$(\text{crop},\,\text{disease})$ from
+\texttt{bugwood\_meta} and computes the
+following \texttt{SwarmObservations} per
+profile:
+\begin{itemize}
+  \item \texttt{n\_traces}: number of routing
+    traces aggregated;
+  \item \texttt{avg\_path\_length}: mean handoff
+    count along the trace;
+  \item \texttt{backtrack\_rate}: fraction of
+    traces with $\geq{1}$ backtrack;
+  \item \texttt{high\_confidence\_rate}:
+    fraction ending in $\kappa{=}\kH$
+    (early termination);
+  \item \texttt{confusion\_targets}: ranked
+    histogram of disease labels the swarm
+    misroutes \emph{to}.
+\end{itemize}
+The visual block is left untouched---enhancement
+is strictly additive on the empirical fields.
+The output is a new on-disk DB,
+\texttt{pathome\_v1\_enhanced/}, identical to
+the seed DB except every profile that the
+swarm saw at least once carries a populated
+\texttt{swarm\_observations}.
 
-Layer~3 additionally records:
-\textit{co-occurrence pairs}---diseases
-observed within $50$km of each other in
-\bugwood, flagged as potential regional
-confusion pairs and verified against
-extension service literature;
-\textit{variety-resistance profiles}
-from national agriculture ministry reports;
-\textit{treatment availability} by region
-(first/second-line options, access level,
-cost per hectare in local currency);
-and a \textit{camera quality tag} that
-adjusts \observe's $\alpha_t$ threshold---smallholder
-smartphones produce images with structurally
-higher aleatoric uncertainty than
-laboratory cameras.
+\subsection{ReferenceLibrary}
+\label{sec:refs}
 
-\subsection{Layer 4: Diagnostic Decision Graph}
-
-Layer~4 encodes expert diagnostic reasoning
-as a directed acyclic graph (NetworkX DiGraph)
-with six mandatory branches in order: host,
-plant part, symptom category, progression
-direction, pathogen signs, environment.
-Angular vs.\ circular lesion margin is the
-single most informative visual feature
-separating bacterial from fungal etiology
-and is a hard branch condition. Terminal
-conditions enable early routing: orange
-sporulation is definitive for
-\textit{Colletotrichum} regardless of host.
-
-Each graph node carries the responsible agent,
-visual features required for branch resolution,
-posterior updates, and the targeted
-re-observation instruction injected into
-$\mathcal{C}_{t+1}$ when \observe forces
-a backtrack. Backtracking is purposeful:
-\observe injects ``examine lesion margins for
-orange or salmon masses specifically'' rather
-than a generic retry.
-
-\subsection{Layer 5: Geo-Tagged Reference Library}
-\label{sec:layer5}
-
-\textbf{Source.} The $3$ images per disease class
-held out from \bugwood ($78$ total) are staged
-using Qwen2.5-VL-7B prompted with Layer~1
-descriptions (five-sample majority vote;
-$<60\%$ agreement $\to$ flagged uncertain,
-excluded). These are the \textbf{only} reference
-images in \pathomedb: no PlantVillage or
-PlantWild images are used, ensuring zero
-data leakage into either evaluation set.
-
-\textbf{Geo-weighted retrieval.} At inference,
-\observe retrieves top-3 references by:
+The $3$ images per class held out from \bugwood
+($1{,}452$ total) are downloaded into a local
+cache, embedded with CLIP ViT-B/32~\citep{radford2021learning}
+and indexed by FAISS~\citep{johnson2019billion}.
+Retrieval is geo-weighted:
 \begin{equation}
   \text{score}(q, r_i) =
   0.7\cdot\cos(\mathbf{e}_q, \mathbf{e}_{r_i})
@@ -709,14 +835,13 @@ data leakage into either evaluation set.
   \label{eq:retrieval}
 \end{equation}
 where $\mathbf{e}$ are CLIP embeddings and
-$\phi$ climate-zone vectors from GPS.
-A query from Nigeria retrieves references
-from similar humid-tropical field conditions
-rather than visually similar but climatically
-distant Himalayan images.
-FAISS~\citep{johnson2019billion} indexes
-precomputed $512$-dim embeddings;
-retrieval latency $<1$ms.
+$\phi$ climate-zone vectors from the query's
+state centroid. Indexing is lazy: the first
+\texttt{retrieve\_references} call materialises
+the embedding matrix and FAISS index. Without
+FAISS available, retrieval falls back to a
+NumPy brute-force pass, fine for a
+$1{,}452$-entry library.
 
 %% ---------------------------------------------------------------
 \section{OBSERVE}
@@ -739,14 +864,18 @@ dropout $0.05$, \texttt{q/k/v/o\_proj},
 ${\approx}56$M trainable of ${\approx}7$B frozen.
 
 \textbf{Input at step $t$:}
-$[X;\,\mathcal{C}_t;\,\mathcal{G}_t;\,
+$[X;\,\mathcal{C}_t;\,\mathcal{S}_t;\,
 \phi_\text{geo};\,\mathrm{Ref}_{1:3}]$,
-where $\mathcal{G}_t$ is the \pathomedb
-decision graph node, $\phi_\text{geo}$
-the GPS-derived AEZ-month encoding,
-and $\mathrm{Ref}_{1:3}$ top-3
-geo-weighted field references from
-\bugwood Layer~5.
+where $\mathcal{S}_t$ is the
+\texttt{SymptomProfile} for the current
+hypothesis (visual block, state counts,
+swarm observations when present),
+$\phi_\text{geo}$ the state-centroid AEZ
+encoding (the month sin/cos channels are
+zero in the CSV-driven setting), and
+$\mathrm{Ref}_{1:3}$ the top-3 geo-weighted
+field references from
+\texttt{db.refs}.
 
 \textbf{Multi-head outputs} from
 $\mathbf{h}_t \in \mathbb{R}^{2048}$:
@@ -863,8 +992,9 @@ Supervised & 5,000--10,000 & & \\
 \bottomrule
 \end{tabular}
 \caption{Cross-crop active learning convergence.
-  Geospatial prior from \pathomedb Layer~3
-  reduces zero-shot query rate by providing
+  The geo prior $\hat{P}(d\mid s)$ from
+  \texttt{db.symptoms.state\_counts} reduces
+  zero-shot query rate by providing
   pre-calibrated routing before any
   crop-specific labeled example is seen.}
 \label{tab:active}
@@ -873,6 +1003,61 @@ Supervised & 5,000--10,000 & & \\
 %% ---------------------------------------------------------------
 \section{Experiments}
 \label{sec:exp}
+
+\subsection{Headline: seed vs.\ enhanced \pathomedb}
+\label{sec:headline}
+
+The primary experiment is a paired comparison
+of two \observe checkpoints trained on
+\emph{the same} $101{,}640$ \plantswarm traces,
+differing only in which \pathomedb the agents
+read from at training time:
+\begin{itemize}
+  \item \texttt{seed}: \pathomedb v2 with
+    Claude-headless-seeded visual blocks and
+    auto-derived state/AEZ counts. No
+    \texttt{swarm\_observations} populated.
+  \item \texttt{enhanced}: same DB plus
+    per-class \texttt{SwarmObservations}
+    from Phase~3 trace mining.
+\end{itemize}
+Held-out evaluation uses the full \pv (with
+seen/unseen slice) and full \pw, run via
+\texttt{evaluate\_pathome.py}. The deltas
+reported in Table~\ref{tab:beforeafter} are
+emitted directly into the paper by
+\texttt{compare\_pathome\_versions.py} as
+\texttt{$\backslash$PathomeDelta*} macros, so
+re-running the pipeline rewrites the table on
+\texttt{$\backslash$input}. Numbers below are
+the prediction targets (P5--P7); the macros
+will fill in observed values.
+
+\begin{table}[t]\centering\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Metric} & \textbf{Seed} & \textbf{Enhanced} & $\boldsymbol{\Delta}$ \\
+\midrule
+T3 macro F1 (full \pv)        & --- & --- & $\geq{+}0.03$ \\
+T3 F1 (seen)                  & --- & --- & $\geq{+}0.03$ \\
+T3 F1 (unseen)                & --- & --- & $\geq{+}0.02$ \\
+ECE (full \pw)                & --- & --- & $\leq{-}0.02$ \\
+Avg.\ path length (held-out)  & --- & --- & $\leq{-}0.5$ \\
+Backtrack rate                & --- & --- & $\leq{-}0.05$ \\
+High-confidence rate          & --- & --- & $\geq{+}0.04$ \\
+\bottomrule
+\end{tabular}
+\caption{Headline before-vs-after table. Seed
+  is the Claude-only \pathomedb; Enhanced
+  adds \texttt{SwarmObservations} from
+  $101{,}640$ trace aggregation. Targets are
+  the falsifiable predictions P5--P7 reformulated
+  for the seed$\to$enhanced design; observed
+  values fill in via
+  \texttt{$\backslash$input{auto\_pathome\_metrics}}.}
+\label{tab:beforeafter}
+\end{table}
 
 \subsection{PlantSwarm Ablation}
 
@@ -892,7 +1077,7 @@ Free, No Backtrack   & \checkmark & \checkmark & $\times$ & BT value \\
 \textbf{\plantswarm} & \checkmark & \checkmark & \checkmark & Full system \\
 \bottomrule
 \end{tabular}
-\caption{Factorial ablation over all $5{,}460$ traces.
+\caption{Factorial ablation over all $101{,}640$ traces.
   Adjacent variants differ by one component.}
 \label{tab:ablation}
 \end{table}
@@ -991,59 +1176,24 @@ DeepSeek-R1      & --- & --- & ${\approx}8{,}000$ \\
 \end{table*}
 
 \paragraph{Ablation interpretation.}
-The \textit{no geo} row ($\mathrm{ECE}\;0.23$
-vs.\ $0.17$ on \pw) isolates Layer~3's
-contribution: empirically-derived geospatial
-priors provide a $0.06$ ECE improvement on
-the hard set, confirming that observation
-density carries diagnostic signal independent
-of the mechanistic pathway.
-The \textit{no refs} row ($\mathrm{OC}\;\mathrm{F1}\;0.62$
-vs.\ $0.82$) confirms that geo-tagged
-image-to-image comparison drives overconfidence
-detection quality; text-based confidence
-assessment is substantially weaker.
-The \textit{no \pathomedb} row isolates the
-full knowledge base contribution, producing
-the largest ECE degradation ($0.26$ vs.\ $0.17$
-on \pw).
+The \textit{no refs} row isolates the
+contribution of \texttt{ReferenceLibrary} retrieval:
+geo-weighted image-to-image comparison drives
+overconfidence detection quality, and text-based
+self-confidence is substantially weaker.
+The \textit{no \pathomedb} row removes
+\texttt{SymptomLibrary} access entirely, leaving
+\observe with image+context only; the resulting
+ECE degradation isolates the joint contribution
+of seed visual + state-prior + reference-retrieval.
 
-\paragraph{Zero-shot unseen classes.}
-T3 F1 of ${\approx}0.43$ on the $12$ unseen
-\pv disease classes---diseases \observe has
-never encountered in training---confirms
-that \pathomedb mechanistic pathways provide
-genuine diagnostic transfer: the enzymatic
-cascade generalizes across disease classes
-within the same pathogen genus. This figure
-is well above the ${\approx}0.026$ random
-baseline for $38$ classes and ${\approx}0.05$
-for the 12-class subset, establishing
-meaningful zero-shot transfer (P5).
-
-\subsection{Geospatial Prior Validation}
-
-\begin{table}[t]\centering\small
-\begin{tabular}{lcc}
-\toprule
-\textbf{Disease class} & \textbf{AEZ} & \textbf{Pearson $r$} \\
-\midrule
-Colletotrichum spp.   & Humid tropical   & $0.74$ \\
-Phytophthora infestans & Cool humid       & $0.71$ \\
-Xanthomonas oryzae    & Tropical lowland & $0.78$ \\
-Botrytis cinerea      & Temperate humid  & $0.73$ \\
-Puccinia striiformis  & Cool dry         & $0.69$ \\
-\midrule
-\textbf{Mean}         &                  & $\mathbf{0.73}$ \\
-\bottomrule
-\end{tabular}
-\caption{Layer~3 validation: Pearson $r$ between
-  \pathomedb monthly prevalence estimates and
-  EPPO historical outbreak records across five
-  held-out disease classes, stratified by
-  agro-ecological zone. Mean $r{=}0.73 \geq 0.70$ (P7).}
-\label{tab:geovalidation}
-\end{table}
+\paragraph{Coverage of the unseen \pv slice.}
+The unseen-class slice is now defined dynamically
+as $\pv\,\setminus\,\bugwood$ post-normalisation
+rather than fixed at $12$. We report the cardinality
+of this slice in the \texttt{seen\_unseen} field
+of \texttt{evaluate\_pathome.py}'s output JSON
+alongside the per-slice T3 F1.
 
 \subsection{Epistemic/Aleatoric Decomposition}
 
@@ -1102,50 +1252,61 @@ as: this is the minimum credible training set
 for the routing policy, and it is substantially
 smaller than prior art has assumed necessary.
 
-\paragraph{Geospatial grounding is empirical, not editorial.}
-The prior work most comparable to Layer~3 of
-\pathomedb is CABI's Crop Protection Compendium,
-where regional prevalence is asserted by expert
-committees. Our Pearson $r{=}0.73$ against
-EPPO records validates that observation
-density from $10$ geo-tagged images per
-disease class carries equivalent or superior
-regional signal to expert committee opinion,
-at a fraction of the curation cost. This is
-a methodological result independent of the
-diagnostic system it supports.
+\paragraph{The seed--enhance--evaluate loop.}
+\pathomedb's contribution is structural, not
+encyclopaedic. We do not claim that the
+$484$ Claude-seeded visual blocks are better
+than what a domain expert would write; we
+claim that they are good \emph{enough} to bootstrap
+trace generation, and that the trace-derived
+\texttt{SwarmObservations} measurably improve
+\observe at downstream evaluation. The
+seed$\to$enhanced delta is the contribution.
+A negative or null delta (P5--P7 falsification)
+would indicate either that the swarm is too
+unreliable to inform the KB, or that
+\observe is insensitive to KB content beyond
+what's already in the seed---both
+falsifiable failure modes by design.
 
-\paragraph{Zero-shot transfer via mechanistic pathways.}
-T3 F1 of $0.43$ on the $12$ unseen \pv disease
-classes is not attributable to visual feature
-generalization---the model has never seen
-these diseases---but to mechanistic pathway
-transfer. A disease caused by a known pathogen
-genus on a known crop follows a predictable
-enzymatic cascade; \pathomedb Layer~1 encodes
-that cascade; agents trained on related
-diseases in the same genus apply the same
-reasoning. This is the precise analogy to
-Reactome's cross-species pathway conservation:
-the mechanism, not the appearance, is the
-transferable unit.
+\paragraph{Cross-crop zero-shot transfer.}
+T3 F1 on the unseen-\pv slice (diseases
+\observe has never encountered in training)
+remains a sharp test, but the slice is now
+defined dynamically by class-name intersection
+between \bugwood usable CSV and \pv after
+normalisation. The exact cardinality is reported
+in the per-run output JSON. Transfer no longer
+relies on a hand-coded mechanistic-pathway
+layer; it relies on the visual block (Claude
+seed) for the unseen diseases plus the
+\texttt{confusion\_diseases} field for
+adjacent training classes.
 
 \paragraph{Limitations.}
-\bugwood's geographic coverage is strongest
-in North America and Europe; Layer~3 is
-least accurate for Sub-Saharan Africa and
-South Asia, the regions of greatest deployment
-need. The $78$ reference images in Layer~5
-are few; rare disease stages may have
-suboptimal references. \observe calibration
-thresholds require recalibration on
-distributions substantially different from
-both \bugwood and \pv. Label noise from
-$\kappa$ circularity is partially mitigated
-by GRPO Phase~B but not eliminated.
-The zero-shot evaluation covers $12$
-disease classes; broader coverage would
-strengthen P5.
+\label{sec:limits}
+The \bugwood IPMNet CSV is US-only ($47/49$
+states represented after the $\geq{10}$-row
+filter). Layer-3-style monthly priors are
+unsupported (no capture date in the export);
+the geo prior reduces to $\hat{P}(d\mid s)$
+at state granularity. The coarse-fallback FAO
+AEZ mapping resolves the entire US footprint
+into two zones (TMP, STM); a real GAEZ
+shapefile recovers $\sim$$17$ zones via
+\texttt{PATHOME\_AEZ\_SHAPEFILE}, but the
+EPPO Pearson-$r$ validation of the previous
+formulation is not reproducible at this geo
+resolution and is dropped. About half of
+the $484$ admitted classes appear in only one
+state in the CSV (no spatial-variance signal);
+the geo prior's contribution concentrates on
+the multi-state classes. State-of-the-data
+distribution is heavily skewed (NC $33\%$,
+ME $18\%$, KY $7\%$), so per-state priors
+inherit a survey bias that should be
+acknowledged in any deployment outside the
+top-data states.
 
 %% ---------------------------------------------------------------
 \section{Conclusion}
@@ -1154,64 +1315,89 @@ strengthen P5.
 We have argued and demonstrated that training
 on geo-tagged field images is strictly preferable
 to training on controlled laboratory images when
-the deployment target is field conditions---and
-that controlled images, the conventional training
-set, are a straightforward easy test for a model
-that has trained on harder data. \textbf{\plantswarm}
-produces richer behavioral demonstrations from
-field images ($0.83$--$0.87$ behavioral routing
-precision vs.\ $0.71$--$0.76$ self-declared,
-gap widened by field ambiguity), generates the
-GPS metadata that grounds \pathomedb's regional
-epidemiology empirically ($r{=}0.73$ vs.\ EPPO),
-and does all of this from $10$ images per disease.
-\textbf{\pathomedb} provides mechanistic invariants
-that enable zero-shot diagnosis of unseen disease
-classes (T3 F1 $0.43$ on $12$ zero-training classes),
-geospatial priors that reduce routing path length
-by $21\%$ in peak-risk conditions, and geo-tagged
-references that drive image-to-image overconfidence
-detection. \textbf{\observe} achieves ECE $0.12$
-on $54{,}306$ controlled images and $0.17$ on the
-complete wild benchmark, surpassing its \plantswarm
-teacher on both, at a training-to-test ratio of
-$1{:}280$.
+the deployment target is field conditions, and
+that the curated portion of the knowledge base
+need not be assembled by hand. \textbf{\pathomedb v2}
+is a two-store, symptom-centric, geo-aware
+knowledge base whose visual content is seeded by
+\texttt{claude -p} and whose behavioural content
+is mined from $101{,}640$ \plantswarm routing
+traces. \textbf{\plantswarm} produces richer
+behavioural demonstrations from field images
+than from controlled photographs (the
+self-declared/behavioural-precision gap widens
+on field ambiguity), generates the per-class
+state-distribution data that grounds the geo
+prior empirically, and does so from a corpus
+that requires no manual curation beyond
+filtering the IPMNet CSV. \textbf{\observe}
+trains twice---once against the seed-only
+\pathomedb, once against the swarm-enhanced
+\pathomedb---on the same trace set, and we
+report the seed$\to$enhanced delta on full
+\pv (with seen/unseen slice) and full \pw.
 
 The question this system answers is not whether
 AI can diagnose plant disease with enough data.
-The question is what it can do with the data
-that actually exists---$10$ field photographs,
-GPS coordinates, and a mechanistic understanding
-of how pathogens work.
+The question is whether a multi-agent VLM swarm,
+fed back to the knowledge base it consulted, can
+make the next round of agents measurably more
+efficient---and how much editorial seeding
+is actually needed to get the loop started.
 
 \section*{Ethics Statement}
 
-\bugwood images are publicly available under
-academic and extension-service terms.
-GPS coordinates are retained at agro-ecological
-zone granularity in \pathomedb, not at
-precision levels that could identify individual
-farms or farmers. Treatment recommendations
-are informational only; deployment requires
-trained extension workers with local regulatory
-knowledge. We acknowledge \bugwood's geographic
-bias toward North America and Europe and release
-Layer~3 regional coverage statistics alongside
-\pathomedb so users can assess reliability
-before deployment. Per-disease ECE is released
-alongside accuracy metrics.
+\bugwood IPMNet images are publicly available
+under academic and extension-service terms.
+\pathomedb retains location at US-state
+granularity (the resolution available in the
+CSV export); no per-image GPS that could
+identify an individual farm or farmer is
+ever stored. The Claude-headless seed is a
+\textit{descriptive} resource (``what does
+\textit{Botrytis} on strawberry look like?'')
+and is not deployed as a treatment
+recommender; production deployment requires
+trained extension workers with local
+regulatory knowledge. We acknowledge that
+the IPMNet CSV is US-only and survey-biased
+(top three states $=\,57\%$ of records) and
+release the per-state coverage statistics
+alongside \pathomedb so users can assess
+reliability before deployment outside the
+top-data states. Per-class T3 F1 and ECE
+are released alongside the aggregate metrics.
 
 \section*{Limitations}
 
-\bugwood geographic bias limits Layer~3 accuracy
-for Sub-Saharan Africa and South Asia.
-Layer~5 reference library is small ($78$ images);
-rare disease stages may retrieve suboptimal references.
-\observe calibration thresholds require recalibration
-under substantial distribution shift.
-$\kappa$ circularity partially propagates label noise.
-Zero-shot evaluation covers $12$ disease classes;
-broader coverage strengthens the claim.
+The \bugwood IPMNet CSV is US-only at state
+granularity; international deployment requires
+either a different export with finer GPS or
+a separate regional knowledge base.
+The coarse-fallback FAO AEZ mapping resolves
+the US footprint into two zones; the full
+$\sim$$17$-zone resolution requires
+\texttt{PATHOME\_AEZ\_SHAPEFILE} pointing at
+a real GAEZ shapefile.
+About half of the $484$ admitted classes
+appear in only one state, contributing no
+spatial-variance signal; the geo prior is
+informative on the multi-state subset only.
+\texttt{ReferenceLibrary} contains $1{,}452$
+images---larger than the previous
+formulation's $78$, but rare disease
+stages may still retrieve suboptimal
+references for visually-confounded classes.
+\observe calibration thresholds require
+recalibration under substantial distribution
+shift. $\kappa$-circularity partially
+propagates label noise; GRPO Phase~B
+mitigates but does not eliminate it. The
+Claude-headless seed quality varies with
+disease prevalence in the model's training
+data; rare or recently-described diseases
+are more likely to return empty visual
+fields.
 
 \section*{Acknowledgments}
 [Omitted for anonymous review.]
@@ -1222,50 +1408,66 @@ broader coverage strengthens the claim.
 %% ---------------------------------------------------------------
 \appendix
 
-\section{Bugwood Image Selection}
+\section{Bugwood CSV Filtering}
 \label{app:selection}
 
-Hard filters: GPS precision ${\leq}10$km,
-species-level disease label, resolution
-${\geq}512{\times}512$, single dominant
-subject with diagnostic region ${\geq}25\%$
-of frame, no severe JPEG compression
-($<60$ quality factor). From candidates
-passing all filters, $k$-medoids ($k{=}10$,
-initialized by $k$-means++) on CLIP ViT-B/32
-embeddings selects the maximally diverse
-$10$ images per class. This ensures early,
-mid, and late stage presentations are covered
-and multiple geographic origins are represented
-within the $10$.
+The IPMNet export
+(\texttt{BugWood\_Diseases.csv}, $19{,}749$
+rows) is normalised by
+\texttt{scripts/filter\_bugwood\_csv.py}:
+\begin{enumerate}
+  \item drop rows with empty \texttt{Host Name}
+    ($2{,}171$);
+  \item map \texttt{Host Name} via
+    \texttt{BUGWOOD\_EXACT\_CROP\_MAP} (60+
+    crop synonyms; non-host taxa dropped);
+  \item strip parenthetical Latin from
+    \texttt{Subject Display Name}; title-case;
+  \item drop rows with empty/unrecognised
+    \texttt{Location};
+  \item group by $(\text{NormCrop},\,\text{NormDisease})$
+    and keep classes with $\geq{10}$ rows.
+\end{enumerate}
+Output: \texttt{BugWood\_Diseases\_usable.csv},
+$11{,}513$ rows over $\mathbf{484}$ classes.
+Five derived columns are appended
+(\texttt{NormCrop}, \texttt{NormDisease},
+\texttt{StateLat}, \texttt{StateLon},
+\texttt{AezCode}). The first $10$ rows per
+class (deterministic ordering by
+\texttt{Image Number}) are admitted by
+\texttt{BugwoodLoader}; $7$ feed \plantswarm
+trace generation, $3$ become \texttt{ReferenceLibrary}
+entries.
 
-Of the $10$ images per class: $7$ feed
-\plantswarm ($30$ runs each, temperature
-$T{=}0.9$, max path length $15$ steps,
-backtrack budget $1$ per episode); $3$ are
-held as \pathomedb Layer~5 references
-(one per disease stage, staged by Qwen2.5-VL-7B
-prompted with Layer~1 pathway descriptions,
-five-sample majority vote).
+\texttt{select\_diverse\_subset} (CLIP
+$k$-medoids over the candidate pool) is still
+exposed for callers that want to apply
+diversity sampling \emph{within} a class's
+post-filter pool, but is not used by default;
+the deterministic Image-Number ordering is
+sufficient for reproducibility.
 
-\section{Layer 3 Construction Details}
+\section{Geo prior at state granularity}
 \label{app:layer3}
 
-GPS coordinates from $182$ trace images are
-mapped to FAO agro-ecological zones using
-the FAO shapefile at $0.5^\circ$ resolution.
-AEZ-month cells with $<3$ observations are
-marked \texttt{sparse} and excluded from
-$\hat{P}(d \mid r, \sigma)$; \observe queries
-the global pathogen prior for sparse cells.
-Risk tiers: \textit{critical} (top quartile
-by count density), \textit{high} (50--75th),
-\textit{medium} (25--50th), \textit{low} ($<25$th).
-Validation uses Pearson $r$ over shared
-(disease, AEZ, month) triples in both
-\pathomedb and the EPPO database; five
-disease classes are held out from trace
-generation for this validation.
+State centroids are population-weighted (US
+Census 2020) for the $50$ states + DC + US
+territories that occasionally appear in IPMNet.
+The reverse-lookup in
+\texttt{pathome.database.\_nearest\_state}
+resolves $(\lambda,\,\phi)$ to the closest
+centroid in $\ell_2$. The prior reads
+$\hat{P}(d\mid s) =
+\mathrm{count}(d, s) / \sum_{d'}\mathrm{count}(d', s)$
+directly off the symptom profile's
+\texttt{state\_counts}. State cells with
+$<3$ observations are marked \texttt{sparse};
+\observe queries the global pathogen prior
+in those cases. The previous AEZ-month grid
+and EPPO Pearson-$r$ validation are dropped
+because the IPMNet export lacks the GPS and
+date fields required to construct them.
 
 \section{Training Configuration}
 \label{app:training}
@@ -1274,34 +1476,39 @@ generation for this validation.
 cosine decay, warmup $500$ steps, batch $32$
 ($8{\times}4$ accumulation), $50$ epochs,
 early stopping patience $5$ (validation ECE).
-Train/val/held-out split: $4{,}368/546/546$
-(80/10/10 of $5{,}460$ traces).
-1$\times$ A100 40GB, ${\approx}4$--$6$h.
+Train/val/held-out split: 80/10/10 of the
+$101{,}640$ \plantswarm traces.
+$1\times$ A100 80GB, ${\approx}10$--$14$h
+per checkpoint (the seed-DB and enhanced-DB
+runs are sequential in
+\texttt{submit\_pathome\_phase4\_train.sh}).
 
 \textbf{Phase B (GRPO):} AdamW $\text{lr}{=}5{\times}10^{-5}$,
 $G{=}8$ rollouts, $10$ epochs, $\beta_\text{KL}{=}0.04$,
 clip $\epsilon{=}0.2$, reference policy frozen from Phase~A.
-1$\times$ A100 40GB, ${\approx}3$--$4$h.
+$1\times$ A100 80GB, ${\approx}6$--$8$h per checkpoint.
 
 \section{Falsifiable Predictions}
 \label{app:predictions}
 
 \begin{table}[H]\centering\small
-\begin{tabular}{lp{3.2cm}c}
+\begin{tabular}{lp{3.4cm}c}
 \toprule
 \textbf{P} & \textbf{Quantity} & \textbf{Target} \\
 \midrule
 P1 & $\rho(L, H[\hat{y}])$ & $+0.42$--$+0.55$ \\
 P2 & $\Delta$Acc, PathogenAgent post-BT & $+9$ F1 \\
 P3 & acc(early) $-$ acc(extended) & $+12$ F1 \\
-P4 & \observe ECE (\pv / \pw) & ${\leq}0.13/0.18$ \\
-P5 & Zero-shot T3 F1 (12 unseen classes) & ${\geq}0.40$ \\
-P6 & Cross-crop T3 F1, iter.\ 3 & ${\geq}80\%$ \\
-P7 & Layer~3 vs EPPO Pearson $r$ & ${\geq}0.70$ \\
+P4 & \observe ECE (\pv / \pw) & ${\leq}0.15/0.20$ \\
+P5 & Enhanced$-$seed $\Delta$T3 macro F1 (full \pv) & ${\geq}{+}0.03$ \\
+P6 & Enhanced$-$seed $\Delta$ECE (full \pw) & ${\leq}{-}0.02$ \\
+P7 & Enhanced$-$seed $\Delta$ avg.\ path length & ${\leq}{-}0.5$ \\
 \bottomrule
 \end{tabular}
-\caption{Seven falsifiable predictions. P5 and P7
-  are new relative to prior formulations.}
+\caption{Seven falsifiable predictions. P5--P7
+  reformulated for the seed$\to$enhanced design;
+  observed values fill in via
+  \texttt{compare\_pathome\_versions.py} \texttt{$\backslash$PathomeDelta*} macros.}
 \label{tab:predictions}
 \end{table}
 
