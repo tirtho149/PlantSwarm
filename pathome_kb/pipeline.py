@@ -223,10 +223,18 @@ def main() -> None:
                 state_image_map=state_image_map,
                 quick=args.quick,
             )
-    elif args.regional_image_only:
-        # Need state_image_map for the image-fill stage even if we're
-        # not running the text-grounded regional pass.
+    elif args.regional_image_only or args.regional_image_fill:
+        # Need state_image_map for the image-fill stage. Also load the
+        # cached regional_registries.json so the merge step still has the
+        # text-grounded regional records to layer image-fills onto.
         state_image_map = build_state_image_map(csv_path)
+        for crop in crops:
+            cached = get_crop_dir(crop) / "regional_registries.json"
+            if cached.is_file():
+                regional_by_crop[crop] = load_json(
+                    "regional_registries.json", output_dir=get_crop_dir(crop))
+            else:
+                print(f"  [warn] no cached regional_registries.json for {crop}")
 
     # ---------------- Optional: regional image-fill (VLM grounding) -----------
     image_fills_by_crop: Dict[str, Dict[str, Dict[str, dict]]] = {}

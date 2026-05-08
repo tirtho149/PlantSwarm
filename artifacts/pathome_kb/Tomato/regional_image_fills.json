@@ -1,0 +1,260 @@
+{
+  "Tomato::Bacterial Speck Of Tomato": {
+    "Alabama": {
+      "color": {
+        "value": [
+          "dark brown",
+          "black",
+          "yellow"
+        ],
+        "quote": "Numerous small dark brown to black lesions are scattered across the green leaflets, with surrounding tissue showing yellow chlorotic patches especially on the upper leaflet."
+      },
+      "shape": {
+        "value": "small punctate specks",
+        "quote": "The lesions appear as tiny pinpoint to small punctate specks, mostly circular and less than a few millimeters in diameter."
+      },
+      "margin": {
+        "value": "diffuse with surrounding chlorotic halo",
+        "quote": "The dark specks have somewhat diffuse edges and many are surrounded by faint yellow chlorotic halos rather than sharply defined borders."
+      },
+      "texture": {
+        "value": [
+          "flat speckled",
+          "necrotic"
+        ],
+        "quote": "The lesions appear flat and embedded in the leaf surface as dry necrotic flecks, with no visible fuzzy growth, ooze, or sporulation."
+      }
+    },
+    "North Carolina": {
+      "color": {
+        "value": [
+          "dark brown",
+          "black",
+          "yellow halo"
+        ],
+        "quote": "Numerous small dark brown to black specks are scattered across the leaf surface, several surrounded by faint yellowish chlorotic halos against the green leaf tissue."
+      },
+      "shape": {
+        "value": "circular to irregular",
+        "quote": "Most lesions are tiny and roughly circular pinpoint specks, though some have coalesced into larger irregular dark blotches."
+      },
+      "margin": {
+        "value": "diffuse with chlorotic halo",
+        "quote": "Lesion margins appear slightly diffuse with thin pale-yellow chlorotic halos surrounding many of the dark specks."
+      },
+      "texture": {
+        "value": [
+          "necrotic",
+          "sunken"
+        ],
+        "quote": "The dark specks appear dry and necrotic, with some advanced lesions looking slightly sunken and causing leaf curling and tearing."
+      }
+    }
+  },
+  "Tomato::Early Blight": {
+    "Alabama": {
+      "color": {
+        "value": [
+          "brown",
+          "dark brown",
+          "blackened"
+        ],
+        "quote": "The foliage across the staked tomato rows has turned almost uniformly dark brown to blackish, in stark contrast to the still-red and orange ripening fruit and the surrounding green grass."
+      },
+      "shape": {
+        "value": "",
+        "quote": ""
+      },
+      "margin": {
+        "value": "",
+        "quote": ""
+      },
+      "texture": {
+        "value": [
+          "dry",
+          "withered",
+          "defoliated"
+        ],
+        "quote": "The canopy looks dry, shriveled, and largely defoliated — only skeletal brown stems remain on the lower and middle portions of the plants, with fruit hanging exposed on bare stakes."
+      }
+    }
+  },
+  "Tomato::Cucumber Mosaic Virus": {
+    "Alabama": {
+      "color": {
+        "value": [
+          "dark green",
+          "dull green-grey"
+        ],
+        "quote": "From this wide field view the affected tomato canopy reads as a uniformly dull dark green with no resolvable mosaic mottling or bright chlorotic patches at this distance."
+      },
+      "shape": {
+        "value": "stunted plants with narrowed drooping leaflets",
+        "quote": "Plants between the stakes are noticeably stunted and compact with narrowed, drooping leaflets giving a shoestring-like silhouette compared to the fuller plants further down the row."
+      },
+      "margin": {
+        "value": "downward-curled and inrolled",
+        "quote": "Leaflet edges appear curled and rolled downward along the affected plants, but discrete lesion margins cannot be resolved at this field-scale distance."
+      },
+      "texture": {
+        "value": [
+          "limp",
+          "wilted-drooping"
+        ],
+        "quote": "The foliage on the affected plants looks limp and collapsed over the stake strings with a wilted, drooping texture; fine surface detail such as rugosity, blistering, or sporulation is not visible at this scale."
+      }
+    }
+  },
+  "Tomato::Gray Mold": {
+    "Kentucky": {
+      "color": {
+        "value": [
+          "white",
+          "tan",
+          "pale green"
+        ],
+        "quote": "The lesion shows a central white-to-grayish fungal mass surrounded by tan/beige necrotic tissue on an otherwise pale green unripe tomato fruit."
+      },
+      "shape": {
+        "value": "roughly circular sunken lesion with radial cracks",
+        "quote": "A roughly circular sunken lesion sits at the stem-end of the fruit with star-like radial cracks splitting outward through the surrounding tan tissue."
+      },
+      "margin": {
+        "value": "irregular, jagged tan border",
+        "quote": "The lesion margin is irregular and jagged where the tan necrotic tissue meets the surrounding pale green fruit surface, with no sharp halo."
+      },
+      "texture": {
+        "value": [
+          "fluffy white mycelium",
+          "sunken",
+          "cracked"
+        ],
+        "quote": "The center shows fluffy white mycelial growth within a sunken, collapsed area, while the surrounding necrotic tissue is dry, papery, and cracked."
+      }
+    }
+  },
+  "Tomato::Late Blight": {
+    "Alabama": {
+      "distinctive_signs": {
+        "value": [
+          "firm greasy-looking lesions",
+          "large irregular dark blotches covering much of the fruit surface",
+          "leathery brown-to-olive discoloration",
+          "cracked tan/cream necrotic patch within one lesion",
+          "no visible white sporulation in this photo"
+        ],
+        "quote": "Three immature green tomato fruits each show large, firm, greasy-leathery dark blotches; the right fruit also has a sunken cracked tan area within the lesion, and no white mold/sporulation is visible."
+      },
+      "plant_parts": {
+        "value": [
+          "fruit (immature/green)"
+        ],
+        "quote": "Only immature green tomato fruits with attached calyx/stem are shown — no leaves or stems are pictured."
+      },
+      "color": {
+        "value": [
+          "dark chocolate brown",
+          "olive-grey to greyish-green",
+          "pale green (healthy fruit background)",
+          "tan/cream (cracked necrotic patch)"
+        ],
+        "quote": "Lesions are a greasy dark chocolate-brown to olive-grey blending into the pale green unaffected fruit, with a tan/cream cracked spot on the rightmost tomato."
+      },
+      "shape": {
+        "value": "Large, irregular, diffuse blotches with poorly defined margins covering 30–60% of each fruit's surface; not concentric or ringed, and one lesion shows a sunken cracked center.",
+        "quote": "The lesions are broad, irregularly shaped diffuse blotches with feathered edges rather than sharp circular spots, often wrapping over the shoulder of the fruit."
+      }
+    }
+  },
+  "Tomato::Southern Bacterial Wilt": {
+    "Alabama": {
+      "distinctive_signs": {
+        "value": [
+          "brown vascular and pith discoloration revealed by longitudinal stem split",
+          "internal browning extends continuously along the stem and into a side branch",
+          "outer epidermis remains green while inner tissues are necrotic"
+        ],
+        "quote": "The longitudinally split stem reveals a continuous brown discoloration of the pith and vascular tissue running the length of the stem and into a lateral branch, while the outer rind stays green."
+      },
+      "plant_parts": {
+        "value": [
+          "stem (longitudinal section)",
+          "pith",
+          "vascular tissue",
+          "lateral branch / side shoot"
+        ],
+        "quote": "A tomato stem has been split lengthwise to expose the pith and vascular cylinder, including the junction where a side branch diverges."
+      },
+      "color": {
+        "value": [
+          "tan to medium brown internal pith",
+          "darker brown streaking along the vascular ring",
+          "bright green outer stem rind"
+        ],
+        "quote": "Internal pith and vascular tissue are uniformly tan-brown with darker brown streaks, contrasting sharply with the still-green outer stem walls."
+      },
+      "shape": {
+        "value": "Elongated linear streak of brown discoloration running the full length of the split stem and continuing into the branching node, with no discrete spots or lesions on the exterior.",
+        "quote": "The discoloration takes the form of an unbroken longitudinal brown streak through the central pith rather than discrete external lesions."
+      }
+    }
+  },
+  "Tomato::Southern Blight": {
+    "Alabama": {
+      "color": {
+        "value": [
+          "brown",
+          "tan",
+          "yellow-brown",
+          "green (residual)"
+        ],
+        "quote": "Three uprooted tomato plants display extensive tan-to-brown discoloration of foliage and stems with only patchy residual green tissue and a few green fruits remaining."
+      },
+      "shape": {
+        "value": "whole-plant collapse / wilted",
+        "quote": "The image shows whole-plant wilt and collapse rather than discrete lesions, with stems flopped and foliage drooping after being pulled from the soil."
+      },
+      "margin": {
+        "value": "",
+        "quote": ""
+      },
+      "texture": {
+        "value": [
+          "desiccated",
+          "shriveled foliage"
+        ],
+        "quote": "Leaves and stems appear dried and shriveled with a brittle, papery look, but no white mycelium or tan sclerotia are resolvable at this distance."
+      }
+    }
+  },
+  "Tomato::Tomato Spotted Wilt Virus": {
+    "Alabama": {
+      "color": {
+        "value": [
+          "bronze",
+          "dark brown",
+          "purplish-brown",
+          "green"
+        ],
+        "quote": "The leaflet shows a dull green background overlaid with numerous small bronze to dark purplish-brown flecks, with subtle bronzing concentrated between veins."
+      },
+      "shape": {
+        "value": "small irregular specks and scattered flecks",
+        "quote": "Symptoms appear as tiny irregular specks and flecks scattered across the leaf blade rather than discrete circular lesions."
+      },
+      "margin": {
+        "value": "diffuse and indistinct",
+        "quote": "The flecks have diffuse, poorly defined edges that blend into the surrounding leaf tissue without a sharp halo or border."
+      },
+      "texture": {
+        "value": [
+          "matte",
+          "puckered",
+          "slightly cupped",
+          "rugose"
+        ],
+        "quote": "The leaf surface looks dull and matte with a faintly puckered, rugose appearance and slight cupping/distortion of the leaflet."
+      }
+    }
+  }
+}

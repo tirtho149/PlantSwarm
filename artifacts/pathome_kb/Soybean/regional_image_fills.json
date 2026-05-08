@@ -1,0 +1,196 @@
+{
+  "Soybean::Bacterial Pustule Of Soybean Disease": {
+    "Kentucky": {
+      "color": {
+        "value": [
+          "green",
+          "yellow-brown",
+          "tan",
+          "reddish-brown"
+        ],
+        "quote": "The leaves are predominantly green with scattered small yellow-brown to tan flecks and larger reddish-brown necrotic patches, especially on the rightmost leaf."
+      },
+      "shape": {
+        "value": "small angular to irregular flecks coalescing into larger irregular necrotic blotches",
+        "quote": "Lesions appear as small angular to irregular pinpoint flecks scattered across the laminae that coalesce into larger irregular necrotic blotches and tattered holes on the more advanced leaves."
+      },
+      "margin": {
+        "value": "indistinct, diffuse with faint chlorotic halo",
+        "quote": "Lesion margins are mostly indistinct and diffuse, with a faint chlorotic yellowing bordering the larger brown necrotic areas."
+      },
+      "texture": {
+        "value": [
+          "puckered/crinkled lamina",
+          "necrotic tissue dropout (shot-hole)",
+          "dry papery necrosis"
+        ],
+        "quote": "The leaves show a puckered, crinkled surface with dry papery necrotic patches and several torn-out (shot-hole) areas where dead tissue has fallen away."
+      }
+    }
+  },
+  "Soybean::Bean Pod Mottle Virus": {
+    "Alabama": {
+      "color": {
+        "value": [
+          "light green",
+          "yellow-green",
+          "dark green"
+        ],
+        "quote": "Foliage shows a patchy mottle of light green to yellow-green areas interspersed with normal dark green tissue, producing a mosaic appearance across multiple trifoliate leaves."
+      },
+      "shape": {
+        "value": "irregular mosaic patches",
+        "quote": "The discoloration forms irregular, diffuse blotches and patches scattered between the veins rather than discrete circular lesions."
+      },
+      "margin": {
+        "value": "diffuse",
+        "quote": "Margins of the chlorotic patches are indistinct and gradually blend into surrounding green tissue with no sharp border or halo."
+      },
+      "texture": {
+        "value": [
+          "mottled",
+          "slightly puckered"
+        ],
+        "quote": "Affected leaflets appear mottled with subtle puckering or uneven surface between veins, while a few small holes from chewing damage are also visible but not part of the viral symptom."
+      }
+    }
+  },
+  "Soybean::Bacterial Blight": {
+    "Indiana": {
+      "color": {
+        "value": [
+          "dark brown",
+          "reddish-brown",
+          "yellow halo"
+        ],
+        "quote": "Numerous small dark reddish-brown to nearly black lesions are scattered across the green leaf, many surrounded by diffuse yellow chlorotic halos."
+      },
+      "shape": {
+        "value": "small angular to irregular spots, some coalescing into larger blotches",
+        "quote": "The lesions are small angular to irregular flecks, with several merging into larger ragged blotches and a few holes where necrotic tissue has dropped out."
+      },
+      "margin": {
+        "value": "sharp dark brown border with diffuse yellow chlorotic halo",
+        "quote": "Lesion edges are sharply defined dark brown borders surrounded by diffuse yellow chlorotic halos that fade gradually into healthy green tissue."
+      },
+      "texture": {
+        "value": [
+          "dry necrotic centers",
+          "shot-hole tearing"
+        ],
+        "quote": "Lesion centers appear dry and necrotic, with several spots torn out leaving shot-hole gaps in the leaf blade; no fungal sporulation or fuzzy growth is visible."
+      }
+    }
+  },
+  "Soybean::Downy Mildew": {
+    "Kentucky": {
+      "color": {
+        "value": [
+          "pale tan",
+          "light brown",
+          "greyish-tan centers",
+          "yellow chlorotic halos"
+        ],
+        "quote": "Lesions appear as pale tan to light brown spots with slightly greyish necrotic centers, set against green leaf tissue with faint yellowish chlorotic mottling around them."
+      },
+      "shape": {
+        "value": "irregular, somewhat angular spots of varying size, occasionally bounded by minor veins",
+        "quote": "The spots are irregular and somewhat angular in outline, scattered across the leaflets in varying sizes and sometimes constrained by small veins."
+      },
+      "margin": {
+        "value": "diffuse, fading gradually into a faint yellow chlorotic halo",
+        "quote": "Lesion margins are diffuse rather than sharp, blending into the surrounding green tissue through a faint yellow chlorotic halo."
+      },
+      "texture": {
+        "value": [
+          "dry papery necrotic centers",
+          "shot-hole tearing in some lesions",
+          "no visible sporulation on this upper surface"
+        ],
+        "quote": "Necrotic centers look dry and papery, with a few lesions having torn out to leave small shot-holes; no downy sporulation is visible from this upper-surface view."
+      }
+    }
+  },
+  "Soybean::Frogeye Leaf Spot": {
+    "Alabama": {
+      "color": {
+        "value": [
+          "tan to light gray center",
+          "reddish-brown to dark purple-brown border"
+        ],
+        "quote": "Numerous small spots with pale tan-to-gray centers ringed by reddish-brown to dark purple-brown borders set against still-green leaf tissue."
+      },
+      "shape": {
+        "value": "small circular to subcircular spots, mostly 1-3 mm, scattered densely across the lamina",
+        "quote": "The lesions are small, roughly circular to slightly irregular spots distributed densely and uniformly over the entire upper leaf surface."
+      },
+      "margin": {
+        "value": "sharply delimited narrow dark reddish-brown to purplish border",
+        "quote": "Each spot is bounded by a thin, sharply defined reddish-brown to purplish ring that clearly separates the necrotic center from surrounding green tissue."
+      },
+      "texture": {
+        "value": [
+          "dry, papery sunken centers",
+          "some centers dropped out producing shot-hole appearance"
+        ],
+        "quote": "Lesion centers look thin, dry and papery, and several have fallen out leaving small shot-holes; no fuzzy sporulation is visible in this photograph."
+      }
+    }
+  },
+  "Soybean::Soybean Rust": {
+    "Florida": {
+      "color": {
+        "value": [
+          "tan",
+          "rust-orange",
+          "reddish-brown"
+        ],
+        "quote": "The underside of the leaf is densely peppered with small tan to rust-orange pustules against a pale green background, with a few darker brown necrotic flecks interspersed."
+      },
+      "shape": {
+        "value": "small pinpoint to angular pustules",
+        "quote": "Lesions appear as numerous tiny pinpoint to slightly angular raised pustules, individually small but covering most of the abaxial leaf surface."
+      },
+      "margin": {
+        "value": "diffuse, indistinct",
+        "quote": "Individual pustules have diffuse, indistinct margins that blend into the surrounding leaf tissue rather than forming sharply bordered spots."
+      },
+      "texture": {
+        "value": [
+          "powdery",
+          "granular",
+          "raised pustules"
+        ],
+        "quote": "The leaf underside shows a granular, powdery texture from densely clustered raised uredinial pustules releasing rust-colored spore masses."
+      }
+    }
+  },
+  "Soybean::Southern Blight": {
+    "Alabama": {
+      "color": {
+        "value": [
+          "tan",
+          "bleached cream",
+          "light brown"
+        ],
+        "quote": "The lower stem shows a bleached cream-to-tan discoloration with light brown necrotic patches at the crown, contrasting with the darker brown of the surrounding stem and soil-coated roots."
+      },
+      "shape": {
+        "value": "elongated, girdling lesion at the crown extending vertically up the lower stem",
+        "quote": "An irregular elongated bleached lesion runs vertically along the lower stem and wraps around the crown region just above the soil line."
+      },
+      "margin": {
+        "value": "diffuse, irregular",
+        "quote": "The boundary between the bleached tan lesion and the surrounding healthier stem tissue is diffuse and irregular rather than sharply defined."
+      },
+      "texture": {
+        "value": [
+          "dry",
+          "papery",
+          "weathered"
+        ],
+        "quote": "The affected lower stem surface appears dry, papery, and weathered, with no clearly visible white mycelial fan or distinct round sclerotia in this view."
+      }
+    }
+  }
+}
