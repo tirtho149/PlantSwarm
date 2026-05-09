@@ -1,0 +1,793 @@
+{
+  "Tomato::Early Blight": {
+    "Alabama": {
+      "severity": "late-season",
+      "severity_quote": "Most foliage on the staked tomato row has collapsed into brown, leafless skeletons while red and green fruit remain hanging on the largely defoliated plants.",
+      "lesion_morphology": "Individual lesions are not resolvable at this field-scale distance; the canopy reads as wholesale browning and shriveling of leaves rather than discrete spots.",
+      "lesion_morphology_quote": "Foliage appears uniformly necrotic and dried, with bare stems exposed instead of visible bulls-eye spots.",
+      "affected_organs": [
+        "leaves",
+        "stems"
+      ],
+      "affected_organs_quote": "Leaves across the row are brown and desiccated and the supporting stems/branches are visibly bare and darkened.",
+      "spread_pattern": "uniform across row",
+      "spread_pattern_quote": "The entire staked tomato row shows defoliation top-to-bottom while adjacent weeds/ground cover stay green, indicating uniform progression through the planting.",
+      "variations_from_canonical": [
+        "Image shows whole-plant defoliation and canopy collapse rather than the small 1/4–1/2 inch bulls-eye lesions on lower leaves described canonically.",
+        "No yellow halo or concentric-ring detail is visible at this scale — disease is past the diagnostic-lesion stage.",
+        "Fruit in the image still appears intact and ripening on the vine; the canonical sunken, leathery calyx-end fruit lesions are not evident here.",
+        "Damage is not confined to the lower canopy as canonical text suggests; the upper canopy is equally defoliated."
+      ],
+      "__image_ids__": [
+        "bugwood::1568038",
+        "bugwood::1568038"
+      ],
+      "state": "Alabama"
+    },
+    "Connecticut": {
+      "severity": "moderate",
+      "severity_quote": "A few well-developed dark lesions are present on a still mostly green leaf, with adjacent leaves showing yellowing and one larger necrotic patch near the leaf tip.",
+      "lesion_morphology": "Roughly circular dark brown to black spots about 5–10 mm across with faint concentric rings and a tan/gray center, some surrounded by mild chlorotic yellowing; one larger coalesced necrotic patch sits at a leaflet tip.",
+      "lesion_morphology_quote": "Two small round dark lesions on the central leaflet show concentric ring patterning, and a larger irregular brown necrotic area occupies the tip of an adjacent leaflet.",
+      "affected_organs": [
+        "leaf"
+      ],
+      "affected_organs_quote": "Lesions and chlorosis are visible on the tomato leaflets in the foreground; green fruit in the background appears unblemished.",
+      "spread_pattern": "scattered, lower canopy",
+      "spread_pattern_quote": "A few discrete spots are scattered across one leaflet while neighboring lower leaves show yellowing and isolated necrotic flecks rather than uniform coverage.",
+      "variations_from_canonical": [
+        "The clear bulls-eye concentric ring pattern is only weakly visible in the small lesions; rings are faint rather than pronounced.",
+        "The yellow halo around individual spots is subtle/absent on the central leaflet — chlorosis appears more as broad leaf yellowing than as a tight halo around each lesion.",
+        "Visible lesions are larger than the canonical 1/4 inch (~6 mm) — the tip lesion is a coalesced patch >2 cm across.",
+        "No stem or fruit lesions are visible; the green fruits in the background appear clean, so this image only documents foliar symptoms."
+      ],
+      "__image_ids__": [
+        "bugwood::5559537"
+      ],
+      "state": "Connecticut"
+    }
+  },
+  "Tomato::Cucumber Mosaic Virus": {
+    "Alabama": {
+      "severity": "advanced",
+      "severity_quote": "Entire rows of staked tomato plants appear stunted, drooping, and sparsely foliated compared to expected canopy fill for trellised tomatoes at this growth stage.",
+      "lesion_morphology": "No discrete lesions are resolvable at this field-scale distance; foliage appears overall dark green with a wilted, droopy posture and reduced leaf size rather than showing distinct spots or mosaic patches.",
+      "lesion_morphology_quote": "Leaves on the affected plants look limp and downward-hanging with no clearly visible discrete lesions or color-broken patches at this resolution.",
+      "affected_organs": [
+        "Foliar",
+        "Whole plant"
+      ],
+      "affected_organs_quote": "Whole plants on the white plastic mulch beds show drooping, stunted foliage along the entire row, with no fruit or flowers clearly visible.",
+      "spread_pattern": "uniform across rows",
+      "spread_pattern_quote": "Multiple parallel staked rows show consistent stunting and droop along their full length, indicating a field-wide rather than localized distribution.",
+      "variations_from_canonical": [
+        "Image is a wide field shot showing whole-plant stunting and droopy posture rather than the close-up mosaic, yellow streaking, or ring-spot foliar patterns emphasized in the canonical description.",
+        "Filiformity (shoestring leaves), the canonical hallmark for CMV in tomato, is not resolvable in this distant field view.",
+        "No fruit, flower color breaking, or vein yellowing is visible in this image, even though the canonical text lists those as common CMV signs."
+      ],
+      "__image_ids__": [
+        "bugwood::1568047",
+        "bugwood::1568048",
+        "bugwood::1568049",
+        "bugwood::1568051",
+        "bugwood::1568052",
+        "bugwood::1568053",
+        "bugwood::1568061",
+        "bugwood::1568047",
+        "bugwood::1568048",
+        "bugwood::1568049",
+        "bugwood::1568051",
+        "bugwood::1568052",
+        "bugwood::1568053",
+        "bugwood::1568061"
+      ],
+      "state": "Alabama"
+    },
+    "Virginia": {
+      "severity": "advanced",
+      "severity_quote": "Two entire tomato shoots show severe, plant-wide leaf distortion with the foliage reduced to thin, shriveled, shoestring-like remnants.",
+      "lesion_morphology": "No discrete lesions are visible; instead the leaves are extremely narrow, filiform, twisted and crinkled, with greatly reduced leaf blades that appear uniformly green rather than mottled.",
+      "lesion_morphology_quote": "Leaflets are reduced to thread- and shoestring-like strips with curled, puckered margins along otherwise intact green stems.",
+      "affected_organs": [
+        "leaves",
+        "shoots",
+        "whole plant"
+      ],
+      "affected_organs_quote": "Both detached shoots show distorted, filiform leaflets along the entire length of the stems, while the stems themselves remain green and structurally intact.",
+      "spread_pattern": "uniform whole-plant",
+      "spread_pattern_quote": "Distortion is consistent from the basal leaves to the growing tips on both shoots, not localized to any one zone of the canopy.",
+      "variations_from_canonical": [
+        "The dominant visible symptom is filiformity/shoestring leaves; the canonical mosaic of light-and-dark green patches is not apparent in this image.",
+        "No ring-spots, line patterns, yellow streaking, or flower color breaking are visible on the tissue shown.",
+        "Leaves appear largely uniform green rather than displaying the yellow-and-green mosaic emphasized in the canonical summary.",
+        "Symptoms shown are at the severe end of the canonical description — the diagnostic 'thin, shoestring-like leaves' feature is expressed here in an advanced, plant-wide form rather than as a subtle finding."
+      ],
+      "__image_ids__": [
+        "bugwood::5411376",
+        "bugwood::5411377",
+        "bugwood::5411378",
+        "bugwood::5411379",
+        "bugwood::5411380"
+      ],
+      "state": "Virginia"
+    }
+  },
+  "Tomato::Bacterial Canker And Wilt Of Tomato": {
+    "Alabama": {
+      "severity": "advanced",
+      "severity_quote": "An uprooted whole tomato plant is laid out on a tray with extensively wilted, browned, and necrotic foliage and pale, elongated lesions running along the main stem.",
+      "lesion_morphology": "Pale tan to cream-colored, elongated streak-like cankers running longitudinally along the green stems, with adjacent tissue appearing bleached and shredded; no fruit spots are visible.",
+      "lesion_morphology_quote": "The main stem shows long, light-colored split/streak lesions with frayed pale tissue, while side stems show similar bleached longitudinal stripes.",
+      "affected_organs": [
+        "stem",
+        "foliage",
+        "whole plant",
+        "roots"
+      ],
+      "affected_organs_quote": "Stems display longitudinal pale cankers, leaves are wilted with brown necrotic patches and curling, and the exposed root system is visible at the base of the uprooted plant.",
+      "spread_pattern": "whole plant / systemic",
+      "spread_pattern_quote": "Symptoms involve the entire plant — stems, lower and upper leaves all show wilting and necrosis, consistent with systemic vascular collapse rather than a localized lesion zone.",
+      "variations_from_canonical": [
+        "No 'bird's eye spots' on fruit are visible — no fruit are present in the frame, so the canonical fruit-spot diagnostic cannot be observed.",
+        "Stem cankers here appear as long pale longitudinal splits/streaks rather than the canonical description of stems splitting to reveal yellow-to-dark-reddish-brown internal vascular discoloration; no obvious dark vascular browning is exposed.",
+        "The image shows the plant uprooted and laid out on a tray for diagnostic display rather than in-situ field symptoms, so canopy-level patterns like one-sided wilt or marginal 'firing' cannot be assessed from natural orientation.",
+        "Severity is more advanced (whole-plant collapse and necrosis) than the canonical 'initial symptoms' description of curling/chlorosis of lower leaves."
+      ],
+      "__image_ids__": [
+        "bugwood::1568040",
+        "bugwood::1568040"
+      ],
+      "state": "Alabama"
+    },
+    "Kentucky": {
+      "severity": "advanced",
+      "severity_quote": "Multiple uprooted tomato plants are piled in a cardboard box, with extensive wilting, browning, and desiccation of foliage on still-green stems.",
+      "lesion_morphology": "No discrete lesions or fruit spots are visible; the visible damage is generalized leaflet browning, curling, and shriveling along otherwise intact green stems and petioles.",
+      "lesion_morphology_quote": "Leaves appear crisped and brown along the margins inward while the main stems remain green and turgid, consistent with vascular wilt rather than localized leaf spotting.",
+      "affected_organs": [
+        "foliage",
+        "stem",
+        "whole plant"
+      ],
+      "affected_organs_quote": "Whole tomato plants have been pulled and bundled, showing wilted, scorched leaves on green stems with no fruit visible in the frame.",
+      "spread_pattern": "whole-plant collapse",
+      "spread_pattern_quote": "The damage affects entire plants uniformly rather than being confined to lower leaves or one side, with multiple plants showing the same wilt.",
+      "variations_from_canonical": [
+        "No 'bird's eye' fruit spots are observable because no fruit is in frame.",
+        "No stem splitting, cankers, or visible vascular discoloration can be seen on the exterior of the green stems.",
+        "Image documents post-rogueing/disposal of symptomatic plants in a box rather than in-field early symptoms like leaf curling or one-sided wilt.",
+        "Leaf damage presents as generalized marginal scorch and desiccation rather than discrete white blister-like spots with dark rings."
+      ],
+      "__image_ids__": [
+        "bugwood::5368889",
+        "bugwood::5368890",
+        "bugwood::5368891",
+        "bugwood::5368892"
+      ],
+      "state": "Kentucky"
+    }
+  },
+  "Tomato::Southern Blight": {
+    "Alabama": {
+      "severity": "advanced",
+      "severity_quote": "Three entire tomato plants have been pulled from the soil and are completely collapsed, with desiccated brown foliage and dead stems indicating total plant death.",
+      "lesion_morphology": "Discrete lesions are not resolvable; instead the lower stems appear bleached/tan and shredded with dried brown tissue, and the foliage is uniformly browned and crispy rather than showing isolated spots.",
+      "lesion_morphology_quote": "The basal stems show pale tan, dried, frayed bark and the leaves are uniformly necrotic across each plant.",
+      "affected_organs": [
+        "whole plant",
+        "stem",
+        "foliage",
+        "root"
+      ],
+      "affected_organs_quote": "Each uprooted specimen shows browned/dead leaves, collapsed stems, and exposed root systems still attached, with only a few green fruit remaining on the middle plant.",
+      "spread_pattern": "whole-plant collapse",
+      "spread_pattern_quote": "All three plants are uniformly dead from root to shoot rather than showing a gradient from lower to upper canopy.",
+      "variations_from_canonical": [
+        "No white fungal mycelial mat is visible on the stems or roots in this photograph.",
+        "No tan to reddish-brown spherical sclerotia (1–2 mm) are discernible on stem bases or surrounding soil at this image resolution.",
+        "Image is a posed display of three uprooted plants on a car hood rather than an in-situ field shot, so the canonical 'water-soaked lesion' early stage is not represented — only the terminal whole-plant death endpoint.",
+        "Fruit lesions described in the canonical text (water-soaked, soft, star-shaped) are not visible; the few remaining fruits appear green and intact."
+      ],
+      "__image_ids__": [
+        "bugwood::1568115",
+        "bugwood::1568116",
+        "bugwood::1568117",
+        "bugwood::1568119",
+        "bugwood::5581640",
+        "bugwood::5581641",
+        "bugwood::5581642",
+        "bugwood::5581643",
+        "bugwood::5581644",
+        "bugwood::1568115",
+        "bugwood::1568116",
+        "bugwood::1568117",
+        "bugwood::1568119",
+        "bugwood::5581640",
+        "bugwood::5581641",
+        "bugwood::5581642",
+        "bugwood::5581643",
+        "bugwood::5581644"
+      ],
+      "state": "Alabama"
+    },
+    "Florida": {
+      "severity": "advanced",
+      "severity_quote": "Dense white mycelial mat covers the substrate with abundant sclerotia formation, indicating advanced fungal colonization.",
+      "lesion_morphology": "Numerous small, spherical sclerotia (~1 mm) ranging from pale tan/cream to mustard-yellow and darker reddish-brown, scattered across a brown substrate webbed with fluffy white mycelium.",
+      "lesion_morphology_quote": "Tiny round bead-like sclerotia in mixed tan, yellow-ochre and brown shades sit on top of a feathery white mycelial mat.",
+      "affected_organs": [
+        "laboratory culture substrate"
+      ],
+      "affected_organs_quote": "The image shows a culture/plate setup rather than living plant tissue — fungal growth is on a brown rectangular substrate inside a glass petri-style dish.",
+      "spread_pattern": "uniform",
+      "spread_pattern_quote": "Mycelium and sclerotia cover the substrate broadly with sclerotia distributed densely across most of the surface.",
+      "variations_from_canonical": [
+        "This is a laboratory/culture image of the pathogen on a substrate in a petri dish, not a field photograph of an infected tomato plant.",
+        "No tomato foliage, stem, root, or fruit tissue is visible — the canonical organs (foliar, stem, root, whole plant) cannot be assessed from this image.",
+        "Sclerotia here appear in a wider color range including pale yellow/mustard tones, not only the canonical 'tan to reddish-brown'.",
+        "Sclerotia look smaller than the canonical 1–2 mm size, appearing closer to ~1 mm or less.",
+        "Canonical signs such as water-soaked lesions, wilting, yellowing, or star-shaped fruit lesions are not visible because no host tissue is shown."
+      ],
+      "__image_ids__": [
+        "bugwood::5429795"
+      ],
+      "state": "Florida"
+    }
+  },
+  "Tomato::Phytophthora Blight": {
+    "Alabama": {
+      "severity": "moderate",
+      "severity_quote": "A single large brown lesion covers roughly the upper third of an otherwise still-green, firm-looking fruit, with no visible soft rot or collapse.",
+      "lesion_morphology": "A large, roughly circular brown lesion with clearly defined concentric rings of lighter and darker brown discoloration radiating from a central point, with smooth, gradient margins that fade into the green surface.",
+      "lesion_morphology_quote": "The lesion shows nested target-like rings of light and dark brown on the shoulder of the fruit, with a glossy, intact skin and no rupturing.",
+      "affected_organs": [
+        "fruit"
+      ],
+      "affected_organs_quote": "Only a single green tomato fruit is visible against a blue background; no foliage, stem, or pod is shown.",
+      "spread_pattern": "single coalesced lesion on one fruit",
+      "spread_pattern_quote": "One large lesion occupies the top/shoulder of the fruit; the rest of the fruit surface is unaffected and uniformly green.",
+      "variations_from_canonical": [
+        "Canonical lists 'Pod' as the affected part, but this image shows the lesion on a tomato fruit, not a pod.",
+        "Lesion appears firm and smooth-skinned with no soft, decayed area visible, consistent with the canonical 'firm, smooth margins' early stage rather than late soft rot.",
+        "Lesion is positioned on the upper shoulder of the fruit rather than the soil-contact underside described as typical in the canonical reference."
+      ],
+      "__image_ids__": [
+        "bugwood::1568019",
+        "bugwood::1568020",
+        "bugwood::1568019",
+        "bugwood::1568020"
+      ],
+      "state": "Alabama"
+    },
+    "North Carolina": {
+      "severity": "advanced",
+      "severity_quote": "Several plants in the foreground rows show extensive wilting and collapse, with sparse, drooping foliage compared to healthier-looking neighbors.",
+      "lesion_morphology": "",
+      "lesion_morphology_quote": "",
+      "affected_organs": [
+        "whole plant",
+        "stem",
+        "foliage"
+      ],
+      "affected_organs_quote": "Affected plants exhibit overall wilt and collapse of the canopy with drooping leaves and stems, while no individual fruit lesions are resolvable in this wide field shot.",
+      "spread_pattern": "scattered",
+      "spread_pattern_quote": "Wilted/dying plants are interspersed among healthier-looking plants along the staked rows on red and black plastic mulch, with no clear edge-of-row pattern.",
+      "variations_from_canonical": [
+        "Image is a wide-angle field view of staked tomato plants on plasticulture beds; no fruit lesions are visible, contrary to the canonical fruit-lesion description.",
+        "Symptoms shown are whole-plant wilting/collapse rather than the round/oblong concentric-ring fruit lesions described in canonical reference.",
+        "Distribution appears as scattered plant decline across rows rather than localized fruit-soil contact damage."
+      ],
+      "__image_ids__": [
+        "bugwood::1576400",
+        "bugwood::1576401",
+        "bugwood::1576403",
+        "bugwood::1576404",
+        "bugwood::1577139",
+        "bugwood::1577140",
+        "bugwood::1577141",
+        "bugwood::1577142",
+        "bugwood::1577143",
+        "bugwood::1577144",
+        "bugwood::1577145",
+        "bugwood::1577146",
+        "bugwood::1577147",
+        "bugwood::1577148",
+        "bugwood::1577149",
+        "bugwood::1577150",
+        "bugwood::1577304",
+        "bugwood::1577305",
+        "bugwood::1578054",
+        "bugwood::1578055",
+        "bugwood::1578056",
+        "bugwood::1578057",
+        "bugwood::1578058",
+        "bugwood::1578059",
+        "bugwood::1578060",
+        "bugwood::1578061",
+        "bugwood::1578062",
+        "bugwood::1578063",
+        "bugwood::1578065",
+        "bugwood::5604957",
+        "bugwood::5604958",
+        "bugwood::5604959",
+        "bugwood::5604960",
+        "bugwood::5604961"
+      ],
+      "state": "North Carolina"
+    }
+  },
+  "Tomato::Late Blight": {
+    "Alabama": {
+      "severity": "advanced",
+      "severity_quote": "All three green tomato fruits show large coalescing dark blotches covering 30-60% of each fruit's surface, with one fruit showing a cracked/sunken necrotic area exposing tan tissue.",
+      "lesion_morphology": "Large, irregular, greasy-looking dark brown to grayish-olive blotches with diffuse, indistinct margins covering broad areas of the fruit shoulder and side, firm in appearance with one lesion showing a sunken cracked tan necrotic patch.",
+      "lesion_morphology_quote": "The lesions are broad, smooth, dark olive-brown patches that blend gradually into the surrounding green skin rather than forming sharp circular spots.",
+      "affected_organs": [
+        "fruit"
+      ],
+      "affected_organs_quote": "Three immature green tomato fruits are shown against a black background, each with extensive dark blotchy discoloration; no leaves or stems are visible in the frame.",
+      "spread_pattern": "scattered",
+      "spread_pattern_quote": "Lesions are distributed across the upper shoulder and lateral surfaces of each fruit, with one lesion wrapping toward the calyx and another extending into a sunken crack.",
+      "variations_from_canonical": [
+        "Lesions appear as large diffuse blotches rather than the canonical 'firm, dark brown, circular spots' — margins are indistinct and shapes are irregular rather than circular.",
+        "No thin powdery white fungal/mycelial sporulation is visible on the fruit surfaces despite the advanced lesion development.",
+        "Only fruit are shown; the canonical foliar, stem, and root symptoms cannot be evaluated from this image.",
+        "One fruit shows a cracked, sunken tan/cream-colored necrotic patch — a more advanced breakdown than the 'firm' surface described in the canonical text."
+      ],
+      "__image_ids__": [
+        "bugwood::1568022",
+        "bugwood::1568023",
+        "bugwood::1568024",
+        "bugwood::1568026",
+        "bugwood::1568027",
+        "bugwood::1568028",
+        "bugwood::1568029",
+        "bugwood::1568030",
+        "bugwood::1568031",
+        "bugwood::1568032",
+        "bugwood::1568033",
+        "bugwood::1568034",
+        "bugwood::1568035",
+        "bugwood::1568022",
+        "bugwood::1568023",
+        "bugwood::1568024",
+        "bugwood::1568026",
+        "bugwood::1568027",
+        "bugwood::1568028",
+        "bugwood::1568029",
+        "bugwood::1568030",
+        "bugwood::1568031",
+        "bugwood::1568032",
+        "bugwood::1568033",
+        "bugwood::1568034",
+        "bugwood::1568035"
+      ],
+      "state": "Alabama"
+    },
+    "Connecticut": {
+      "severity": "advanced",
+      "severity_quote": "Multiple leaflets show large necrotic tan-brown patches that consume more than half of each affected leaflet, with surrounding canopy already collapsed and dried.",
+      "lesion_morphology": "Large irregular tan to grayish-brown necrotic blotches with diffuse darker margins crossing major veins, occupying the leaflet tips and edges, with papery dried tissue and tearing at the lesion centers.",
+      "lesion_morphology_quote": "Tan-brown blotches with feathery dark edges spread across leaflets and are not stopped by the midrib, with brittle dried-out centers.",
+      "affected_organs": [
+        "leaves",
+        "stems"
+      ],
+      "affected_organs_quote": "Several tomato leaflets carry expansive brown necrotic patches and the surrounding stems/petioles bear dried, blighted tissue; a green unripe fruit visible behind the foliage shows no obvious lesion.",
+      "spread_pattern": "scattered across upper canopy",
+      "spread_pattern_quote": "Blighted leaflets are interspersed with still-green leaves on the same branches, and dead brown foliage in the background suggests the infection is progressing through the plant rather than confined to one stratum.",
+      "variations_from_canonical": [
+        "No thin powdery white sporulation/mycelium is visible on the lesion surfaces in this image — the affected tissue appears dry and papery rather than fuzzy.",
+        "Lesions are tan to grayish-brown rather than the canonical 'dark brown'; the green-gray water-soaked advancing edge is only faintly suggested.",
+        "No fruit or tuber symptoms are visible — the one tomato fruit in frame is green and apparently unblemished, despite the canonical description noting firm dark brown shoulder spots on fruit.",
+        "Damage looks more dried/necrotic than actively expanding, suggesting drier conditions at the time of photo than the humid sporulating phase the canonical text emphasizes."
+      ],
+      "__image_ids__": [
+        "bugwood::5559539"
+      ],
+      "state": "Connecticut"
+    }
+  },
+  "Tomato::Tomato Leaf Mould": {
+    "Alabama": {
+      "severity": "moderate",
+      "severity_quote": "Each of the three detached leaves shows numerous coalescing brown patches across most leaflets, but the leaf tissue itself remains green and intact rather than withered.",
+      "lesion_morphology": "Diffuse, irregular tan-to-brown velvety patches with fuzzy, indistinct margins, ranging from small dots to larger coalescing blotches on the lower leaf surface.",
+      "lesion_morphology_quote": "The patches look fuzzy and powdery rather than sharply defined, with several small spots merging into larger irregular zones.",
+      "affected_organs": [
+        "leaves"
+      ],
+      "affected_organs_quote": "Only detached compound tomato leaves are visible, each showing brown velvety patches scattered across the leaflet undersides.",
+      "spread_pattern": "scattered across leaflets",
+      "spread_pattern_quote": "Lesions are distributed broadly over nearly every leaflet of all three leaves rather than being concentrated at margins or tips.",
+      "variations_from_canonical": [
+        "Image shows the lower (abaxial) leaf surface only — the canonical pale greenish-yellow upper-surface spots cannot be confirmed here.",
+        "Mold color in this photo reads as tan-to-medium-brown rather than the canonical olive-green velvety appearance.",
+        "Despite extensive lesion coverage, the leaves are not visibly withered or dried as the canonical description suggests for advanced infection.",
+        "No stem or fruit symptoms are visible — only foliar involvement is documented in this image, even though the canonical reference also lists stem and pod."
+      ],
+      "__image_ids__": [
+        "bugwood::1568017",
+        "bugwood::1568017"
+      ],
+      "state": "Alabama"
+    },
+    "Connecticut": {
+      "severity": "moderate",
+      "severity_quote": "Several discrete patches of velvety mold are visible on the underside of a single detached leaf, but the leaf tissue is still largely green and intact.",
+      "lesion_morphology": "Diffuse, irregular grayish-tan to olive-brown velvety patches with soft, feathered margins, ranging roughly from small spots to broader 1–2 cm areas, lacking sharp borders.",
+      "lesion_morphology_quote": "The lesions appear as fuzzy tan-brown smudges on the lower leaf surface, blending gradually into surrounding green tissue rather than forming defined rings.",
+      "affected_organs": [
+        "leaf (abaxial/lower surface)"
+      ],
+      "affected_organs_quote": "The image shows the underside of a compound tomato leaf with multiple velvety mold patches scattered across leaflets; no stems or fruit are visible.",
+      "spread_pattern": "scattered across leaflets",
+      "spread_pattern_quote": "Multiple separate fuzzy patches are distributed across several leaflets of the same leaf, rather than being confined to one area.",
+      "variations_from_canonical": [
+        "Mold color in this image reads as grayish-tan to light brown rather than the canonical 'olive-green to brown' velvety mold.",
+        "No corresponding upper-surface yellow spots are visible because only the abaxial (under) side of the leaf is shown.",
+        "Lesion patches are diffuse and feathered rather than appearing as 'discrete' spots described in the canonical reference.",
+        "Only foliar tissue is shown; stem and fruit symptoms listed in the canonical description are not visible."
+      ],
+      "__image_ids__": [
+        "bugwood::5559541"
+      ],
+      "state": "Connecticut"
+    }
+  },
+  "Tomato::Bacterial Speck Of Tomato": {
+    "Alabama": {
+      "severity": "moderate",
+      "severity_quote": "Numerous small dark specks are distributed across multiple leaflets with one upper leaflet showing extensive coalescing chlorosis, but the foliage is still largely intact and green.",
+      "lesion_morphology": "Very small (pinpoint to ~1–2 mm) dark brown to black speck-like spots scattered over the leaf lamina, with surrounding tissue turning yellow on the most heavily affected leaflet, producing diffuse chlorotic halos rather than crisp angular margins.",
+      "lesion_morphology_quote": "Tiny black flecks pepper the leaflets, and the central upper leaflet shows yellow interveinal blotches studded with these dark specks.",
+      "affected_organs": [
+        "leaves",
+        "petiole/stem"
+      ],
+      "affected_organs_quote": "Multiple compound-leaf leaflets carry dark specks, and a darkened necrotic patch is visible at a petiole junction near the central stem.",
+      "spread_pattern": "scattered across multiple leaflets with one focal hotspot",
+      "spread_pattern_quote": "Specks are sprinkled across most leaflets in the frame, but density and chlorosis are concentrated on a single upper-central leaflet.",
+      "variations_from_canonical": [
+        "Halos on the worst leaflet appear as broad diffuse yellow blotches rather than the small discrete yellow halos described canonically.",
+        "Lesion margins are irregular/rounded rather than the 'angular, straight-edged' shape called out in the canonical diagnostic features.",
+        "A dark necrotic lesion is visible on the petiole/stem area, which is consistent with canonical 'stem' involvement but is more conspicuous than the foliar-dominant emphasis of the canonical summary.",
+        "No fruit is present in this image, so the canonical fruit-speck diagnostic cannot be evaluated here."
+      ],
+      "__image_ids__": [
+        "bugwood::1568046",
+        "bugwood::1568046"
+      ],
+      "state": "Alabama"
+    },
+    "North Carolina": {
+      "severity": "advanced",
+      "severity_quote": "A single curled tomato leaflet is densely peppered with dozens of dark lesions and shows tissue tearing/holes, indicating heavy infection rather than early speckling.",
+      "lesion_morphology": "Numerous small, roughly circular dark brown to black spots, many with thin pale/tan centers and faint chlorotic-purple halos, coalescing in places into larger irregular necrotic patches.",
+      "lesion_morphology_quote": "Spots are small, dark and round, some with lighter dried centers, scattered densely across the lamina with occasional merging into bigger lesions.",
+      "affected_organs": [
+        "leaf"
+      ],
+      "affected_organs_quote": "Only a single curled, distorted tomato leaflet is visible, covered in dark specking; no stems, fruit or roots are shown.",
+      "spread_pattern": "uniform across leaf blade",
+      "spread_pattern_quote": "Lesions are distributed broadly over the entire leaf surface from base to tip rather than concentrated at margins or midrib.",
+      "variations_from_canonical": [
+        "Lesions appear more rounded than the canonical 'angular, straight-edged' description.",
+        "Substantial leaf curling and tissue tearing/holes are visible — heavier blade distortion than the canonical description implies.",
+        "Halos look more dull purple/brown than the canonical 'yellow halo'.",
+        "Lesion density is much higher than typical canonical photos — coalescing into larger necrotic patches rather than remaining discrete pinpoint specks."
+      ],
+      "__image_ids__": [
+        "bugwood::1573569",
+        "bugwood::1573570",
+        "bugwood::1573571",
+        "bugwood::1573572",
+        "bugwood::1573573",
+        "bugwood::1573574",
+        "bugwood::1576387",
+        "bugwood::1576393",
+        "bugwood::1576394",
+        "bugwood::1577155",
+        "bugwood::1577156",
+        "bugwood::1577157",
+        "bugwood::1577158"
+      ],
+      "state": "North Carolina"
+    }
+  },
+  "Tomato::Tomato Spotted Wilt Virus": {
+    "Alabama": {
+      "severity": "moderate",
+      "severity_quote": "A single tomato leaflet shows extensive but not coalescing fine flecking with intact lamina and no visible wilting or collapse.",
+      "lesion_morphology": "Numerous pinpoint to small (~1 mm) dark brown to purplish-brown specks and flecks with diffuse, blurred margins scattered over a dull, bronzed grayish-green leaf surface.",
+      "lesion_morphology_quote": "The upper leaf surface is peppered with tiny dark purple-brown stipples on a bronzed background, with no sharply bordered spots.",
+      "affected_organs": [
+        "leaf"
+      ],
+      "affected_organs_quote": "Only foliage is shown — a compound tomato leaflet with bronzing and dark stippling across the lamina.",
+      "spread_pattern": "scattered, uniform across leaf",
+      "spread_pattern_quote": "The fine flecks are distributed fairly evenly between veins across the entire visible leaflet rather than concentrated at margins or tips.",
+      "variations_from_canonical": [
+        "Lesions in this image are pinpoint stipples/flecks rather than the discrete 'small brown lesions' described canonically.",
+        "No 'shepherd's crook', leaf rolling, or wilting is visible — the leaf is flat and intact despite heavy stippling.",
+        "No fruit, stem, or whole-plant symptoms are visible; only a single leaflet is shown, so the canonical multi-organ involvement is not represented.",
+        "Bronzing is present but appears as a dull grayish cast across the whole leaflet rather than being limited to 'upper sides of young leaves'."
+      ],
+      "__image_ids__": [
+        "bugwood::1568012",
+        "bugwood::1568013",
+        "bugwood::1568014",
+        "bugwood::1568016",
+        "bugwood::1568012",
+        "bugwood::1568013",
+        "bugwood::1568014",
+        "bugwood::1568016"
+      ],
+      "state": "Alabama"
+    },
+    "Delaware": {
+      "severity": "moderate",
+      "severity_quote": "Two detached compound leaves rest on a white background showing patchy bronzing and necrotic blotches across roughly 20–40% of the leaflet area, with margins curling but most leaflet tissue still green.",
+      "lesion_morphology": "Irregular bronze-to-brown necrotic blotches with diffuse, blurred margins concentrated along the midrib and leaflet tips, accompanied by scattered tiny dark stipple-like flecks on otherwise green tissue.",
+      "lesion_morphology_quote": "Brown necrotic patches blend gradually into surrounding green tissue without sharply defined edges, and small pinpoint dark spots are visible across the leaflets.",
+      "affected_organs": [
+        "foliage (compound leaves)",
+        "leaflets",
+        "leaf petioles/rachis"
+      ],
+      "affected_organs_quote": "Bronzing, necrosis, and downward cupping are visible only on the leaflets and along the leaf rachis; no stems, fruit, or whole-plant view are present.",
+      "spread_pattern": "scattered within-leaf, concentrated toward leaflet tips and one side of the rachis",
+      "spread_pattern_quote": "Necrotic blotches are unevenly distributed — heavier on the smaller left leaf and on the upper/distal leaflets of the right leaf, with basal leaflets remaining largely green.",
+      "variations_from_canonical": [
+        "Image shows detached, isolated compound leaves on a studio background rather than an in-situ whole plant or seedling, so no 'shepherd's crook' or wilt posture is visible.",
+        "Lesions appear as larger irregular bronze-brown blotches rather than the canonical 'small brown lesions' or chlorotic ring spots; no concentric rings are visible.",
+        "No fruit, stem, or ringspot symptoms shown — only foliar bronzing, necrosis, and downward leaflet cupping are documented here.",
+        "Bronzing is patchy and mid-leaf rather than uniformly covering the upper surface of the youngest leaves as canonically described."
+      ],
+      "__image_ids__": [
+        "bugwood::5553631"
+      ],
+      "state": "Delaware"
+    }
+  },
+  "Tomato::Southern Bacterial Wilt": {
+    "Alabama": {
+      "severity": "advanced",
+      "severity_quote": "A longitudinally split stem and side branch reveal extensive brown discoloration filling the entire pith and vascular core along the full length of the specimen.",
+      "lesion_morphology": "Continuous tan-to-medium-brown internal discoloration occupying the pith and vascular cylinder, bordered by thin intact green outer cortex strips, with a dry, slightly sunken texture rather than discrete spots.",
+      "lesion_morphology_quote": "The split stem shows a uniform brown core running the length of both the main stem and the lateral branch, framed by narrow green epidermal margins.",
+      "affected_organs": [
+        "stem",
+        "vascular tissue",
+        "pith"
+      ],
+      "affected_organs_quote": "Brown discoloration is visible inside the longitudinally cut stem and its branching shoot, involving both the vascular ring and the central pith.",
+      "spread_pattern": "uniform",
+      "spread_pattern_quote": "The browning extends continuously and uninterrupted from the cut base through the node and into the lateral branch.",
+      "variations_from_canonical": [
+        "No bacterial ooze, beads, or wet slime are visible at the cut surfaces in this image — the interior appears dry and matte rather than the slimy tan-white ooze described canonically.",
+        "Discoloration is a fairly uniform medium brown rather than the canonical progression from light tan/yellow-brown to dark brown-black streaking; no distinct streak pattern is visible.",
+        "No foliage, roots, basal cankers, or whole-plant wilt are shown — the image is restricted to a dissected stem segment, so the canonical foliar-wilt and root-rot signs cannot be assessed here.",
+        "Browning involves the entire pith and vascular core together rather than appearing as a distinct vascular ring, suggesting a more advanced internal collapse than the early canonical 'light tan vascular discoloration' stage."
+      ],
+      "__image_ids__": [
+        "bugwood::1568041",
+        "bugwood::1568041"
+      ],
+      "state": "Alabama"
+    },
+    "Georgia": {
+      "severity": "diagnostic test image",
+      "severity_quote": "A cut tomato stem section is suspended over a clear glass beaker of water for the bacterial ooze streaming test, so disease severity in a whole-plant sense is not depicted.",
+      "lesion_morphology": "The cut stem end is mostly green externally but reveals a tan to light-brown discolored vascular/cortex region with a small whitish-tan ooze bead emerging from the cut surface on the lower right.",
+      "lesion_morphology_quote": "Tan-brown discoloration is visible at the cut face and a pale, sticky-looking droplet protrudes from the exposed vascular tissue.",
+      "affected_organs": [
+        "stem",
+        "vascular tissue"
+      ],
+      "affected_organs_quote": "Only a severed stem segment is shown; the cut end exposes brown-tinged vascular/pith tissue with bacterial ooze.",
+      "spread_pattern": "localized to cut stem section",
+      "spread_pattern_quote": "Discoloration and ooze are confined to the cut end of an isolated stem piece; no canopy or row context is visible.",
+      "variations_from_canonical": [
+        "Image is a laboratory/diagnostic ooze-test demonstration rather than a field photo of wilting plants.",
+        "No foliage, roots, or whole-plant wilting are visible — only an excised stem segment.",
+        "The classic milky ooze 'thread' descending into water described in the canonical text is not yet clearly formed; only a small bead is visible at the cut surface.",
+        "External stem surface is still green with no obvious basal canker, contrasting with the canonical 'brown cankers at the base.'"
+      ],
+      "__image_ids__": [
+        "bugwood::5472887"
+      ],
+      "state": "Georgia"
+    }
+  },
+  "Tomato::Septoria Leaf Spot": {
+    "Delaware": {
+      "severity": "advanced",
+      "severity_quote": "Numerous small dark spots cover most of the leaflets, with extensive necrotic patches, marginal browning, and tissue tearing along several leaflet edges.",
+      "lesion_morphology": "Small (~1–3 mm) circular dark-brown to black spots densely peppering the leaflets, many coalescing into larger irregular tan-brown necrotic blotches along leaf margins; the small spots show dark centers but only minimal yellow halos.",
+      "lesion_morphology_quote": "Tiny dark pinpoint lesions are scattered across the green leaflet surfaces, while several leaflets show larger merged tan/brown dead patches and chewed-looking necrotic edges.",
+      "affected_organs": [
+        "leaves"
+      ],
+      "affected_organs_quote": "Spots and necrotic patches are confined to the leaflet blades; the visible green petiole and stem appear clean and unblemished.",
+      "spread_pattern": "uniform across compound leaf",
+      "spread_pattern_quote": "Every leaflet on the compound leaf shows lesions, with spots distributed broadly across each blade rather than clustered in one zone.",
+      "variations_from_canonical": [
+        "Lesions appear darker brown/black and smaller (pinpoint, ~1–2 mm) than the canonical tan-to-gray 2–5 mm spots.",
+        "Yellow halos around individual spots are not prominent in this image; surrounding tissue is mostly still green.",
+        "Several leaflets show large coalesced necrotic patches and torn/missing tissue along margins, beyond the discrete circular spots described canonically.",
+        "The visible petiole/stem shows no lesions, though canonical text notes stems can be affected."
+      ],
+      "__image_ids__": [
+        "bugwood::5553629"
+      ],
+      "state": "Delaware"
+    },
+    "Connecticut": {
+      "severity": "moderate-to-advanced",
+      "severity_quote": "The single leaflet is densely peppered with dozens of lesions across nearly its entire surface, with marginal yellowing, edge necrosis, and at least one shot-hole where lesion tissue has dropped out.",
+      "lesion_morphology": "Numerous small (~2-4 mm) circular spots with pale tan-to-gray centers and slightly darker brown margins, scattered across the upper leaf surface; halos are faint or absent and individual lesions remain discrete (non-coalescing).",
+      "lesion_morphology_quote": "Small round gray-centered spots with darker rims dot the lamina between veins; a few lesions near the margin have darkened and necrotic tissue has fallen out.",
+      "affected_organs": [
+        "leaf"
+      ],
+      "affected_organs_quote": "Only a detached tomato leaflet is shown; lesions cover the leaf blade and extend to the margins, while no stem or fruit tissue is visible in the frame.",
+      "spread_pattern": "uniform across leaflet",
+      "spread_pattern_quote": "Spots are distributed fairly evenly across the entire leaflet surface from base to tip rather than clustered on one zone, with marginal yellowing concentrated at the leaf edges.",
+      "variations_from_canonical": [
+        "Image is a detached single leaflet on a red studio cloth, so the canonical 'lower-canopy-first, progressing upward' spread pattern cannot be observed.",
+        "Pronounced bright yellow halos around each lesion, as described canonically, are not obvious here — halos are faint and diffuse, with yellowing instead concentrated along the leaf margin.",
+        "Dark raised pycnidia in lesion centers are not clearly resolvable at this image scale, though canonical description treats them as a key diagnostic feature.",
+        "At least one lesion has progressed to a shot-hole (tissue dropout), which the canonical text does not specifically describe for Septoria.",
+        "No stem or fruit lesions are visible in this image, so the canonical mention of stem/seed involvement cannot be confirmed from this photo."
+      ],
+      "__image_ids__": [
+        "bugwood::5559543"
+      ],
+      "state": "Connecticut"
+    }
+  },
+  "Tomato::Gray Mold": {
+    "Kentucky": {
+      "severity": "advanced",
+      "severity_quote": "A single green tomato fruit shows a large central decayed crater with ruptured skin and a visible white fungal mycelium plug, indicating well-established fruit rot.",
+      "lesion_morphology": "A roughly circular sunken lesion at the stem-end of an unripe green fruit, ~1.5 inches across, with tan-to-pale-brown necrotic flaps of split skin radiating from the center and a dense whitish fungal growth filling the cavity.",
+      "lesion_morphology_quote": "The skin has ruptured into star-shaped tan flaps surrounding a soft white moldy center on an otherwise green fruit.",
+      "affected_organs": [
+        "fruit"
+      ],
+      "affected_organs_quote": "Only a detached green tomato fruit is shown, exhibiting a central rotted area with white mycelium; no leaves or stems are visible.",
+      "spread_pattern": "single-fruit close-up",
+      "spread_pattern_quote": "The image shows one isolated fruit on pavement next to a ruler, so canopy or row spread cannot be assessed.",
+      "variations_from_canonical": [
+        "Visible fungal growth in the cavity is whitish-cottony rather than the canonical 'dense velvety gray brown spore mass'.",
+        "Fruit is unripe (green) rather than the typical reddening/ripe fruit context, and skin has ruptured outward in star-shaped tan flaps rather than a uniform whitish soft rot.",
+        "No 'ghost spots' (small 3-8 mm whitish rings) are visible on the surrounding fruit surface.",
+        "Image shows only an isolated fruit with a ruler for scale; foliar, stem, and concentric-ring girdling features described in the canonical text are not represented."
+      ],
+      "__image_ids__": [
+        "bugwood::5368609",
+        "bugwood::5368610",
+        "bugwood::5368611",
+        "bugwood::5405263",
+        "bugwood::5405264"
+      ],
+      "state": "Kentucky"
+    },
+    "Mississippi": {
+      "severity": "moderate",
+      "severity_quote": "A single leaflet shows a large tan necrotic wedge covering roughly the lower third to half of the leaflet, with a second fully blighted brown leaflet visible on an adjacent stem.",
+      "lesion_morphology": "A large V-shaped tan-to-light-brown necrotic lesion entering from the leaflet tip and margin, with a darker brown desiccated tip, a sharply defined boundary against still-green tissue, and faint concentric tonal banding within the dead area.",
+      "lesion_morphology_quote": "The lesion is a broad wedge of papery tan tissue with a darker brown collapsed apex, bordered abruptly by healthy green leaf blade.",
+      "affected_organs": [
+        "leaf"
+      ],
+      "affected_organs_quote": "Two tomato leaflets show the damage — one with a wedge of dead tissue at its tip, the other entirely collapsed to brown — while stems and any fruit in view appear green and unaffected.",
+      "spread_pattern": "scattered",
+      "spread_pattern_quote": "Only isolated leaflets on the plant are affected; surrounding foliage in the frame remains green and healthy.",
+      "variations_from_canonical": [
+        "No velvety gray-brown sporulating mass is visible on the lesion — the dead tissue appears dry and papery rather than fuzzy with spores.",
+        "No stem lesion or concentric girdling rings are visible; damage in this image is confined to leaflets.",
+        "No fruit symptoms (whitish soft rot or ghost-spot rings) are visible — the green fruit in the frame appears unblemished.",
+        "Lesion entry is from the leaflet tip/margin as a broad wedge rather than the small tan-to-brown spots emphasized in the canonical description."
+      ],
+      "__image_ids__": [
+        "bugwood::5558707"
+      ],
+      "state": "Mississippi"
+    }
+  },
+  "Tomato::Sclerotinia Timber Rot": {
+    "Louisiana": {
+      "severity": "advanced",
+      "severity_quote": "A central plant has fully collapsed with a dried, brown stem and desiccated hanging foliage, while neighboring plants remain green.",
+      "lesion_morphology": "No discrete lesions are visible; the affected stem is shriveled and tan-brown along its length with collapsed, papery dried leaves attached, rather than showing clear margined spots.",
+      "lesion_morphology_quote": "The diseased stem appears shrunken and uniformly brown, with brittle brown leaflets hanging from it.",
+      "affected_organs": [
+        "stem",
+        "leaves",
+        "whole plant"
+      ],
+      "affected_organs_quote": "The main stem and all of its attached foliage are dead and brown, indicating loss of the entire shoot.",
+      "spread_pattern": "scattered",
+      "spread_pattern_quote": "A single plant within the staked row on black plastic mulch is killed while plants on either side remain healthy and green.",
+      "variations_from_canonical": [
+        "No white cottony mycelium is visible on the affected tissue in this image.",
+        "No large irregular black sclerotia are visible on the stem or surrounding tissue.",
+        "Affected stem is tan-brown and shriveled rather than the bleached white appearance described in the canonical reference.",
+        "No flowers or fruits are visible, so flower-stage water-soaking and gray fruit rot cannot be confirmed here.",
+        "Image documents the end-stage collapse/wilt of an individual plant rather than the diagnostic mold-and-sclerotia signs."
+      ],
+      "__image_ids__": [
+        "bugwood::5472861",
+        "bugwood::5472862"
+      ],
+      "state": "Louisiana"
+    },
+    "Maine": {
+      "severity": "advanced",
+      "severity_quote": "A main stem section is bleached tan and shredded/dried at the lesion zone while a tuft of white cottony mycelium colonizes the stem junction.",
+      "lesion_morphology": "A girdling stem lesion at a branch junction with bleached light-tan, frayed/shredded outer tissue on one side and a discrete pad of dense white cottony mycelium on the green side, with no clearly visible black sclerotia.",
+      "lesion_morphology_quote": "The right portion of the main stem is dry, bleached tan and split open in fibrous strands, while a clump of white fluffy fungal growth sits at the node.",
+      "affected_organs": [
+        "stem",
+        "branch junction/node",
+        "leaves (wilted)"
+      ],
+      "affected_organs_quote": "The lower main stem is bleached and disintegrating, white mycelium is centered at the stem-branch joint, and the attached leaves are wilted and collapsed.",
+      "spread_pattern": "localized at stem node, girdling",
+      "spread_pattern_quote": "Damage is concentrated at one branching node on the main stem, with disease progressing outward along the stem from that single point.",
+      "variations_from_canonical": [
+        "Image is a studio/laboratory photograph of an excised stem on a gray background, not an in-field flowering plant.",
+        "No black sclerotia are visible — only white cottony mycelium and bleached stem tissue are evident.",
+        "No flowers or fruit are visible in this image, so the canonical 'water-soaked flowers' and 'gray rotting fruit' signs cannot be confirmed here.",
+        "The bleached stem tissue is markedly frayed and shredded into fibrous strands, more disintegrated than the canonical 'dry, bleached' description implies."
+      ],
+      "__image_ids__": [
+        "bugwood::5530073",
+        "bugwood::5530074"
+      ],
+      "state": "Maine"
+    }
+  },
+  "Tomato::Rhizopus Soft Rots": {
+    "Kentucky": {
+      "severity": "advanced",
+      "severity_quote": "The entire plant has been uprooted and laid on a cloth; nearly all foliage is brown, curled, and desiccated, indicating whole-plant collapse rather than a localized lesion.",
+      "lesion_morphology": "No discrete fungal lesion is clearly resolved; the plant shows widespread leaf browning, shriveling and curling along stems, plus one darkened, shriveled fruit at upper right with a brown, sunken surface.",
+      "lesion_morphology_quote": "Leaves are uniformly tan-brown and crisped, and a single fruit is collapsed and dark brown without any visible white cottony tuft or sporulating crown.",
+      "affected_organs": [
+        "leaves",
+        "stem",
+        "fruit"
+      ],
+      "affected_organs_quote": "Foliage is fully wilted and desiccated, the stem and side branches show dry necrotic tissue, and one fruit on an upper truss is collapsed and brown.",
+      "spread_pattern": "whole-plant / systemic",
+      "spread_pattern_quote": "Symptoms cover the entire excavated plant uniformly from base to tip rather than being confined to a few fruit or a lower-canopy zone.",
+      "variations_from_canonical": [
+        "Canonical describes water-soaked fruit lesions covered with a thin cotton-like white mycelial tuft and dark sporulation crowning it — none of those features is visible in this image.",
+        "No coarse fungal hyphal strands or 'nests of mold' linking adjacent fruit are visible; only one shriveled fruit is shown.",
+        "Image presents as a whole-plant collapse with desiccated foliage and stem, whereas the canonical reference focuses on fruit/root rot morphology rather than systemic foliar wilt.",
+        "The plant has been uprooted and posed on a cloth with a ruler, so the field spread pattern cannot be observed and is inferred only from the specimen."
+      ],
+      "__image_ids__": [
+        "bugwood::5369117",
+        "bugwood::5369118",
+        "bugwood::5369119",
+        "bugwood::5369120",
+        "bugwood::5369121",
+        "bugwood::5369122",
+        "bugwood::5369123",
+        "bugwood::5369124",
+        "bugwood::5369125",
+        "bugwood::5369126",
+        "bugwood::5369127",
+        "bugwood::5369128",
+        "bugwood::5369129",
+        "bugwood::5369130",
+        "bugwood::5369131"
+      ],
+      "state": "Kentucky"
+    }
+  }
+}
