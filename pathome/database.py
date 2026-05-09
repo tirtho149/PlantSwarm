@@ -39,7 +39,12 @@ from typing import Iterable, List, Optional
 from PIL import Image
 
 from .layer5_references import ReferenceImage, ReferenceLibrary, RetrievalHit
-from .symptoms import SymptomLibrary, SymptomProfile, VisualSymptom
+from .symptoms import (
+    CanonicalDisease,
+    RegionalObservation,
+    SymptomLibrary,
+    SymptomProfile,
+)
 from utils.geo import US_STATE_CENTROID, aez_lookup
 
 

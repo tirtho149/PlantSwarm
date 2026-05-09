@@ -40,8 +40,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 from .internet_pipeline import run_internet_pipeline
-from .regional_extraction import build_state_image_map, run_regional_extraction
-from .regional_image_fill import run_regional_image_fill
+from .regional_observation import build_state_image_map, run_regional_observation
 from .symptoms_adapter import merge_registries_to_seed, write_seed_json
 from .utils import OUTPUT_DIR, get_crop_dir, load_json
 
@@ -133,22 +132,15 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--seed-min-observations", type=int, default=3,
                    help="min_observations carried into the SymptomLibrary seed")
     p.add_argument("--regional", action="store_true",
-                   help="after the cross-region run, do a per-state extraction "
-                        "pass that produces SymptomProfile.regional_visuals "
-                        "with image_id-tagged citations")
+                   help="after the cross-region run, do a per-(crop, disease, state) "
+                        "VLM observation pass: looks at cached Bugwood image, emits "
+                        "{severity, lesion_morphology, affected_organs, "
+                        "spread_pattern, variations_from_canonical} grounded in "
+                        "the image. Replaces the old regional text-duplication path.")
     p.add_argument("--regional-only", action="store_true",
-                   help="skip the cross-region pipeline entirely; only run the "
-                        "per-state pass against cached raw_extractions.json. "
-                        "Useful when you've already produced final_registry.json")
-    p.add_argument("--regional-image-fill", action="store_true",
-                   help="after the regional text pass, look at each cached "
-                        "Bugwood image and fill in empty discrete visual "
-                        "fields (color, shape, margin, texture, sporulation, "
-                        "progression) via claude -p with the Read tool. Adds "
-                        "grounding=image citations.")
-    p.add_argument("--regional-image-only", action="store_true",
-                   help="skip everything except the image-fill stage. "
-                        "Requires regional_registries.json to already exist.")
+                   help="skip discovery + extraction + reconciliation; only run "
+                        "the per-state VLM observation against cached final_registry.json "
+                        "and the local Bugwood image cache.")
     return p.parse_args()
 
 
@@ -176,7 +168,7 @@ def main() -> None:
     registries: List[Tuple[str, dict]] = []
     failures: List[str] = []
 
-    skip_full_pipeline = args.regional_only or args.regional_image_only
+    skip_full_pipeline = args.regional_only
     if not skip_full_pipeline:
         for i, crop in enumerate(crops, 1):
             diseases = by_crop[crop]
@@ -208,43 +200,14 @@ def main() -> None:
         print("  failed crops: " + ", ".join(failures))
         print("  re-run pipeline.py to retry just the failed ones (cached crops skipped)")
 
-    # ---------------- Optional: regional (per-state) extraction ----------------
-    regional_by_crop: Dict[str, Dict[str, Dict[str, dict]]] = {}
-    state_image_map = None
+    # ---------------- Optional: per-state VLM observation -------------------
+    regional_observations_by_crop: Dict[str, Dict[str, Dict[str, dict]]] = {}
     do_regional = args.regional or args.regional_only
     if do_regional:
-        print(f"\n{'='*60}\nREGIONAL (per-state) EXTRACTION STAGE\n{'='*60}")
+        print(f"\n{'='*60}\nREGIONAL OBSERVATION STAGE (VLM)\n{'='*60}")
         state_image_map = build_state_image_map(csv_path)
         for crop in crops:
-            diseases = by_crop[crop]
-            regional_by_crop[crop] = run_regional_extraction(
-                crop=crop,
-                diseases=diseases,
-                state_image_map=state_image_map,
-                quick=args.quick,
-            )
-    elif args.regional_image_only or args.regional_image_fill:
-        # Need state_image_map for the image-fill stage. Also load the
-        # cached regional_registries.json so the merge step still has the
-        # text-grounded regional records to layer image-fills onto.
-        state_image_map = build_state_image_map(csv_path)
-        for crop in crops:
-            cached = get_crop_dir(crop) / "regional_registries.json"
-            if cached.is_file():
-                regional_by_crop[crop] = load_json(
-                    "regional_registries.json", output_dir=get_crop_dir(crop))
-            else:
-                print(f"  [warn] no cached regional_registries.json for {crop}")
-
-    # ---------------- Optional: regional image-fill (VLM grounding) -----------
-    image_fills_by_crop: Dict[str, Dict[str, Dict[str, dict]]] = {}
-    do_image_fill = args.regional_image_fill or args.regional_image_only
-    if do_image_fill:
-        print(f"\n{'='*60}\nREGIONAL IMAGE-FILL STAGE (VLM)\n{'='*60}")
-        if state_image_map is None:
-            state_image_map = build_state_image_map(csv_path)
-        for crop in crops:
-            image_fills_by_crop[crop] = run_regional_image_fill(
+            regional_observations_by_crop[crop] = run_regional_observation(
                 crop=crop,
                 state_image_map=state_image_map,
                 quick=args.quick,
@@ -253,25 +216,30 @@ def main() -> None:
     seed_payload = merge_registries_to_seed(
         registries=registries,
         expected_classes=expected,
-        regional_by_crop=regional_by_crop,
-        image_fills_by_crop=image_fills_by_crop,
+        regional_observations_by_crop=regional_observations_by_crop,
         min_observations=args.seed_min_observations,
     )
     out_path = Path(args.out)
     write_seed_json(seed_payload, out_path)
 
-    n_with_data = sum(
+    n_with_canonical = sum(
         1 for prof in seed_payload["profiles"]
-        if (prof.get("visual") or {}).get("notes") or (prof.get("visual") or {}).get("distinctive_signs")
+        if (prof.get("canonical") or {}).get("summary")
+        or (prof.get("canonical") or {}).get("diagnostic_features")
     )
     n_with_regional = sum(
-        1 for prof in seed_payload["profiles"] if prof.get("regional_visuals")
+        1 for prof in seed_payload["profiles"] if prof.get("regional_observations")
+    )
+    n_regional_blocks = sum(
+        len(prof.get("regional_observations") or {})
+        for prof in seed_payload["profiles"]
     )
     print(f"\nseed written: {out_path}")
-    print(f"  profiles total           : {len(seed_payload['profiles'])}")
-    print(f"  profiles w/ visual data  : {n_with_data}")
-    print(f"  profiles w/ regional data: {n_with_regional}")
-    print(f"  profiles still empty     : {len(seed_payload['profiles']) - n_with_data}")
+    print(f"  profiles total                 : {len(seed_payload['profiles'])}")
+    print(f"  profiles w/ canonical data     : {n_with_canonical}")
+    print(f"  profiles w/ regional observations: {n_with_regional}")
+    print(f"  total per-state blocks         : {n_regional_blocks}")
+    print(f"  profiles still empty           : {len(seed_payload['profiles']) - n_with_canonical}")
 
 
 if __name__ == "__main__":

@@ -58,6 +58,12 @@ VISUAL SYMPTOMS (structured for image-based disease identification):
 - diagnostic_features: what visually distinguishes THIS disease from similar ones
 - look_alikes: other diseases this could be confused with
 
+MANAGEMENT:
+- treatments: list of management / control measures the page recommends
+  (cultural practices, fungicides / bactericides, resistant varieties,
+   sanitation, spray timing, etc.). Use the page's wording verbatim.
+  Set to null if the page is symptom-only.
+
 SOURCE: {url}
 TITLE: {title}
 
@@ -127,6 +133,7 @@ EXTRACTION_SCHEMA = {
                                 "type_of_disease": _EVIDENCE_FIELD,
                                 "affected_parts": _EVIDENCE_FIELD_ARRAY,
                                 "visual_symptoms": _VISUAL_SYMPTOMS_SCHEMA,
+                                "treatments": _EVIDENCE_FIELD_ARRAY,
                             },
                             "required": [
                                 "disease_name",
@@ -134,6 +141,7 @@ EXTRACTION_SCHEMA = {
                                 "type_of_disease",
                                 "affected_parts",
                                 "visual_symptoms",
+                                "treatments",
                             ],
                         },
                     },

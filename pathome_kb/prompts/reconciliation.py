@@ -35,7 +35,9 @@ RULES:
 7. For visual_symptoms sub-fields: merge the BEST description from across sources.
    Prefer the most specific, visually descriptive quote. Each sub-field gets its
    own citation.
-8. Do NOT invent or infer any values. If no source provides a field, leave it null.
+8. For treatments: merge the union of management / control measures the sources
+   recommend. Deduplicate near-identical entries; preserve a citation for each.
+9. Do NOT invent or infer any values. If no source provides a field, leave it null.
 
 Raw extractions:
 {extractions}
@@ -118,6 +120,7 @@ FINAL_REGISTRY_SCHEMA = {
                     "type_of_disease": _CITED_FIELD,
                     "affected_parts": _CITED_FIELD_ARRAY,
                     "visual_symptoms": _CITED_VISUAL_SYMPTOMS,
+                    "treatments": _CITED_FIELD_ARRAY,
                     "confidence": {
                         "type": "string",
                         "enum": ["high", "medium", "low"],
@@ -134,6 +137,7 @@ FINAL_REGISTRY_SCHEMA = {
                     "type_of_disease",
                     "affected_parts",
                     "visual_symptoms",
+                    "treatments",
                     "confidence",
                     "num_sources",
                     "conflicts",

@@ -84,7 +84,7 @@ def main() -> None:
         s for prof in db.symptoms for s in prof.state_counts
     }
     profiles_with_visual = sum(
-        1 for prof in db.symptoms if not prof.visual.is_empty()
+        1 for prof in db.symptoms if not prof.canonical.is_empty()
     )
     print(f"  symptoms : {len(db.symptoms)} (crop, disease) profiles "
           f"({profiles_with_visual} with curated visual descriptions)")

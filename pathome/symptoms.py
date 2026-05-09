@@ -64,64 +64,82 @@ class Citation:
 
 
 @dataclass
-class VisualSymptom:
-    """Structured description of what a disease looks like.
+class CanonicalDisease:
+    """Canonical (cross-region) knowledge about one (crop, disease).
 
-    All fields default to empty so a profile is valid even before a curator
-    fills it in — geo + reference data still drive routing and retrieval in
-    that case. Field names mirror the diagnostic vocabulary used by
-    extension-service literature, not OBSERVE's internal label space.
+    Built ONCE per disease from web research (claude -p WebSearch +
+    extension-service URL extraction + reconciliation). All fields are
+    text-grounded with verbatim quotes from source URLs; ``sources``
+    keys mirror the field names so every fact can be traced back.
 
-    ``sources`` (optional) maps a field name (e.g. ``"distinctive_signs"``,
-    ``"plant_parts"``, ``"notes"``) to a list of ``Citation`` records. The
-    auto re-observation prompt and routing only read the typed fields; the
-    citations are preserved on disk so downstream consumers (paper, audit
-    UI, deployment dashboards) can show provenance.
+    Field choice mirrors what extension-service / APS / CABI factsheets
+    publish: a one-paragraph summary, the diagnostic features a field
+    diagnostician should look for, look-alike confusions, the recommended
+    treatment(s), affected plant parts, and basic taxonomy.
     """
 
-    plant_parts: List[str] = field(default_factory=list)         # leaf, stem, fruit, root, flower
-    color: List[str] = field(default_factory=list)               # brown, yellow halo, black, ...
-    shape: str = ""                                              # circular | angular | irregular | elongated
-    margin: str = ""                                             # diffuse | sharp | halo
-    texture: List[str] = field(default_factory=list)             # sunken, raised, powdery, downy
-    sporulation: List[str] = field(default_factory=list)         # orange masses, white powder, salmon spores
-    distinctive_signs: List[str] = field(default_factory=list)   # concentric rings, vein clearing, ...
-    progression: str = ""                                        # expanding | systemic | static
-    confusion_diseases: List[str] = field(default_factory=list)  # easily-confused diseases
+    summary: str = ""                                            # one-paragraph cross-region overview
+    diagnostic_features: List[str] = field(default_factory=list) # what to look for to confirm
+    look_alikes: List[str] = field(default_factory=list)         # diseases easily confused with this one
+    treatments: List[str] = field(default_factory=list)          # management / control measures
+    affected_parts: List[str] = field(default_factory=list)      # leaf, stem, fruit, root, flower, ...
+    pathogen_scientific_name: str = ""                           # e.g. "Alternaria tomatophila"
+    type_of_disease: str = ""                                    # Fungal | Bacterial | Viral | Oomycete | ...
     notes: str = ""
     sources: Dict[str, List[Citation]] = field(default_factory=dict)
-    # Bugwood image IDs that ground this visual block. For the per-state
-    # regional_visuals these are the images photographed in that state; for
-    # the cross-region default visual the list is empty.
-    reference_image_ids: List[str] = field(default_factory=list)
 
     def is_empty(self) -> bool:
         return not any([
-            self.plant_parts, self.color, self.shape, self.margin,
-            self.texture, self.sporulation, self.distinctive_signs,
-            self.progression, self.confusion_diseases, self.notes,
+            self.summary, self.diagnostic_features, self.look_alikes,
+            self.treatments, self.affected_parts,
+            self.pathogen_scientific_name, self.type_of_disease, self.notes,
         ])
 
     def auto_reobservation_prompt(self) -> str:
-        """Build a re-observation prompt from the populated visual fields.
+        """Re-observation prompt for low-confidence routing.
 
-        Returns an empty string when no fields are filled — caller should
-        fall back to a generic retry message in that case.
+        Drawn from diagnostic_features and affected_parts when populated.
         """
         if self.is_empty():
             return ""
         bits: List[str] = []
-        if self.sporulation:
-            bits.append(f"look for {', '.join(self.sporulation)}")
-        if self.margin:
-            bits.append(f"examine the lesion margin ({self.margin})")
-        if self.distinctive_signs:
-            bits.append(f"check for {', '.join(self.distinctive_signs)}")
-        if self.color:
-            bits.append(f"note color shifts toward {', '.join(self.color)}")
-        if self.plant_parts:
-            bits.append(f"focus on the {', '.join(self.plant_parts)}")
+        if self.diagnostic_features:
+            bits.append(f"check for {', '.join(self.diagnostic_features[:3])}")
+        if self.affected_parts:
+            bits.append(f"focus on the {', '.join(self.affected_parts)}")
+        if self.look_alikes:
+            bits.append(f"distinguish from {', '.join(self.look_alikes[:3])}")
         return "; ".join(bits)
+
+
+@dataclass
+class RegionalObservation:
+    """Per-(crop, disease, state) visual evidence.
+
+    Sourced from the VLM looking at the Bugwood photograph(s) for this
+    state, in the context of the canonical disease entry. The block is
+    deliberately *not* a copy of the canonical text — it captures only
+    what the local image actually shows plus how that differs from the
+    canonical description.
+
+    All citations carry ``grounding="image"`` and an ``image_id``; the
+    ``url`` field is empty (the image IS the witness, not a web page).
+    """
+
+    state: str = ""
+    image_ids: List[str] = field(default_factory=list)            # Bugwood photos from this state
+    severity: str = ""                                            # mild | moderate | advanced | late-season
+    lesion_morphology: str = ""                                   # one-sentence description from image
+    affected_organs: List[str] = field(default_factory=list)      # what the image shows is affected
+    spread_pattern: str = ""                                      # lower canopy, scattered, uniform, etc.
+    variations_from_canonical: List[str] = field(default_factory=list)  # bullets: how this image differs
+    sources: Dict[str, List[Citation]] = field(default_factory=dict)
+
+    def is_empty(self) -> bool:
+        return not any([
+            self.severity, self.lesion_morphology, self.spread_pattern,
+            self.affected_organs, self.variations_from_canonical,
+        ])
 
 
 # ---------------------------------------------------------------------------
@@ -154,16 +172,28 @@ class SwarmObservations:
 
 @dataclass
 class SymptomProfile:
+    """One profile per (crop, disease).
+
+    Schema is split deliberately:
+    - ``canonical`` is built once per disease from web research, has all
+      text fields a field diagnostician needs (summary, diagnostic features,
+      look-alikes, treatments, taxonomy). Sources are URL+verbatim quote.
+    - ``regional_observations[state]`` is built per state from the
+      Bugwood image(s) for that state. Stores ONLY visual phenotype
+      observations and the deltas between what the image shows and what
+      the canonical entry describes. Sources are image_id-grounded with
+      no URL.
+
+    This avoids the duplication that the previous flat ``visual`` +
+    ``regional_visuals[state]`` schema produced (where each per-state
+    block was largely a copy of the cross-region text).
+    """
+
     profile_id: str
     crop: str
     disease: str
-    visual: VisualSymptom = field(default_factory=VisualSymptom)
-    # Per-state visual blocks. Keys are US state names (matching Location
-    # in the Bugwood CSV). Each VisualSymptom mirrors the cross-region
-    # block but its citations carry image_id pointers to Bugwood images
-    # photographed in that state. Empty by default; populated by the
-    # regional extraction pass in pathome_kb.
-    regional_visuals: Dict[str, VisualSymptom] = field(default_factory=dict)
+    canonical: CanonicalDisease = field(default_factory=CanonicalDisease)
+    regional_observations: Dict[str, RegionalObservation] = field(default_factory=dict)
     state_counts: Dict[str, int] = field(default_factory=dict)
     aez_counts: Dict[str, int] = field(default_factory=dict)
     total_observations: int = 0
@@ -196,14 +226,12 @@ class SymptomProfile:
         return d
 
     @staticmethod
-    def _hydrate_visual(raw: Optional[dict]) -> VisualSymptom:
-        v = dict(raw or {})
-        raw_sources = v.get("sources") or {}
-        rehydrated: Dict[str, List[Citation]] = {}
-        for k, items in raw_sources.items():
+    def _hydrate_sources(raw: Optional[dict]) -> Dict[str, List[Citation]]:
+        out: Dict[str, List[Citation]] = {}
+        for k, items in (raw or {}).items():
             if not isinstance(items, list):
                 continue
-            rehydrated[k] = [
+            out[k] = [
                 Citation(
                     value=str(it.get("value", "")),
                     url=str(it.get("url", "")),
@@ -213,25 +241,95 @@ class SymptomProfile:
                 )
                 for it in items if isinstance(it, dict)
             ]
-        v["sources"] = rehydrated
-        v["reference_image_ids"] = list(v.get("reference_image_ids") or [])
-        return VisualSymptom(**v)
+        return out
+
+    @classmethod
+    def _hydrate_canonical(cls, raw: Optional[dict]) -> CanonicalDisease:
+        c = dict(raw or {})
+        sources = cls._hydrate_sources(c.get("sources"))
+        return CanonicalDisease(
+            summary=str(c.get("summary", "")),
+            diagnostic_features=list(c.get("diagnostic_features") or []),
+            look_alikes=list(c.get("look_alikes") or []),
+            treatments=list(c.get("treatments") or []),
+            affected_parts=list(c.get("affected_parts") or []),
+            pathogen_scientific_name=str(c.get("pathogen_scientific_name", "")),
+            type_of_disease=str(c.get("type_of_disease", "")),
+            notes=str(c.get("notes", "")),
+            sources=sources,
+        )
+
+    @classmethod
+    def _hydrate_regional(cls, state: str, raw: Optional[dict]) -> RegionalObservation:
+        r = dict(raw or {})
+        sources = cls._hydrate_sources(r.get("sources"))
+        return RegionalObservation(
+            state=str(r.get("state") or state),
+            image_ids=list(r.get("image_ids") or []),
+            severity=str(r.get("severity", "")),
+            lesion_morphology=str(r.get("lesion_morphology", "")),
+            affected_organs=list(r.get("affected_organs") or []),
+            spread_pattern=str(r.get("spread_pattern", "")),
+            variations_from_canonical=list(r.get("variations_from_canonical") or []),
+            sources=sources,
+        )
+
+    @classmethod
+    def _legacy_visual_to_canonical(cls, raw: dict) -> CanonicalDisease:
+        """Read OLD ``visual`` blob (plant_parts/distinctive_signs/notes/...)
+        as a CanonicalDisease so older symptoms_seed.json files still load."""
+        return CanonicalDisease(
+            summary=str(raw.get("notes", "")),
+            diagnostic_features=list(raw.get("distinctive_signs") or []),
+            look_alikes=list(raw.get("confusion_diseases") or []),
+            treatments=[],
+            affected_parts=list(raw.get("plant_parts") or []),
+            pathogen_scientific_name="",
+            type_of_disease="",
+            notes="",
+            sources=cls._hydrate_sources(raw.get("sources")),
+        )
 
     @classmethod
     def from_dict(cls, d: dict) -> "SymptomProfile":
-        regional_raw = d.get("regional_visuals") or {}
-        regional: Dict[str, VisualSymptom] = {
-            state: cls._hydrate_visual(blob)
-            for state, blob in regional_raw.items() if isinstance(blob, dict)
-        }
+        # Canonical: prefer the new "canonical" key; fall back to legacy "visual".
+        if isinstance(d.get("canonical"), dict):
+            canonical = cls._hydrate_canonical(d["canonical"])
+        elif isinstance(d.get("visual"), dict):
+            canonical = cls._legacy_visual_to_canonical(d["visual"])
+        else:
+            canonical = CanonicalDisease()
+
+        # Regional: prefer the new "regional_observations"; fall back to legacy
+        # "regional_visuals" (which had the same shape as visual).
+        regional: Dict[str, RegionalObservation] = {}
+        if isinstance(d.get("regional_observations"), dict):
+            regional = {
+                state: cls._hydrate_regional(state, blob)
+                for state, blob in d["regional_observations"].items()
+                if isinstance(blob, dict)
+            }
+        elif isinstance(d.get("regional_visuals"), dict):
+            # Legacy regional blocks carried image_id citations on visual fields;
+            # collapse to RegionalObservation with image_ids only.
+            for state, blob in d["regional_visuals"].items():
+                if not isinstance(blob, dict):
+                    continue
+                image_ids = list(blob.get("reference_image_ids") or [])
+                regional[state] = RegionalObservation(
+                    state=state,
+                    image_ids=image_ids,
+                    sources=cls._hydrate_sources(blob.get("sources")),
+                )
+
         sw_raw = d.get("swarm_observations")
         sw = SwarmObservations(**sw_raw) if isinstance(sw_raw, dict) else None
         return cls(
             profile_id=d["profile_id"],
             crop=d["crop"],
             disease=d["disease"],
-            visual=cls._hydrate_visual(d.get("visual")),
-            regional_visuals=regional,
+            canonical=canonical,
+            regional_observations=regional,
             state_counts=dict(d.get("state_counts") or {}),
             aez_counts=dict(d.get("aez_counts") or {}),
             total_observations=int(d.get("total_observations", 0)),
@@ -277,9 +375,12 @@ class SymptomLibrary:
             self._profiles[profile.profile_id] = profile
             self._by_disease[profile.disease].append(profile.profile_id)
             return
-        # Merge: keep curated visual, accumulate counts and references.
-        if not existing.visual.is_empty():
-            profile.visual = existing.visual
+        # Merge: keep curated canonical/regional, accumulate counts + refs.
+        if not existing.canonical.is_empty():
+            profile.canonical = existing.canonical
+        if existing.regional_observations:
+            for state, obs in existing.regional_observations.items():
+                profile.regional_observations.setdefault(state, obs)
         for s, n in existing.state_counts.items():
             profile.state_counts[s] = profile.state_counts.get(s, 0) + n
         for a, n in existing.aez_counts.items():
@@ -323,7 +424,7 @@ class SymptomLibrary:
         """Populate auto re-observation prompts where the curator left them blank."""
         for prof in self._profiles.values():
             if not prof.reobservation_prompt:
-                prof.reobservation_prompt = prof.visual.auto_reobservation_prompt()
+                prof.reobservation_prompt = prof.canonical.auto_reobservation_prompt()
 
     # -- query ----------------------------------------------------------
 
@@ -390,7 +491,7 @@ class SymptomLibrary:
         prof = self.get(crop, disease)
         if prof is None:
             return default
-        return prof.reobservation_prompt or prof.visual.auto_reobservation_prompt() or default
+        return prof.reobservation_prompt or prof.canonical.auto_reobservation_prompt() or default
 
     # -- persistence ----------------------------------------------------
 

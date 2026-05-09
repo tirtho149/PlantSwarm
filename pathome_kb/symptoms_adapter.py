@@ -1,40 +1,16 @@
 """
 pathome_kb/symptoms_adapter.py
 ==============================
-Convert SAGE-style ``final_registry.json`` records into the JSON format
-``pathome.SymptomLibrary.load`` consumes.
+Convert SAGE-style ``final_registry.json`` records and per-state
+``regional_observations.json`` blocks into the JSON shape consumed by
+``pathome.SymptomLibrary.load``.
 
-SAGE registry shape (per disease):
-    {
-      "disease_name":             "Early Blight",
-      "pathogen_scientific_name": {value, url, quote},
-      "type_of_disease":          {value, url, quote},
-      "affected_parts":           {value: [...], url, quote},
-      "visual_symptoms": {
-        "summary":             {value, url, quote},
-        "diagnostic_features": {value, url, quote},
-        "look_alikes":         {value: [...], url, quote},
-      },
-      "confidence": "high"|"medium"|"low",
-      "num_sources": int,
-      "conflicts": [...]
-    }
+Two outputs per profile:
+- ``canonical`` (cross-region) ← from ``final_registry.json``
+- ``regional_observations[state]`` ← from per-state VLM observations
 
-Adapter mapping:
-- ``affected_parts.value``                 → ``VisualSymptom.plant_parts``
-- ``visual_symptoms.diagnostic_features``  → ``VisualSymptom.distinctive_signs``
-- ``visual_symptoms.look_alikes.value``    → ``VisualSymptom.confusion_diseases``
-- ``visual_symptoms.summary.value``        → ``VisualSymptom.notes``
-- The structured tuples (color, shape, margin, texture, sporulation,
-  progression) are left empty by this pipeline because the SAGE pipeline
-  emits free-form prose; downstream Phase 2 routing reads those fields
-  off the auto-built reobservation_prompt rather than from prose, so
-  empty fields are valid.
-- Every populated field is accompanied by a ``Citation`` in
-  ``VisualSymptom.sources[<field>]``.
-
-The adapter never invents content — if the SAGE record is empty, the
-SymptomProfile is created with an empty visual block and no citations.
+The previous regional_text duplication stage has been retired; the
+adapter no longer handles ``regional_visuals`` or ``visual`` schemas.
 """
 
 from __future__ import annotations
@@ -47,7 +23,7 @@ from .utils import save_json  # noqa: F401
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# helpers
 # ---------------------------------------------------------------------------
 
 def _val(field: Any) -> Optional[Any]:
@@ -60,23 +36,6 @@ def _val(field: Any) -> Optional[Any]:
     return v
 
 
-def _citation_record(field: Any, key_for_value: str = "") -> Optional[dict]:
-    """Convert a SAGE cited field into a Citation-ready dict, or None."""
-    if not isinstance(field, dict):
-        return None
-    v = field.get("value")
-    if v in (None, "", []):
-        return None
-    if isinstance(v, list):
-        v = "; ".join(str(x) for x in v if x)
-    url = (field.get("url") or "").strip()
-    quote = (field.get("quote") or "").strip()
-    if not (url or quote):
-        # nothing to cite
-        return None
-    return {"value": str(v), "url": url, "quote": quote}
-
-
 def _strs(value: Any) -> List[str]:
     if value is None:
         return []
@@ -85,72 +44,176 @@ def _strs(value: Any) -> List[str]:
     return [str(value).strip()] if str(value).strip() else []
 
 
+def _str(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        return "; ".join(str(x) for x in value if x)
+    return str(value).strip()
+
+
+def _citation(field_dict: Any, image_id: str = "", grounding: str = "text") -> Optional[dict]:
+    """Convert a SAGE/regional cited field into a Citation-shaped dict, or None."""
+    if not isinstance(field_dict, dict):
+        return None
+    v = field_dict.get("value")
+    if v in (None, "", []):
+        return None
+    if isinstance(v, list):
+        v = "; ".join(str(x) for x in v if x)
+    url = (field_dict.get("url") or "").strip()
+    quote = (field_dict.get("quote") or "").strip()
+    if grounding == "text" and not (url or quote):
+        return None
+    out = {
+        "value": str(v),
+        "url": url,
+        "quote": quote,
+        "image_id": image_id,
+        "grounding": grounding,
+    }
+    return out
+
+
 # ---------------------------------------------------------------------------
-# One disease record → one symptoms-profile-shaped dict
+# canonical (cross-region) record → CanonicalDisease dict
 # ---------------------------------------------------------------------------
 
-def disease_to_profile_dict(
-    crop: str,
-    disease: str,
-    record: dict,
-) -> dict:
-    """Map a SAGE registry entry to the dict shape SymptomProfile.from_dict accepts."""
-    visual_section = record.get("visual_symptoms") or {}
+def disease_to_canonical_dict(record: dict) -> dict:
+    """Map a SAGE ``final_registry.json`` entry to a ``canonical`` dict."""
+    visual = record.get("visual_symptoms") or {}
+    summary = visual.get("summary")
+    diagnostic = visual.get("diagnostic_features")
+    look = visual.get("look_alikes")
 
-    plant_parts = _strs(_val(record.get("affected_parts")))
-    distinctive_signs_raw = _val(visual_section.get("diagnostic_features"))
-    distinctive_signs = _strs(distinctive_signs_raw)
-    look_alikes = _strs(_val(visual_section.get("look_alikes")))
-    summary = _val(visual_section.get("summary"))
-    notes = str(summary) if summary else ""
+    # ``treatments`` is a new-schema field; tolerate its absence in older
+    # final_registry.json files produced before the prompt extension.
+    treatments = record.get("treatments") or {}
+
+    pathogen = record.get("pathogen_scientific_name") or {}
+    type_field = record.get("type_of_disease") or {}
+    affected = record.get("affected_parts") or {}
+
+    canonical = {
+        "summary": _str(_val(summary)),
+        "diagnostic_features": _strs(_val(diagnostic)),
+        "look_alikes": _strs(_val(look)),
+        "treatments": _strs(_val(treatments)),
+        "affected_parts": _strs(_val(affected)),
+        "pathogen_scientific_name": _str(_val(pathogen)),
+        "type_of_disease": _str(_val(type_field)),
+        "notes": "",
+        "sources": {},
+    }
+
+    sources: Dict[str, List[dict]] = {}
+    for key, src in (
+        ("summary", summary),
+        ("diagnostic_features", diagnostic),
+        ("look_alikes", look),
+        ("treatments", treatments),
+        ("affected_parts", affected),
+        ("pathogen_scientific_name", pathogen),
+        ("type_of_disease", type_field),
+    ):
+        cit = _citation(src)
+        if cit:
+            sources.setdefault(key, []).append(cit)
+    canonical["sources"] = sources
+    return canonical
+
+
+# ---------------------------------------------------------------------------
+# regional record → RegionalObservation dict
+# ---------------------------------------------------------------------------
+
+def observation_to_regional_dict(state: str, record: dict) -> dict:
+    """Map a per-state regional_observations.json record to the dict
+    consumed by SymptomProfile.from_dict.
+
+    The record is the JSON the VLM stage emits per (profile, state). It
+    typically has fields:
+      severity, lesion_morphology, affected_organs, spread_pattern,
+      variations_from_canonical (list of bullets),
+      __image_ids__ (list of bugwood::N).
+    Each populated field becomes an image-grounded Citation tied to
+    the primary image_id.
+    """
+    image_ids = list(record.get("__image_ids__") or record.get("image_ids") or [])
+    primary = image_ids[0] if image_ids else ""
+
+    severity = _str(record.get("severity"))
+    morphology = _str(record.get("lesion_morphology"))
+    organs = _strs(record.get("affected_organs"))
+    spread = _str(record.get("spread_pattern"))
+    variations = _strs(record.get("variations_from_canonical"))
 
     sources: Dict[str, List[dict]] = {}
 
-    cit = _citation_record(record.get("affected_parts"))
-    if cit and plant_parts:
-        sources["plant_parts"] = [cit]
+    def _vlm_cite(field_value: Any, quote: str) -> Optional[dict]:
+        if field_value in (None, "", []):
+            return None
+        if isinstance(field_value, list):
+            v = "; ".join(str(x) for x in field_value if x)
+        else:
+            v = str(field_value)
+        return {
+            "value": v,
+            "url": "",
+            "quote": str(quote or ""),
+            "image_id": primary,
+            "grounding": "image",
+        }
 
-    cit = _citation_record(visual_section.get("diagnostic_features"))
-    if cit and distinctive_signs:
-        sources["distinctive_signs"] = [cit]
+    # Each field's "quote" lives on the structured record itself in the
+    # newer prompt — record["severity_quote"] etc. Tolerate either a flat
+    # string OR a {value, quote} sub-object per field.
+    def _field_pair(key: str) -> Tuple[Any, str]:
+        v = record.get(key)
+        q_key = f"{key}_quote"
+        q = record.get(q_key, "")
+        if isinstance(v, dict):
+            q = v.get("quote", q)
+            v = v.get("value")
+        return v, q
 
-    cit = _citation_record(visual_section.get("look_alikes"))
-    if cit and look_alikes:
-        sources["confusion_diseases"] = [cit]
+    pairs = {
+        "severity": _field_pair("severity"),
+        "lesion_morphology": _field_pair("lesion_morphology"),
+        "affected_organs": _field_pair("affected_organs"),
+        "spread_pattern": _field_pair("spread_pattern"),
+        "variations_from_canonical": _field_pair("variations_from_canonical"),
+    }
+    for k, (val, quote) in pairs.items():
+        cit = _vlm_cite(val, quote)
+        if cit:
+            sources.setdefault(k, []).append(cit)
 
-    cit = _citation_record(visual_section.get("summary"))
-    if cit and notes:
-        sources["notes"] = [cit]
-
-    pathogen_cit = _citation_record(record.get("pathogen_scientific_name"))
-    if pathogen_cit:
-        sources.setdefault("pathogen_scientific_name", []).append(pathogen_cit)
-
-    type_cit = _citation_record(record.get("type_of_disease"))
-    if type_cit:
-        sources.setdefault("type_of_disease", []).append(type_cit)
-
-    visual = {
-        "plant_parts": plant_parts,
-        "color": [],
-        "shape": "",
-        "margin": "",
-        "texture": [],
-        "sporulation": [],
-        "distinctive_signs": distinctive_signs,
-        "progression": "",
-        "confusion_diseases": look_alikes,
-        "notes": notes,
+    return {
+        "state": state,
+        "image_ids": image_ids,
+        "severity": severity,
+        "lesion_morphology": morphology,
+        "affected_organs": organs,
+        "spread_pattern": spread,
+        "variations_from_canonical": variations,
         "sources": sources,
-        "reference_image_ids": [],
     }
 
+
+# ---------------------------------------------------------------------------
+# Profile assembly
+# ---------------------------------------------------------------------------
+
+def disease_to_profile_dict(crop: str, disease: str, record: dict) -> dict:
+    """One SAGE registry entry → SymptomProfile JSON dict (canonical only)."""
+    canonical = disease_to_canonical_dict(record)
     return {
         "profile_id": f"{crop}::{disease}",
         "crop": crop,
         "disease": disease,
-        "visual": visual,
-        "regional_visuals": {},
+        "canonical": canonical,
+        "regional_observations": {},
         "state_counts": {},
         "aez_counts": {},
         "total_observations": 0,
@@ -161,140 +224,22 @@ def disease_to_profile_dict(
 
 
 # ---------------------------------------------------------------------------
-# Merge per-crop registries → SymptomLibrary seed JSON
+# Top-level merge
 # ---------------------------------------------------------------------------
-
-def regional_record_to_visual_dict(
-    state: str,
-    record: dict,
-) -> dict:
-    """Convert a per-state regional registry record (from
-    ``regional_extraction``) into a VisualSymptom-shaped dict, with
-    image_id-tagged citations and reference_image_ids populated.
-    """
-    summary = record.get("summary") or {}
-    diagnostic = record.get("diagnostic_features") or {}
-    affected = record.get("affected_parts") or {}
-    look = record.get("look_alikes") or {}
-    image_ids = list(record.get("__image_ids__") or [])
-    primary_image = image_ids[0] if image_ids else ""
-
-    plant_parts = _strs(_val(affected))
-    distinctive_signs = _strs(_val(diagnostic))
-    confusion_diseases = _strs(_val(look))
-    notes = str(_val(summary) or "")
-
-    sources: Dict[str, List[dict]] = {}
-
-    def _cite(field_dict: dict, ground_image: bool = True) -> Optional[dict]:
-        if not isinstance(field_dict, dict):
-            return None
-        v = field_dict.get("value")
-        if v in (None, "", []):
-            return None
-        if isinstance(v, list):
-            v = "; ".join(str(x) for x in v if x)
-        url = (field_dict.get("url") or "").strip()
-        quote = (field_dict.get("quote") or "").strip()
-        if not (url or quote):
-            return None
-        out = {"value": str(v), "url": url, "quote": quote}
-        if ground_image and primary_image:
-            out["image_id"] = primary_image
-        return out
-
-    cit = _cite(affected)
-    if cit and plant_parts:
-        sources["plant_parts"] = [cit]
-    cit = _cite(diagnostic)
-    if cit and distinctive_signs:
-        sources["distinctive_signs"] = [cit]
-    cit = _cite(look)
-    if cit and confusion_diseases:
-        sources["confusion_diseases"] = [cit]
-    cit = _cite(summary)
-    if cit and notes:
-        sources["notes"] = [cit]
-
-    return {
-        "plant_parts": plant_parts,
-        "color": [],
-        "shape": "",
-        "margin": "",
-        "texture": [],
-        "sporulation": [],
-        "distinctive_signs": distinctive_signs,
-        "progression": "",
-        "confusion_diseases": confusion_diseases,
-        "notes": notes,
-        "sources": sources,
-        "reference_image_ids": image_ids,
-    }
-
-
-def _merge_image_fill(
-    visual_dict: dict,
-    image_fill: dict,
-    primary_image_id: str,
-) -> dict:
-    """Layer image-grounded fields on top of the text-grounded visual dict.
-
-    Only fields currently empty in ``visual_dict`` are filled. Each
-    image-grounded entry adds a Citation with grounding="image".
-    """
-    array_keys = {"plant_parts", "color", "texture", "sporulation",
-                  "distinctive_signs", "confusion_diseases"}
-    for field, payload in image_fill.items():
-        if not isinstance(payload, dict):
-            continue
-        v = payload.get("value")
-        if v in (None, "", []):
-            continue
-        # Don't overwrite text-grounded content
-        existing = visual_dict.get(field)
-        if (field in array_keys and existing) or (field not in array_keys and existing):
-            continue
-        if isinstance(v, list):
-            visual_dict[field] = [str(x) for x in v if x]
-            display = "; ".join(visual_dict[field])
-        else:
-            visual_dict[field] = str(v)
-            display = visual_dict[field]
-        cit = {
-            "value": display,
-            "url": "",
-            "quote": str(payload.get("quote", "")).strip(),
-            "image_id": primary_image_id,
-            "grounding": "image",
-        }
-        visual_dict.setdefault("sources", {}).setdefault(field, []).append(cit)
-    return visual_dict
-
 
 def merge_registries_to_seed(
     registries: Iterable[Tuple[str, dict]],
     expected_classes: Iterable[Tuple[str, str]],
-    regional_by_crop: Optional[Dict[str, Dict[str, Dict[str, dict]]]] = None,
-    image_fills_by_crop: Optional[Dict[str, Dict[str, Dict[str, dict]]]] = None,
+    regional_observations_by_crop: Optional[Dict[str, Dict[str, Dict[str, dict]]]] = None,
     min_observations: int = 3,
 ) -> dict:
-    """Merge crop→registry pairs into the seed JSON.
+    """Merge canonical (cross-region) + regional observations into seed JSON.
 
-    For every (crop, disease) in ``expected_classes`` we emit one
-    SymptomProfile. If the registry has data, we use it; otherwise we
-    emit an empty profile so the build pass picks it up.
+    ``registries`` is a list of (crop, registry_dict) pairs from the
+    SAGE cross-region pipeline; each registry has a ``diseases`` list.
 
-    ``regional_by_crop`` is the optional output of
-    ``regional_extraction.run_regional_extraction``: a dict mapping
-    ``crop -> profile_id -> state -> regional_record``. When supplied,
-    each profile's ``regional_visuals[state]`` is populated alongside
-    the cross-region ``visual``.
-
-    ``image_fills_by_crop`` is the optional output of
-    ``regional_image_fill.run_regional_image_fill``: same shape, but
-    each record is a dict of image-grounded field fills. Fields are
-    layered on top of the regional text-grounded block when empty,
-    with grounding="image" citations.
+    ``regional_observations_by_crop`` maps:
+        crop -> profile_id ("Crop::Disease") -> state -> observation_record
     """
     by_crop_disease: Dict[Tuple[str, str], dict] = {}
     for crop, registry in registries:
@@ -306,31 +251,21 @@ def merge_registries_to_seed(
                 continue
             by_crop_disease[(crop, disease)] = d
 
-    regional_by_crop = regional_by_crop or {}
-    image_fills_by_crop = image_fills_by_crop or {}
+    regional_observations_by_crop = regional_observations_by_crop or {}
 
     profiles = []
     for crop, disease in expected_classes:
         record = by_crop_disease.get((crop, disease)) or {}
         prof = disease_to_profile_dict(crop, disease, record)
-        # Attach regional_visuals[state] when we have a regional record.
-        crop_regional = regional_by_crop.get(crop) or {}
-        per_profile_regional = crop_regional.get(prof["profile_id"]) or {}
-        crop_image_fills = image_fills_by_crop.get(crop) or {}
-        per_profile_fills = crop_image_fills.get(prof["profile_id"]) or {}
-        if per_profile_regional or per_profile_fills:
-            regional_visuals: Dict[str, dict] = {}
-            states = set(per_profile_regional.keys()) | set(per_profile_fills.keys())
-            for state in states:
-                rec = per_profile_regional.get(state) or {}
-                fill = per_profile_fills.get(state) or {}
-                visual_dict = regional_record_to_visual_dict(state, rec)
-                if fill:
-                    image_ids = visual_dict.get("reference_image_ids") or []
-                    primary_image = image_ids[0] if image_ids else ""
-                    _merge_image_fill(visual_dict, fill, primary_image)
-                regional_visuals[state] = visual_dict
-            prof["regional_visuals"] = regional_visuals
+
+        crop_regional = regional_observations_by_crop.get(crop) or {}
+        per_profile = crop_regional.get(prof["profile_id"]) or {}
+        if per_profile:
+            prof["regional_observations"] = {
+                state: observation_to_regional_dict(state, rec)
+                for state, rec in per_profile.items()
+                if isinstance(rec, dict)
+            }
         profiles.append(prof)
 
     return {
@@ -340,6 +275,7 @@ def merge_registries_to_seed(
 
 
 def write_seed_json(payload: dict, path: str | Path) -> Path:
+    """Persist the merged seed payload to disk and return the path."""
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     with open(p, "w", encoding="utf-8") as fh:
