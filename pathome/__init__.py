@@ -22,6 +22,7 @@ from .layer5_references import ReferenceLibrary
 from .symptoms import (
     CanonicalDisease,
     Citation,
+    RegionalDelta,
     RegionalObservation,
     SwarmObservations,
     SymptomLibrary,
@@ -35,6 +36,7 @@ __all__ = [
     "SymptomProfile",
     "CanonicalDisease",
     "RegionalObservation",
+    "RegionalDelta",
     "Citation",
     "SwarmObservations",
     "ReferenceLibrary",

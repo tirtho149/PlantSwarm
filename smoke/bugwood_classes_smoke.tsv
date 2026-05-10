@@ -1,26 +1,18 @@
 crop	disease	candidate_rows	kept_rows
-Tomato	Tomato Spotted Wilt Virus	123	123
-Tomato	Late Blight	119	119
+Corn	Corn Smut	61	61
 Soybean	Sclerotinia Timber Rot	59	59
 Soybean	Cercospora Blight	54	54
-Tomato	Early Blight	48	48
-Tomato	Tomato Leaf Mould	39	39
-Tomato	Phytophthora Blight	38	38
-Tomato	Southern Blight	36	36
 Soybean	Downy Mildew	35	35
+Corn	Northern Corn Leaf Blight	33	33
 Soybean	Soybean Rust	32	32
 Soybean	Charcoal Rot	26	26
-Tomato	Septoria Leaf Spot	25	25
+Corn	White Ear Rot And Seedling Blight Of Maize	26	26
 Soybean	Frogeye Leaf Spot	23	23
 Soybean	Bean Pod Mottle Virus	22	22
-Tomato	Gray Mold	22	22
 Soybean	Bacterial Pustule Of Soybean Disease	21	21
-Tomato	Bacterial Canker And Wilt Of Tomato	20	20
+Corn	Gray Leaf Spot	20	20
 Soybean	Southern Blight	19	19
-Tomato	Cucumber Mosaic Virus	19	19
-Tomato	Bacterial Speck Of Tomato	19	19
-Tomato	Sclerotinia Timber Rot	19	19
 Soybean	Bacterial Blight	18	18
 Soybean	Root And Stem Rot	16	16
-Tomato	Southern Bacterial Wilt	15	15
-Tomato	Rhizopus Soft Rots	15	15
+Corn	Goss' Bacterial Wilt	16	16
+Corn	Southern Corn Rust	15	15

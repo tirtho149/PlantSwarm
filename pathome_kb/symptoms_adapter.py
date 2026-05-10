@@ -128,77 +128,63 @@ def disease_to_canonical_dict(record: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 def observation_to_regional_dict(state: str, record: dict) -> dict:
-    """Map a per-state regional_observations.json record to the dict
-    consumed by SymptomProfile.from_dict.
+    """Map a per-state VLM observation into the dict shape consumed by
+    SymptomProfile.from_dict.
 
-    The record is the JSON the VLM stage emits per (profile, state). It
-    typically has fields:
-      severity, lesion_morphology, affected_organs, spread_pattern,
-      variations_from_canonical (list of bullets),
-      __image_ids__ (list of bugwood::N).
-    Each populated field becomes an image-grounded Citation tied to
-    the primary image_id.
+    The record is the JSON the VLM stage emits per (profile, state).
+    The new schema is a deltas-only list:
+        deltas: [{field, canonical_says, image_shows, image_quote}]
+    Plus ``__image_ids__`` for image grounding. Older records with
+    parallel fields (severity / lesion_morphology / ...) are folded into
+    deltas via ``_legacy_record_to_deltas`` so existing JSON still loads.
     """
     image_ids = list(record.get("__image_ids__") or record.get("image_ids") or [])
     primary = image_ids[0] if image_ids else ""
 
-    severity = _str(record.get("severity"))
-    morphology = _str(record.get("lesion_morphology"))
-    organs = _strs(record.get("affected_organs"))
-    spread = _str(record.get("spread_pattern"))
-    variations = _strs(record.get("variations_from_canonical"))
+    raw_deltas = record.get("deltas")
+    if not isinstance(raw_deltas, list):
+        raw_deltas = _legacy_record_to_deltas(record)
 
-    sources: Dict[str, List[dict]] = {}
-
-    def _vlm_cite(field_value: Any, quote: str) -> Optional[dict]:
-        if field_value in (None, "", []):
-            return None
-        if isinstance(field_value, list):
-            v = "; ".join(str(x) for x in field_value if x)
-        else:
-            v = str(field_value)
-        return {
-            "value": v,
-            "url": "",
-            "quote": str(quote or ""),
-            "image_id": primary,
-            "grounding": "image",
-        }
-
-    # Each field's "quote" lives on the structured record itself in the
-    # newer prompt — record["severity_quote"] etc. Tolerate either a flat
-    # string OR a {value, quote} sub-object per field.
-    def _field_pair(key: str) -> Tuple[Any, str]:
-        v = record.get(key)
-        q_key = f"{key}_quote"
-        q = record.get(q_key, "")
-        if isinstance(v, dict):
-            q = v.get("quote", q)
-            v = v.get("value")
-        return v, q
-
-    pairs = {
-        "severity": _field_pair("severity"),
-        "lesion_morphology": _field_pair("lesion_morphology"),
-        "affected_organs": _field_pair("affected_organs"),
-        "spread_pattern": _field_pair("spread_pattern"),
-        "variations_from_canonical": _field_pair("variations_from_canonical"),
-    }
-    for k, (val, quote) in pairs.items():
-        cit = _vlm_cite(val, quote)
-        if cit:
-            sources.setdefault(k, []).append(cit)
+    deltas: List[dict] = []
+    for d in raw_deltas:
+        if not isinstance(d, dict):
+            continue
+        if not d.get("image_shows"):
+            continue
+        deltas.append({
+            "field":          _str(d.get("field")) or "other",
+            "canonical_says": _str(d.get("canonical_says")) or "(not specified)",
+            "image_shows":    _str(d.get("image_shows")),
+            "image_quote":    _str(d.get("image_quote")),
+            "image_id":       _str(d.get("image_id")) or primary,
+        })
 
     return {
         "state": state,
         "image_ids": image_ids,
-        "severity": severity,
-        "lesion_morphology": morphology,
-        "affected_organs": organs,
-        "spread_pattern": spread,
-        "variations_from_canonical": variations,
-        "sources": sources,
+        "deltas": deltas,
     }
+
+
+def _legacy_record_to_deltas(record: dict) -> List[dict]:
+    """Promote an older parallel-fields record into the deltas schema so
+    cached final_registry.json files continue to load.
+
+    Only the ``variations_from_canonical`` bullets are mapped — the
+    parallel severity/morphology/etc fields are dropped because they
+    duplicate canonical and that's the duplication this rewrite removes.
+    """
+    out: List[dict] = []
+    for bullet in (record.get("variations_from_canonical") or []):
+        if not isinstance(bullet, str) or not bullet.strip():
+            continue
+        out.append({
+            "field": "other",
+            "canonical_says": "(legacy bullet — canonical context not preserved)",
+            "image_shows": bullet.strip(),
+            "image_quote": "",
+        })
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -235,11 +221,12 @@ def merge_registries_to_seed(
 ) -> dict:
     """Merge canonical (cross-region) + regional observations into seed JSON.
 
-    ``registries`` is a list of (crop, registry_dict) pairs from the
-    SAGE cross-region pipeline; each registry has a ``diseases`` list.
-
-    ``regional_observations_by_crop`` maps:
-        crop -> profile_id ("Crop::Disease") -> state -> observation_record
+    ``registries`` is a list of (crop, registry_dict) pairs. Each disease
+    entry's ``regional_observations`` field (if present) is the
+    canonical home for the per-state observations — the regional pass
+    embeds them there. ``regional_observations_by_crop`` is still
+    accepted as a fallback for callers that pass observations
+    out-of-band, but is no longer required.
     """
     by_crop_disease: Dict[Tuple[str, str], dict] = {}
     for crop, registry in registries:
@@ -258,8 +245,11 @@ def merge_registries_to_seed(
         record = by_crop_disease.get((crop, disease)) or {}
         prof = disease_to_profile_dict(crop, disease, record)
 
-        crop_regional = regional_observations_by_crop.get(crop) or {}
-        per_profile = crop_regional.get(prof["profile_id"]) or {}
+        # Prefer the embedded regional_observations on the disease entry.
+        per_profile = record.get("regional_observations") or {}
+        if not per_profile:
+            crop_regional = regional_observations_by_crop.get(crop) or {}
+            per_profile = crop_regional.get(prof["profile_id"]) or {}
         if per_profile:
             prof["regional_observations"] = {
                 state: observation_to_regional_dict(state, rec)

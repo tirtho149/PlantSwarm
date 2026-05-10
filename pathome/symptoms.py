@@ -113,33 +113,67 @@ class CanonicalDisease:
 
 
 @dataclass
+class RegionalDelta:
+    """One image-grounded observation that ADDS to or CONTRADICTS the
+    canonical KB. The set of these per state is the regional KB.
+    Re-statements of canonical text are forbidden by construction —
+    canonical is the source of truth for fields the VLM doesn't touch.
+    """
+
+    field: str = ""             # which canonical field this delta refines
+    canonical_says: str = ""    # short quote from canonical, or "(not specified)"
+    image_shows: str = ""       # what the image adds or contradicts
+    image_quote: str = ""       # one-sentence visual evidence from the image
+    image_id: str = ""          # bugwood::N — which image was the witness
+
+
+@dataclass
 class RegionalObservation:
-    """Per-(crop, disease, state) visual evidence.
+    """Per-(crop, disease, state) deltas vs canonical.
 
-    Sourced from the VLM looking at the Bugwood photograph(s) for this
-    state, in the context of the canonical disease entry. The block is
-    deliberately *not* a copy of the canonical text — it captures only
-    what the local image actually shows plus how that differs from the
-    canonical description.
-
-    All citations carry ``grounding="image"`` and an ``image_id``; the
-    ``url`` field is empty (the image IS the witness, not a web page).
+    The VLM walks the canonical KB like a decision tree and emits ONLY
+    the deltas — additions or contradictions backed by the Bugwood
+    photo. There is no parallel re-extraction of severity / morphology /
+    etc; canonical owns those slots, regional owns the deltas. If the
+    image confirms canonical exactly, ``deltas`` is empty.
     """
 
     state: str = ""
-    image_ids: List[str] = field(default_factory=list)            # Bugwood photos from this state
-    severity: str = ""                                            # mild | moderate | advanced | late-season
-    lesion_morphology: str = ""                                   # one-sentence description from image
-    affected_organs: List[str] = field(default_factory=list)      # what the image shows is affected
-    spread_pattern: str = ""                                      # lower canopy, scattered, uniform, etc.
-    variations_from_canonical: List[str] = field(default_factory=list)  # bullets: how this image differs
-    sources: Dict[str, List[Citation]] = field(default_factory=dict)
+    image_ids: List[str] = field(default_factory=list)
+    deltas: List[RegionalDelta] = field(default_factory=list)
 
     def is_empty(self) -> bool:
-        return not any([
-            self.severity, self.lesion_morphology, self.spread_pattern,
-            self.affected_organs, self.variations_from_canonical,
-        ])
+        return not self.deltas
+
+    def deltas_by_field(self) -> Dict[str, List[RegionalDelta]]:
+        """Group deltas by which canonical field they refine."""
+        out: Dict[str, List[RegionalDelta]] = {}
+        for d in self.deltas:
+            out.setdefault(d.field or "other", []).append(d)
+        return out
+
+    def narrative(self, max_quote_chars: int = 240) -> str:
+        """Render the per-state deltas as a prompt-ready text block.
+
+        One bullet per delta, naming the canonical field, what canonical
+        says, what THIS image adds/contradicts, and a trimmed visual
+        quote. Empty if the image confirms canonical exactly.
+        """
+        if not self.deltas:
+            return ""
+        lines = [f"State: {self.state}"]
+        for d in self.deltas:
+            lines.append(f"  • [{d.field or 'other'}]")
+            if d.canonical_says:
+                lines.append(f"      canonical: {d.canonical_says}")
+            if d.image_shows:
+                lines.append(f"      image:     {d.image_shows}")
+            if d.image_quote:
+                q = d.image_quote
+                if len(q) > max_quote_chars:
+                    q = q[:max_quote_chars].rstrip() + "…"
+                lines.append(f"      evidence:  \"{q}\"")
+        return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
@@ -225,6 +259,42 @@ class SymptomProfile:
         d = asdict(self)
         return d
 
+    def context_for_state(self, state: str = "") -> str:
+        """Render canonical KB + per-state deltas as a single prompt block.
+
+        Used by routing/diagnosis agents that want the full decision-tree
+        view for a (crop, disease, state) tuple: canonical is the trunk,
+        deltas for the requested state are the branches. If ``state`` is
+        empty or has no observations, only canonical is rendered.
+        """
+        lines: List[str] = [f"Crop:    {self.crop}", f"Disease: {self.disease}"]
+        c = self.canonical
+        if c.pathogen_scientific_name:
+            lines.append(f"Pathogen: {c.pathogen_scientific_name}")
+        if c.type_of_disease:
+            lines.append(f"Type: {c.type_of_disease}")
+        if c.affected_parts:
+            lines.append(f"Affected parts: {', '.join(c.affected_parts)}")
+        if c.summary:
+            lines.append(f"Summary: {c.summary}")
+        if c.diagnostic_features:
+            lines.append("Diagnostic features:")
+            lines.extend(f"  - {f}" for f in c.diagnostic_features)
+        if c.look_alikes:
+            lines.append("Look-alikes:")
+            lines.extend(f"  - {f}" for f in c.look_alikes)
+        if c.treatments:
+            lines.append("Treatments:")
+            lines.extend(f"  - {t}" for t in c.treatments)
+
+        if state:
+            obs = self.regional_observations.get(state)
+            if obs and not obs.is_empty():
+                lines.append("")
+                lines.append(f"State-specific deltas for {state}:")
+                lines.append(obs.narrative())
+        return "\n".join(lines)
+
     @staticmethod
     def _hydrate_sources(raw: Optional[dict]) -> Dict[str, List[Citation]]:
         out: Dict[str, List[Citation]] = {}
@@ -262,16 +332,21 @@ class SymptomProfile:
     @classmethod
     def _hydrate_regional(cls, state: str, raw: Optional[dict]) -> RegionalObservation:
         r = dict(raw or {})
-        sources = cls._hydrate_sources(r.get("sources"))
+        deltas: List[RegionalDelta] = []
+        for d in (r.get("deltas") or []):
+            if not isinstance(d, dict):
+                continue
+            deltas.append(RegionalDelta(
+                field=str(d.get("field", "")),
+                canonical_says=str(d.get("canonical_says", "")),
+                image_shows=str(d.get("image_shows", "")),
+                image_quote=str(d.get("image_quote", "")),
+                image_id=str(d.get("image_id", "")),
+            ))
         return RegionalObservation(
             state=str(r.get("state") or state),
             image_ids=list(r.get("image_ids") or []),
-            severity=str(r.get("severity", "")),
-            lesion_morphology=str(r.get("lesion_morphology", "")),
-            affected_organs=list(r.get("affected_organs") or []),
-            spread_pattern=str(r.get("spread_pattern", "")),
-            variations_from_canonical=list(r.get("variations_from_canonical") or []),
-            sources=sources,
+            deltas=deltas,
         )
 
     @classmethod
@@ -310,16 +385,15 @@ class SymptomProfile:
                 if isinstance(blob, dict)
             }
         elif isinstance(d.get("regional_visuals"), dict):
-            # Legacy regional blocks carried image_id citations on visual fields;
-            # collapse to RegionalObservation with image_ids only.
+            # Legacy regional_visuals blocks predate the deltas schema;
+            # keep image_ids only (no synthesized deltas — there's no
+            # canonical context to compare against here).
             for state, blob in d["regional_visuals"].items():
                 if not isinstance(blob, dict):
                     continue
-                image_ids = list(blob.get("reference_image_ids") or [])
                 regional[state] = RegionalObservation(
                     state=state,
-                    image_ids=image_ids,
-                    sources=cls._hydrate_sources(blob.get("sources")),
+                    image_ids=list(blob.get("reference_image_ids") or []),
                 )
 
         sw_raw = d.get("swarm_observations")
@@ -492,6 +566,16 @@ class SymptomLibrary:
         if prof is None:
             return default
         return prof.reobservation_prompt or prof.canonical.auto_reobservation_prompt() or default
+
+    def context_for(self, crop: str, disease: str, state: str = "") -> str:
+        """Canonical KB + per-state deltas as one prompt block.
+
+        Empty string if the (crop, disease) profile is unknown.
+        """
+        prof = self.get(crop, disease)
+        if prof is None:
+            return ""
+        return prof.context_for_state(state)
 
     # -- persistence ----------------------------------------------------
 

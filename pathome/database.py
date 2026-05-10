@@ -206,6 +206,12 @@ class PathomeDB:
     def symptom_profile(self, crop: str, disease: str) -> Optional[SymptomProfile]:
         return self.symptoms.get(crop, disease)
 
+    def symptom_context(self, crop: str, disease: str, state: str = "") -> str:
+        """Canonical KB + per-state deltas, ready to drop into a prompt.
+        Empty string if the (crop, disease) profile is unknown.
+        """
+        return self.symptoms.context_for(crop, disease, state)
+
     def prevalent_in_state(self, state: str, top_k: int = 5):
         return self.symptoms.prevalent_in_state(state, top_k=top_k)
 

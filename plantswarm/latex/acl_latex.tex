@@ -76,12 +76,17 @@ for self-declared confidence---a gap that is
 \emph{wider} on field images because genuine visual
 ambiguity produces richer behavioral differentiation.
 GPS coordinates embedded in each trace enable
-\textbf{\pathomedb}: a five-layer mechanistic
-cross-crop pathogen knowledge base whose regional
-epidemiology layer is derived empirically from
-observation density rather than expert curation,
-validated against EPPO historical outbreak records
-at Pearson $r{\geq}0.71$.
+\textbf{\pathomedb}: a visual-symptom-centric
+cross-crop pathogen knowledge base with a
+canonical-vs-regional split---one canonical disease
+block per class, sourced from extension-service
+literature with verbatim citations, plus per-state
+image-grounded \emph{deltas} over a state-stratified
+sample of \bugwood photographs. Regional disease
+prevalence is derived empirically from observation
+density rather than expert curation and validates
+against EPPO historical outbreak records at Pearson
+$r{\geq}0.71$.
 \textbf{\observe} (Qwen2.5-VL-7B + LoRA, trained
 via Decision Transformer and GRPO) is evaluated
 on the \emph{complete} \pv dataset ($54{,}306$
@@ -217,9 +222,15 @@ correlated with geographic rarity
 over six architectural variants.
 
 \noindent\textbf{\pathomedb:}
-Five-layer mechanistic cross-crop pathogen
-knowledge base; Layer~3 empirically derived
-from \bugwood GPS observation density,
+Visual-symptom-centric cross-crop pathogen
+knowledge base built in five automated stages
+(web discovery $\to$ extraction $\to$ reconciliation
+$\to$ state-aware image cache $\to$ per-state VLM
+delta extraction); canonical text per disease with
+verbatim citations, image-grounded regional deltas
+per (disease, state) tuple, no parallel re-extraction
+of canonical fields. Layer~3 (geo prior) empirically
+derived from \bugwood GPS observation density,
 validated against EPPO ($r{\geq}0.71$);
 Layer~5 geo-tagged reference library from
 $78$ \bugwood field images, enabling
@@ -647,16 +658,35 @@ The build emits exactly two on-disk artifacts:
     \texttt{SymptomLibrary} of
     \texttt{SymptomProfile}s, one per
     $(\text{crop},\,\text{disease})$.
-    Each profile carries (a) a
-    \texttt{VisualSymptom} block (plant parts,
-    color, shape, margin, texture, sporulation,
-    distinctive signs, progression, confusion
-    diseases, free-form notes); (b) per-state
-    and per-AEZ observation counts; (c) a list
-    of reference IDs; (d) an auto-built
-    \texttt{reobservation\_prompt} composed
-    from the populated visual fields; and (e)
-    an optional \texttt{SwarmObservations}
+    Each profile splits the visual content into
+    (a) a \texttt{CanonicalDisease} block
+    (cross-region, sourced from extension-service
+    URLs), with \texttt{summary},
+    \texttt{diagnostic\_features},
+    \texttt{look\_alikes}, \texttt{treatments},
+    \texttt{affected\_parts},
+    \texttt{pathogen\_scientific\_name}, and
+    \texttt{type\_of\_disease}---every value
+    accompanied by URL and verbatim source quote
+    (\texttt{grounding="text"}); and
+    (b) a \texttt{regional\_observations[state]}
+    map of \texttt{RegionalObservation}s, each
+    holding the cached \texttt{image\_ids} and a
+    list of \texttt{deltas}, where every delta is a
+    structured record \texttt{\{field,
+    canonical\_says, image\_shows, image\_quote\}}
+    grounded in a single Bugwood image
+    (\texttt{grounding="image"}). Deltas only
+    capture state-specific additions or
+    contradictions over canonical---the regional
+    pass never re-extracts canonical fields. The
+    profile additionally carries (c) per-state and
+    per-AEZ observation counts;
+    (d) a list of reference IDs;
+    (e) an auto-built \texttt{reobservation\_prompt}
+    composed from canonical diagnostic features and
+    affected parts; and
+    (f) an optional \texttt{SwarmObservations}
     aggregate populated post-trace.
   \item \texttt{refs/} -- a
     \texttt{ReferenceLibrary} over the held-out
@@ -673,42 +703,80 @@ load lazily---in particular, the FAISS index is
 built on the first
 \texttt{retrieve\_references} call rather than
 at construction time, so \pathomedb build is fast
-and deterministic.
+and deterministic. The decision-tree shape of
+canonical-trunk $\to$ per-state delta-branches lets
+agents ask \texttt{db.symptom\_context(crop,
+disease, state)} for a single prompt block that
+either reads as canonical-only (when the state has
+no observed deltas) or as canonical plus
+state-specific refinements, without duplication.
 
 \subsection{Phase~0: Claude-headless visual seeding}
 \label{sec:claudeseed}
 
-For each of the $484$ profiles,
-\texttt{scripts/seed\_pathome\_with\_claude.py}
-issues a single subprocess call:
-\begin{verbatim}
-claude -p "<schema-fixed prompt>"
-       --output-format json
-       --disallowedTools "Bash,Edit,Write,
-                          Read,Grep,Glob,
-                          WebFetch,WebSearch"
-       --model sonnet
-\end{verbatim}
-The prompt fixes a JSON schema enumerating the
-\texttt{VisualSymptom} fields and instructs the
-model to return empty arrays/strings rather
-than guessing for diseases it is uncertain
-about. The response is parsed via the
-envelope's \texttt{result} key, code-fence
-stripped, validated against the schema, and
-written incrementally into the seed file
-so that walltime kills resume cleanly.
-Failures (timeouts, malformed JSON, schema
-violations) are logged to \texttt{failed.jsonl}
-and resubmittable via \texttt{--retry-failed}.
-At four parallel workers and $\sim$$7$\,s per
-profile (Sonnet), the full $484$-class seed
-lands in well under an hour and costs a fraction
-of a single curator-day. We explicitly do
-\emph{not} rely on the seed being expert-grade
-on every profile; it is the input to the
-trace-driven enhancement pass, not the
-endpoint.
+Phase~0 runs locally---compute clusters typically
+cannot complete the \texttt{claude} CLI's OAuth
+flow---and is shipped to Nova as a single committed
+JSON. The pipeline (module \texttt{pathome\_kb},
+ported from SAGE~\citep{sage2025}) is a five-stage
+chain plus an adapter:
+
+\begin{enumerate}
+  \item \textbf{Discovery.} For each disease,
+    \texttt{claude -p} with \texttt{WebSearch} returns
+    a ranked list of extension-service URLs (one search
+    per disease, parallel). Output:
+    \texttt{discovery\_results.json}.
+  \item \textbf{Extraction.} Per URL, the page is
+    fetched and a \texttt{claude -p} no-tools call
+    extracts the canonical fields (summary, diagnostic
+    features, look-alikes, treatments, affected parts,
+    pathogen, type) keeping every value accompanied by
+    a verbatim quote from the page. Output:
+    \texttt{raw\_extractions.json}.
+  \item \textbf{Reconciliation.} A second
+    \texttt{claude -p} call merges per-source records
+    into one canonical entry per disease, surfacing
+    field-level conflicts when sources disagree.
+    Output: \texttt{final\_registry.json} (canonical
+    block of every profile).
+  \item \textbf{State-aware image cache.}
+    \texttt{scripts/ensure\_state\_image\_cache.py}
+    downloads exactly one \bugwood photograph per
+    $(\text{crop},\,\text{disease},\,\text{state})$
+    tuple, keyed by the disease's per-state observation
+    count in the usable CSV.
+  \item \textbf{Per-state VLM delta extraction.} For
+    each cached image, \texttt{claude -p
+    -{}-allowedTools Read} reads both the image and
+    the canonical KB entry from stage~3, and emits
+    \emph{only} structured deltas
+    \texttt{\{field, canonical\_says, image\_shows,
+    image\_quote\}} for what THIS image adds or
+    contradicts. Restating canonical text is forbidden
+    by the prompt; if the image confirms canonical
+    exactly, \texttt{deltas} is empty. Output: written
+    back into \texttt{final\_registry.json} under each
+    disease's \texttt{regional\_observations[state]},
+    so one unified registry per crop holds canonical
+    plus per-state image-grounded refinements.
+\end{enumerate}
+
+The adapter (\texttt{pathome\_kb.symptoms\_adapter})
+turns each registry into the \texttt{SymptomProfile}
+schema of \S\ref{sec:pathomedb}, materialising every
+canonical field as a text-grounded \texttt{Citation}
+and every delta as an image-grounded one.
+At four parallel workers (default
+\texttt{MAX\_PARALLEL\_EXTRACTIONS}), production
+across the full $484$-class set lands in 16--24~h
+of walltime over OAuth quota. The smoke run on
+$25$ classes (Tomato + Soybean) completes in
+$\sim$$45$~min and costs $\sim$\$5--$\$15$. We
+explicitly do \emph{not} rely on the canonical
+text being expert-grade on every profile; it is
+the input to the trace-driven enhancement pass
+(\S\ref{sec:swarmobs}), not the endpoint.
 
 \subsection{Build: layering the CSV onto the seed}
 
@@ -730,10 +798,10 @@ each record:
     a \texttt{ReferenceImage} entry is
     registered in \texttt{db.refs}.
 \end{itemize}
-The visual block from Phase~0 is preserved
-verbatim. The geo prior (Eq.~\ref{eq:density})
-reads its counts directly off
-\texttt{state\_counts}---there is no separate
+The canonical and regional blocks from Phase~0
+are preserved verbatim. The geo prior
+(Eq.~\ref{eq:density}) reads its counts directly
+off \texttt{state\_counts}---there is no separate
 regional-epidemiology table to maintain.
 The on-disk DB is written as
 \texttt{artifacts/pathome\_v1\_seed/} and is
@@ -789,8 +857,9 @@ $(\text{crop},\,\text{disease})$ from
     misroutes \emph{to}.
 \end{itemize}
 This block is attached to the matching
-\texttt{SymptomProfile}; the visual content
-from Phase~0 is left untouched. The output
+\texttt{SymptomProfile}; the canonical and
+regional content from Phase~0 is left untouched.
+The output
 is a new on-disk DB,
 \texttt{artifacts/pathome\_v1\_enhanced/},
 identical to the seed DB except every profile

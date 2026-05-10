@@ -2,7 +2,8 @@
 # ============================================================================
 # smoke/run_phase0_full.sh
 # ============================================================================
-# Single-command, perfect-KB regenerate for Tomato + Soybean.
+# Single-command, perfect-KB regenerate for any 2 crops in the smoke CSV.
+# Default crops: Soybean + Corn. Override with SMOKE_CROPS="Crop1,Crop2".
 #
 # What runs (every stage end-to-end, default = MAXIMUM COVERAGE):
 #
@@ -13,18 +14,22 @@
 #        extraction (claude -p)           → verbatim quotes + treatments
 #        reconciliation (claude -p)       → canonical entries with treatments
 #        → final_registry.json per crop
-#   4. Per-state VLM observation:
+#   4. Per-state VLM observation (deltas-only, decision-tree style):
 #        claude -p + Read tool looks at each cached Bugwood image
-#        + reads canonical reference from step 3
-#        → severity / lesion_morphology / affected_organs /
-#          spread_pattern / variations_from_canonical
-#        → regional_observations.json per crop
+#        + canonical KB from step 3 as context
+#        → list of deltas {field, canonical_says, image_shows, image_quote}
+#          — only state-specific additions/contradictions, never a
+#          parallel re-extraction of canonical fields
+#        → embedded into final_registry.json (single source of truth)
 #   5. Adapter merge → smoke/artifacts/pathome_seed/symptoms_seed.json
 #
 # Output schema:
 #   SymptomProfile {
 #     canonical: CanonicalDisease           # one block per disease (text)
-#     regional_observations: {state: ...}   # per-state VLM observations + variations
+#     regional_observations: {                # per-state image-grounded deltas
+#       state: { image_ids, deltas:[{field, canonical_says,
+#                                    image_shows, image_quote}] }
+#     }
 #   }
 #
 # Walltime / cost (full coverage):
@@ -105,7 +110,7 @@ fi
 # ----------------------------------------------------------------------------
 if [ "${FULL_KEEP_CACHE:-0}" != "1" ]; then
   step "3a. Clearing stale registries to re-run with treatments prompt"
-  for crop in Tomato Soybean; do
+  for crop in $(echo "${SMOKE_CROPS:-Soybean,Corn}" | tr ',' ' '); do
     rm -f "artifacts/pathome_kb/$crop/raw_extractions.json" \
           "artifacts/pathome_kb/$crop/final_registry.json" \
           "artifacts/pathome_kb/$crop/registry.md" \
@@ -119,12 +124,31 @@ fi
 # ----------------------------------------------------------------------------
 if [ "${FULL_SKIP_KB:-0}" != "1" ]; then
   step "3b. Cross-region SAGE pipeline + per-state VLM observation"
+
+  # Auto-detect: if every target crop already has discovery_results.json on
+  # disk, we can resume from the extraction stage and skip the (slow + costly)
+  # WebSearch pass. Otherwise run discovery fresh.
+  RESUME_ARG=()
+  ALL_HAVE_DISCOVERY=1
+  for crop in $(echo "${SMOKE_CROPS:-Soybean,Corn}" | tr ',' ' '); do
+    if [ ! -f "artifacts/pathome_kb/$crop/discovery_results.json" ]; then
+      ALL_HAVE_DISCOVERY=0
+      break
+    fi
+  done
+  if [ "$ALL_HAVE_DISCOVERY" = "1" ]; then
+    echo "  [resume] discovery_results.json present for every crop — resuming from extraction"
+    RESUME_ARG=(--resume-from extraction)
+  else
+    echo "  [fresh]  no cached discovery for at least one crop — running full discovery"
+  fi
+
   python3 -m pathome_kb \
     --csv "$USABLE_CSV" \
     --out "$OUT" \
     --regional \
-    --resume-from extraction \
-    --only-crops "Tomato,Soybean" \
+    --only-crops "${SMOKE_CROPS:-Soybean,Corn}" \
+    "${RESUME_ARG[@]}" \
     "${QUICK_ARG[@]}"
 fi
 
@@ -140,33 +164,37 @@ n_canon = sum(1 for p in profiles if (p.get('canonical') or {}).get('summary'))
 n_reg   = sum(1 for p in profiles if p.get('regional_observations'))
 n_blocks = sum(len(p.get('regional_observations') or {}) for p in profiles)
 n_with_treat = sum(1 for p in profiles if (p.get('canonical') or {}).get('treatments'))
-n_text = n_image = 0
-n_variations = 0
+n_text = 0
+n_deltas = 0
+fields_hit = {}
 for p in profiles:
     for f, cits in ((p.get('canonical') or {}).get('sources') or {}).items():
         for c in cits:
             n_text += 1 if c.get('grounding','text') == 'text' else 0
     for state, obs in (p.get('regional_observations') or {}).items():
-        n_variations += len(obs.get('variations_from_canonical') or [])
-        for f, cits in (obs.get('sources') or {}).items():
-            for c in cits:
-                n_image += 1 if c.get('grounding') == 'image' else 0
+        for d in (obs.get('deltas') or []):
+            n_deltas += 1
+            fields_hit[d.get('field','other')] = fields_hit.get(d.get('field','other'), 0) + 1
 print(f'profiles total                   : {len(profiles)}')
 print(f'profiles w/ canonical summary    : {n_canon}')
 print(f'profiles w/ canonical treatments : {n_with_treat}')
 print(f'profiles w/ regional observations: {n_reg}')
 print(f'total per-state blocks           : {n_blocks}')
-print(f'total variations bullets         : {n_variations}')
+print(f'total state-specific deltas      : {n_deltas}')
 print(f'text-grounded citations (canonical): {n_text}')
-print(f'image-grounded citations (regional): {n_image}')
+if fields_hit:
+    print('deltas by canonical field:')
+    for k, v in sorted(fields_hit.items(), key=lambda x: -x[1]):
+        print(f'  {k:24s} {v}')
 "
 
 echo
 echo "Push the seed to GitHub:"
 echo "  git add -f $OUT \\"
 echo "             $USABLE_CSV \\"
-echo "             artifacts/pathome_kb/Tomato/{discovery_results,final_registry,regional_observations}.json \\"
-echo "             artifacts/pathome_kb/Soybean/{discovery_results,final_registry,regional_observations}.json"
+for crop in $(echo "${SMOKE_CROPS:-Soybean,Corn}" | tr ',' ' '); do
+  echo "             artifacts/pathome_kb/$crop/{discovery_results,final_registry}.json \\"
+done
 echo "  git commit -m 'smoke: regenerate state-aware KB'"
 echo "  git push origin main"
 echo

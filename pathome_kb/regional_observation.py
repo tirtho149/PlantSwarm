@@ -9,16 +9,19 @@ a single image-aware stage that:
 
 1. Reads the canonical disease record from `final_registry.json`
 2. Locates the cached Bugwood photo for the (crop, disease, state) tuple
-3. Asks Claude (vision-capable, via `claude -p` with the Read tool) to:
-   - describe what THIS image shows (severity, lesion morphology,
-     affected organs, spread pattern)
-   - compare against the canonical text and emit
-     `variations_from_canonical` bullets where the image disagrees with
-     or refines the canonical description
+3. Asks Claude (vision-capable, via `claude -p` with the Read tool) to
+   walk the canonical KB like a decision tree and emit ONLY deltas —
+   structured ``{field, canonical_says, image_shows, image_quote}``
+   records — that ADD to or CONTRADICT the canonical description for
+   THIS state's image. If the image confirms canonical exactly, the
+   list is empty. There is no parallel re-extraction of severity /
+   morphology / etc; canonical is the source of truth for those.
 
-Output: `regional_observations.json` per crop, mapping
-``profile_id -> state -> observation_record``. The adapter turns each
-record into a ``RegionalObservation`` with image-grounded citations.
+Output: per-state observation records are embedded INTO the same
+``final_registry.json`` under each disease entry's
+``regional_observations`` field (one unified registry per crop, no
+separate file). The adapter turns each record into a
+``RegionalObservation`` with image-grounded citations.
 """
 
 from __future__ import annotations
@@ -83,8 +86,12 @@ def _resolve_cached_image(image_id: str) -> Path | None:
 # Prompt
 # ---------------------------------------------------------------------------
 
-def _format_canonical_brief(canonical: dict, max_chars: int = 2000) -> str:
-    """Render a compact canonical-disease summary for the prompt."""
+def _format_canonical_brief(canonical: dict, max_chars: int = 2400) -> str:
+    """Render canonical fields keyed by the SAME field-names the prompt
+    asks the VLM to compare against, so the decision-tree mapping is
+    explicit. Empty fields are rendered as '(not specified)' so the VLM
+    knows which slots it can legitimately fill with image evidence.
+    """
     def _v(field):
         if not isinstance(field, dict):
             return ""
@@ -94,93 +101,141 @@ def _format_canonical_brief(canonical: dict, max_chars: int = 2000) -> str:
         return str(v or "")
 
     vs = canonical.get("visual_symptoms") or {}
-    parts = [
-        f"Pathogen: {_v(canonical.get('pathogen_scientific_name'))}",
-        f"Type: {_v(canonical.get('type_of_disease'))}",
-        f"Affected parts: {_v(canonical.get('affected_parts'))}",
-        f"Summary: {_v(vs.get('summary'))}",
-        f"Diagnostic features: {_v(vs.get('diagnostic_features'))}",
-        f"Look-alikes: {_v(vs.get('look_alikes'))}",
+    field_map = [
+        ("pathogen",            _v(canonical.get("pathogen_scientific_name"))),
+        ("type_of_disease",     _v(canonical.get("type_of_disease"))),
+        ("affected_organs",     _v(canonical.get("affected_parts"))),
+        ("lesion_morphology",   _v(vs.get("summary"))),
+        ("diagnostic_features", _v(vs.get("diagnostic_features"))),
+        ("look_alikes",         _v(vs.get("look_alikes"))),
+        ("treatments",          _v(canonical.get("treatments"))),
     ]
-    text = "\n".join(p for p in parts if p.split(": ", 1)[1].strip())
+    lines = [
+        f"  - {name}: {value if value.strip() else '(not specified)'}"
+        for name, value in field_map
+    ]
+    text = "\n".join(lines)
     if len(text) > max_chars:
-        text = text[:max_chars] + "\n[…canonical truncated]"
+        text = text[:max_chars] + "\n  […canonical truncated]"
     return text
 
 
 REGIONAL_OBSERVATION_PROMPT = """\
 You are looking at one Bugwood Network field photograph of a plant
-disease. Your task: describe what this specific image shows (NOT the
-disease in general), then flag where the image diverges from the
-canonical description.
+disease. The CANONICAL knowledge base for this disease is given below
+— it is already the source of truth for symptoms, morphology, severity
+typical of this disease, look-alikes, and treatments.
+
+Your job is NOT to re-describe the disease. Your job is to walk the
+canonical KB like a decision tree and emit ONLY observations from THIS
+photograph that ADD to or CONTRADICT the canonical text — the
+state-specific delta. If the image confirms canonical exactly, return
+an empty list.
 
 Crop:    {crop}
 Disease: {disease}
 State:   {state}
 Image:   {image_path}
 
-CANONICAL REFERENCE (cross-region, from extension-service literature):
+CANONICAL KB (already populated — DO NOT repeat its contents):
 ─────────────────────────────────────────────────────────────────────
 {canonical_brief}
 ─────────────────────────────────────────────────────────────────────
 
-Your job is to fill in this JSON object describing THIS photograph,
-NOT the canonical text:
+Allowed delta fields (pick the one your observation refines or
+contradicts; use "other" only if none fit):
+  - lesion_morphology    (size / shape / margin / color of lesions)
+  - severity             (advancement / extent at this site)
+  - affected_organs      (which plant parts THIS image shows affected)
+  - spread_pattern       (canopy distribution: lower / upper / scattered / uniform)
+  - diagnostic_features  (a sign visible here that's not in canonical's list)
+  - look_alikes          (something that COULD be confused with what's shown)
+  - treatments           (rare — only if image evidence implies a treatment-relevant
+                          stage that canonical doesn't already cover)
+  - other
 
+Output JSON:
 {{
-  "severity":         "<one phrase: mild | moderate | advanced | late-season | early-onset | ...>",
-  "severity_quote":   "<one short sentence describing what you see that justifies that severity>",
-
-  "lesion_morphology":      "<one-sentence description of lesion shape, size, color, margin AS VISIBLE in this image>",
-  "lesion_morphology_quote":"<short reinforcing quote of what you see>",
-
-  "affected_organs":       ["<organ that THIS image clearly shows is affected>", "..."],
-  "affected_organs_quote": "<short quote describing what you see on those organs>",
-
-  "spread_pattern":        "<one phrase: lower canopy, scattered, uniform, edge of row, ...>",
-  "spread_pattern_quote":  "<short quote describing the spread you see>",
-
-  "variations_from_canonical": [
-    "<bullet: how this image diverges from the canonical reference>",
-    "<bullet: e.g. 'lesions appear ~3x larger than canonical 1/4-inch description'>",
-    "<bullet: only include bullets that are SUPPORTED by the image>"
+  "deltas": [
+    {{
+      "field":          "<one of the allowed fields above>",
+      "canonical_says": "<short quote from CANONICAL KB above on this field, OR '(not specified)' if canonical is silent>",
+      "image_shows":    "<what THIS image adds or contradicts — one sentence, state-specific>",
+      "image_quote":    "<one-sentence visual evidence from the image — what you literally see>"
+    }}
   ]
 }}
 
 Hard rules:
-- Describe what is VISIBLE in the image. Do not transcribe the canonical
-  reference. If a field cannot be determined from a single photo, set
-  the value to an empty string and the quote to "".
-- The variations_from_canonical list is for HONEST disagreements:
-  the image shows worse/milder/earlier/later/different morphology than
-  what the canonical text describes. If the image agrees with the
-  canonical reference exactly, set this to an empty list.
+- Each delta MUST be supported by something visible in the image. If you
+  cannot point to visual evidence, omit the delta.
+- Do NOT emit a delta that just restates canonical text. Restating
+  canonical is forbidden — that is the redundant pass we are removing.
+- "(not specified)" is the right value for canonical_says when the
+  canonical KB is silent on that field but the image shows something
+  worth recording.
+- If the image is in full agreement with canonical, return {{"deltas": []}}.
 """
 
 REGIONAL_OBSERVATION_SCHEMA = {
     "type": "object",
     "properties": {
-        "severity":              {"type": "string"},
-        "severity_quote":        {"type": "string"},
-        "lesion_morphology":     {"type": "string"},
-        "lesion_morphology_quote": {"type": "string"},
-        "affected_organs":       {"type": "array", "items": {"type": "string"}},
-        "affected_organs_quote": {"type": "string"},
-        "spread_pattern":        {"type": "string"},
-        "spread_pattern_quote":  {"type": "string"},
-        "variations_from_canonical": {
+        "deltas": {
             "type": "array",
-            "items": {"type": "string"},
+            "items": {
+                "type": "object",
+                "properties": {
+                    "field":          {"type": "string"},
+                    "canonical_says": {"type": "string"},
+                    "image_shows":    {"type": "string"},
+                    "image_quote":    {"type": "string"},
+                },
+                "required": ["field", "canonical_says", "image_shows", "image_quote"],
+            },
         },
     },
-    "required": [
-        "severity", "severity_quote",
-        "lesion_morphology", "lesion_morphology_quote",
-        "affected_organs", "affected_organs_quote",
-        "spread_pattern", "spread_pattern_quote",
-        "variations_from_canonical",
-    ],
+    "required": ["deltas"],
 }
+
+
+# ---------------------------------------------------------------------------
+# Embed regional records into the unified final_registry.json
+# ---------------------------------------------------------------------------
+
+def _embed_into_registry(
+    canonical_registry: dict,
+    regional_by_profile: Dict[str, Dict[str, dict]],
+    output_dir: Path,
+) -> None:
+    """Write the regional observations INTO final_registry.json.
+
+    For each disease entry, attach a ``regional_observations`` dict keyed
+    by state. The result is one self-contained registry per crop —
+    canonical fields up top, per-state observations nested under each
+    disease — instead of two files the caller has to merge.
+    """
+    crop = canonical_registry.get("crop", "")
+    diseases = canonical_registry.get("diseases", []) or []
+    for d in diseases:
+        name = (d.get("disease_name") or "").strip()
+        profile_id = f"{crop}::{name}" if crop else name
+        # Try a couple of profile_id forms just in case the regional pass
+        # used a different crop string in the key.
+        per_state = regional_by_profile.get(profile_id) or {}
+        if not per_state:
+            for k, v in regional_by_profile.items():
+                if k.endswith(f"::{name}"):
+                    per_state = v
+                    break
+        d["regional_observations"] = per_state
+
+    canonical_registry["regional_observations_count"] = sum(
+        len(v) for v in regional_by_profile.values()
+    )
+
+    save_json("final_registry.json", canonical_registry, output_dir=output_dir)
+    print(f"  Embedded {canonical_registry['regional_observations_count']} "
+          f"per-state observations into {output_dir / 'final_registry.json'}")
 
 
 # ---------------------------------------------------------------------------
@@ -285,7 +340,9 @@ def run_regional_observation(
     if skipped_no_canonical:
         print(f"  [skipped: no canonical record for {skipped_no_canonical} tuples]")
     if not todo:
-        save_json("regional_observations.json", {}, output_dir=output_dir)
+        # Even with no work, embed an empty regional_observations field on
+        # every disease so the registry has a stable shape.
+        _embed_into_registry(canonical_registry, {}, output_dir)
         return {}
 
     results: Dict[str, Dict[str, dict]] = defaultdict(dict)
@@ -296,15 +353,16 @@ def run_regional_observation(
             try:
                 profile_id, state, record = fut.result()
                 completed += 1
-                n_variations = len(record.get("variations_from_canonical") or [])
-                tag = "✓" if record.get("severity") else "·"
+                deltas = record.get("deltas") or []
+                tag = "✓" if deltas else "·"
                 print(f"  [{completed}/{len(todo)}] {tag} {profile_id} / {state}  "
-                      f"variations={n_variations}")
+                      f"deltas={len(deltas)}")
                 results[profile_id][state] = record
             except Exception as e:
                 print(f"  ERROR: {e}")
 
-    save_json("regional_observations.json", dict(results), output_dir=output_dir)
-    print(f"  Saved: {output_dir / 'regional_observations.json'}")
+    # Embed the per-state observations under each matching disease entry in
+    # final_registry.json so we have ONE unified registry per crop.
+    _embed_into_registry(canonical_registry, dict(results), output_dir)
     print(f"  Done in {time.time() - t0:.0f}s")
     return dict(results)

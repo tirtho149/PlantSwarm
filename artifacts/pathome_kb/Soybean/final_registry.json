@@ -1,17 +1,1241 @@
 {
   "diseases": [
     {
+      "disease_name": "Bean Pod Mottle Virus",
+      "pathogen_scientific_name": {
+        "value": "Bean pod mottle virus",
+        "url": "https://cropwatch.unl.edu/plantdisease/soybean/bean-pod-mottle",
+        "quote": "Bean pod mottle is caused by the comovirus Bean pod mottle virus.",
+        "taxonomy_validated": false
+      },
+      "type_of_disease": {
+        "value": "Viral",
+        "url": "https://cropwatch.unl.edu/plantdisease/soybean/bean-pod-mottle",
+        "quote": "Bean pod mottle is caused by the comovirus Bean pod mottle virus."
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Pod",
+          "Seed"
+        ],
+        "url": "https://cropwatch.unl.edu/plantdisease/soybean/bean-pod-mottle",
+        "quote": "Symptoms of BPMV are green to yellow mottling (blotchiness) of younger leaves in the upper canopy. In severe cases leaves may show puckering and distortion and plants can be stunted. Pods can be misshapen with mottling and reduced in size. Infected plants may have green stems after the pods have matured. Seed from infected plants may appear smoky in color or have reduced size and quality due to seed coat mottling which will be brown or black depending on hilum color."
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": "Green to yellow mottling (blotchiness) of younger leaves in the upper canopy; in severe cases leaves show puckering and distortion and plants can be stunted; pods may be misshapen and reduced in size, and seeds may appear smoky in color or show seed coat mottling.",
+          "url": "https://cropwatch.unl.edu/plantdisease/soybean/bean-pod-mottle",
+          "quote": "Symptoms of BPMV are green to yellow mottling (blotchiness) of younger leaves in the upper canopy. In severe cases leaves may show puckering and distortion and plants can be stunted."
+        },
+        "diagnostic_features": {
+          "value": "Foliar symptoms are most obvious at cooler temperatures and often disappear when it is hot; pods can be misshapen with mottling, and infected plants may show green stems after pods have matured.",
+          "url": "https://cropprotectionnetwork.org/encyclopedia/bean-pod-mottle-of-soybean",
+          "quote": "Foliar symptoms are most obvious at cooler temperatures and often disappear when it is hot."
+        },
+        "look_alikes": {
+          "value": [],
+          "url": "",
+          "quote": ""
+        }
+      },
+      "treatments": {
+        "value": [
+          "Consider planting insecticide-treated seed if overwintering survival of bean leaf beetles is predicted, or if bean pod mottle has been confirmed in fields previously and bean leaf beetles have been present.",
+          "Foliar-applied insecticides can manage bean leaf beetle populations and may reduce bean pod mottle.",
+          "Soybean varieties differ in BPMV tolerance, although the differences are not clearly studied.",
+          "Cultural practices such as late planting will reduce BPMV.",
+          "Insecticide seed treatments and foliar sprays targeting management of the bean leaf beetle will reduce the incidence of BPMV."
+        ],
+        "url": "https://cropprotectionnetwork.org/encyclopedia/bean-pod-mottle-of-soybean",
+        "quote": "Consider planting insecticide-treated seed if overwintering survival of bean leaf beetles is predicted, or if bean pod mottle has been confirmed in fields previously and bean leaf beetles have been present. Foliar-applied insecticides can manage bean leaf beetle populations and may reduce bean pod mottle."
+      },
+      "confidence": "high",
+      "num_sources": 2,
+      "conflicts": [
+        {
+          "field": "affected_parts",
+          "canonical_value": "Foliar, Stem, Pod, Seed",
+          "alternative_value": "Foliar, Pod, Seed",
+          "alternative_source_url": "https://cropprotectionnetwork.org/encyclopedia/bean-pod-mottle-of-soybean",
+          "note": "CropProtectionNetwork lists Foliar/Pod/Seed only; CropWatch UNL also includes Stem (green stems after pod maturity)."
+        }
+      ],
+      "regional_observations": {
+        "Alabama": {
+          "deltas": [
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Foliar symptoms are most obvious at cooler temperatures and often disappear when it is hot; pods can be misshapen with mottling, and infected plants may show green stems after pods have matured.",
+              "image_shows": "Numerous small shot-hole feeding punctures riddle the same leaves that show the mottling, indicating the bean leaf beetle vector is actively feeding on this plant.",
+              "image_quote": "Many leaves carry round, chewed-through holes (a few mm across) scattered between veins alongside the pale-green blotchy patches."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "Green to yellow mottling (blotchiness) of younger leaves in the upper canopy",
+              "image_shows": "Mottling here is not confined to the upper canopy — pale-green blotchy patches are visible on mid- and lower-canopy trifoliates as well, including older leaves at the frame edges.",
+              "image_quote": "Light-green mottled patches appear on leaves throughout the frame, including lower trifoliates at the bottom and side of the image, not just the topmost leaf."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Only foliar tissue shows symptoms in this frame; the plant is at flowering (a small purple raceme is visible) and no pods are present yet to evaluate.",
+              "image_quote": "A small purple soybean flower sits at center-bottom; leaves dominate the frame and no pods are visible."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Green to yellow mottling (blotchiness) of younger leaves in the upper canopy; in severe cases leaves show puckering and distortion and plants can be stunted",
+              "image_shows": "Mottling here is light-green-on-darker-green only — no yellow tones, no puckering, and no leaf distortion are visible, suggesting a mild/early expression at this site.",
+              "image_quote": "Leaves are flat and normally shaped; the blotches are pale green against medium green with no yellowing or crinkled tissue."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5581647",
+            "bugwood::5581648",
+            "bugwood::5581649",
+            "bugwood::5581650",
+            "bugwood::5581647",
+            "bugwood::5581648",
+            "bugwood::5581649",
+            "bugwood::5581650"
+          ],
+          "state": "Alabama"
+        },
+        "Iowa": {
+          "deltas": [
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Foliar symptoms are most obvious at cooler temperatures and often disappear when it is hot; pods can be misshapen with mottling, and infected plants may show green stems after pods have matured.",
+              "image_shows": "Small round insect feeding holes are present on the symptomatic leaves, consistent with co-occurring bean leaf beetle (BPMV vector) feeding alongside the mottling.",
+              "image_quote": "Two small chewed perforations sit in the middle of the central leaflet and additional similar holes appear on neighboring leaves."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Green to yellow mottling (blotchiness) of younger leaves in the upper canopy; in severe cases leaves show puckering and distortion and plants can be stunted.",
+              "image_shows": "The leaflets display a strongly rugose/bullate surface with dark-green raised interveinal islands bulging above sunken yellow-green tissue, beyond simple flat mottling.",
+              "image_quote": "Each leaflet has a quilted, blistered texture where dark-green patches dome upward between the veins and pale yellow-green tissue lies depressed around them."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Only foliar tissue is visibly affected in this frame; no pods, stems, or seeds are shown for assessment.",
+              "image_quote": "The photograph shows only a trifoliate of leaves with petiole; no pods or seeds are in view."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5623785"
+          ],
+          "state": "Iowa"
+        },
+        "North Carolina": {
+          "__image_ids__": [
+            "bugwood::5609645",
+            "bugwood::5609646",
+            "bugwood::5609647",
+            "bugwood::5609648",
+            "bugwood::5609649",
+            "bugwood::5609650",
+            "bugwood::5609651"
+          ],
+          "state": "North Carolina"
+        },
+        "South Dakota": {
+          "__image_ids__": [
+            "bugwood::5473570"
+          ],
+          "state": "South Dakota"
+        },
+        "Wisconsin": {
+          "__image_ids__": [
+            "bugwood::5623779",
+            "bugwood::5623780",
+            "bugwood::5623781",
+            "bugwood::5623782",
+            "bugwood::5623783"
+          ],
+          "state": "Wisconsin"
+        }
+      }
+    },
+    {
+      "disease_name": "Cercospora Blight",
+      "pathogen_scientific_name": {
+        "value": "Cercospora kikuchii",
+        "url": "https://extension.umn.edu/soybean-pest-management/cercospora-leaf-blight-and-purple-seed-stain-soybean",
+        "quote": "Cercospora leaf blight is caused by the fungus  Cercospora kikuchii .",
+        "taxonomy_validated": false
+      },
+      "type_of_disease": {
+        "value": "Fungal",
+        "url": "https://extension.umn.edu/soybean-pest-management/cercospora-leaf-blight-and-purple-seed-stain-soybean",
+        "quote": "Cercospora leaf blight is caused by the fungus  Cercospora kikuchii ."
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Pod",
+          "Seed"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/cercospora-leaf-blight-and-purple-seed-stain-soybean",
+        "quote": "The spots may coalesce to form large necrotic areas on leaves, which eventually results in defoliation of infected leaves in the upper canopy. Reddish-purple lesions may also occur on petioles, stems, and pods. Infected seeds have pink to purple discoloration on the seed coats."
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": "Light purple spots on upper leaf surfaces exposed to light that expand and deepen to reddish-purple or bronze, giving leaves a leathery, 'sunburned' appearance; red-brown spots may coalesce into necrotic areas causing defoliation, with reddish-purple lesions on petioles, stems, and pods, and pink to purple discoloration on seed coats.",
+          "url": "https://extension.umn.edu/soybean-pest-management/cercospora-leaf-blight-and-purple-seed-stain-soybean",
+          "quote": "The first symptom of Cercospora leaf blight is the development of light purple spots and areas on the top surface of leaves exposed to light. The discolored areas expand and deepen in color to a reddish-purple or bronze. The infected leaves appear leathery and 'sunburned'. Red-brown spots may develop on both leaf surfaces. The spots may coalesce to form large necrotic areas on leaves, which eventually results in defoliation of infected leaves in the upper canopy. Reddish-purple lesions may also occur on petioles, stems, and pods. Infected seeds have pink to purple discoloration on the seed coats."
+        },
+        "diagnostic_features": {
+          "value": "Purple-bronze discoloration on the leaf surface caused by the light-dependent toxin cercosporin, with dark spots along major leaf veins and petioles; symptoms begin on sun-exposed leaves in the upper canopy and leaves appear leathery and 'sunburned'.",
+          "url": "https://content.ces.ncsu.edu/cercospora-blight-of-soybean",
+          "quote": "the pathogen produces a toxin called cercosporin, which is responsible for the purple-bronze discoloration on the leaf surface ... small, dark spots will appear along major leaf veins and petioles"
+        },
+        "look_alikes": {
+          "value": [],
+          "url": "",
+          "quote": ""
+        }
+      },
+      "treatments": {
+        "value": [
+          "Crop rotation systems incorporating non-host plants such as corn or small grains can reduce inoculum in crop residue and disrupt the disease cycle.",
+          "Tillage is also an option to reduce inoculum levels in the field.",
+          "Soybean varieties vary in their response to C. kikuchii, but none are completely resistant to the pathogen.",
+          "Use pathogen-free seed and varieties with low susceptibility to Cercospora leaf blight.",
+          "Rotation out of soybeans may be helpful.",
+          "Foliar and seed treatment fungicides may be useful for managing this disease.",
+          "Fungicide classes should be rotated to avoid fungicide resistance development.",
+          "Fungicides are registered for use on Cercospora but are not usually needed."
+        ],
+        "url": "https://content.ces.ncsu.edu/cercospora-blight-of-soybean",
+        "quote": "Crop rotation systems incorporating non-host plants such as corn or small grains can reduce inoculum in crop residue and disrupt the disease cycle. Tillage is also an option to reduce inoculum levels in the field. Soybean varieties vary in their response to C. kikuchii, but none are completely resistant to the pathogen. Fungicides may be used to reduce disease observed in the field, but their use has not been shown to be effective to reduce purple seed stain. ... Fungicide classes should be rotated to avoid fungicide resistance development."
+      },
+      "confidence": "high",
+      "num_sources": 3,
+      "conflicts": [
+        {
+          "field": "affected_parts",
+          "canonical_value": "Foliar, Stem, Pod, Seed",
+          "alternative_value": "Foliar, Pod",
+          "alternative_source_url": "https://content.ces.ncsu.edu/cercospora-blight-of-soybean",
+          "note": "NC State lists Foliar+Pod; UDel lists only Foliar; UMN provides the most comprehensive list including stems and seeds."
+        },
+        {
+          "field": "affected_parts",
+          "canonical_value": "Foliar, Stem, Pod, Seed",
+          "alternative_value": "Foliar",
+          "alternative_source_url": "https://www.udel.edu/academics/colleges/canr/cooperative-extension/fact-sheets/cercospora-leaf-blight-and-purple-seed-stain-in-soybean/",
+          "note": "UDel restricts Cercospora leaf blight to foliar symptoms only; UMN documents lesions on stems, pods, and seed coat discoloration."
+        },
+        {
+          "field": "treatments",
+          "canonical_value": "Fungicides may be useful (rotation of classes recommended to avoid resistance)",
+          "alternative_value": "Fungicides are registered for use on Cercospora but are not usually needed.",
+          "alternative_source_url": "https://www.udel.edu/academics/colleges/canr/cooperative-extension/fact-sheets/cercospora-leaf-blight-and-purple-seed-stain-in-soybean/",
+          "note": "UDel says fungicides usually unnecessary; NC State and UMN recommend them as a management tool."
+        }
+      ],
+      "regional_observations": {
+        "Alabama": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Light purple spots... reddish-purple or bronze, giving leaves a leathery, 'sunburned' appearance",
+              "image_shows": "Lesions here are not purple-bronze but appear as broad yellow chlorotic zones with tan-to-dark-brown necrotic patches concentrated at leaf margins and tips, with small dark flecks scattered on green tissue.",
+              "image_quote": "Leaves display large yellow halos surrounding irregular brown necrotic blotches along leaflet edges rather than any purple or bronze sheen."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Purple-bronze discoloration on the leaf surface caused by the light-dependent toxin cercosporin, with dark spots along major leaf veins and petioles",
+              "image_shows": "Multiple shot-hole perforations are present where necrotic tissue has dropped out of the leaflets, a sign not listed in canonical's diagnostic features.",
+              "image_quote": "Several leaflets show clean-edged holes punched through the lamina, some ragged and surrounded by tan necrotic borders."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Advanced stage at this Alabama site — most leaflets in frame show >30% leaf area chlorotic or necrotic with marginal browning and tissue loss.",
+              "image_quote": "Nearly every leaflet visible carries large brown necrotic patches, extensive yellowing, and torn/perforated lamina."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "symptoms begin on sun-exposed leaves in the upper canopy",
+              "image_shows": "Damage at this site is uniform across the upper-canopy leaflets in frame rather than confined to a few sun-exposed leaves.",
+              "image_quote": "Every leaflet across the top-down view shows similar yellowing and marginal necrosis with no clearly healthy upper leaf nearby."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5581645",
+            "bugwood::5581646",
+            "bugwood::5581645",
+            "bugwood::5581646"
+          ],
+          "state": "Alabama"
+        },
+        "Illinois": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Light purple spots on upper leaf surfaces exposed to light that expand and deepen to reddish-purple or bronze, giving leaves a leathery, 'sunburned' appearance",
+              "image_shows": "Lesions on this Illinois leaflet are small, discrete dark-brown to red-brown punctate flecks scattered across a chlorotic yellow-green lamina, lacking the broad purple-bronze 'sunburned' coalescence canonical emphasizes.",
+              "image_quote": "The upper leaflet surface is mottled yellow-green with numerous tiny pinpoint brown specks rather than diffuse purple bronzing."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Purple-bronze discoloration on the leaf surface caused by the light-dependent toxin cercosporin, with dark spots along major leaf veins and petioles",
+              "image_shows": "Symptomatic tissue here is yellow chlorosis between veins with green tissue retained along the midrib and major veins, an interveinal mottle pattern not noted in canonical.",
+              "image_quote": "The midrib and primary veins remain a green band while the interveinal panels are washed yellow with brown stippling."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Within this single trifoliate, one leaflet is heavily mottled and spotted while the adjacent leaflet at left appears uniformly green and asymptomatic, indicating an uneven leaflet-to-leaflet distribution.",
+              "image_quote": "The right-hand leaflet is yellowed and spotted across its full blade while the left-hand leaflet shows solid green color with no visible flecks."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Only foliar tissue is documented in this frame; petioles, stems, pods, and seeds are not visible to confirm canonical's multi-organ involvement at this site.",
+              "image_quote": "The photograph is framed on leaflets only, with the petiole partially shown but no stem, pod, or seed in view."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5609899"
+          ],
+          "state": "Illinois"
+        },
+        "Indiana": {
+          "deltas": [
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Purple-bronze discoloration on the leaf surface caused by the light-dependent toxin cercosporin, with dark spots along major leaf veins and petioles",
+              "image_shows": "Adds a microscopic diagnostic sign for this Indiana sample: a single long, slender, slightly curved, multi-septate hyaline (filiform) conidium consistent with Cercospora kikuchii, observable only under the microscope rather than on the leaf surface.",
+              "image_quote": "A solitary elongate, gently curved, transparent fungal spore with multiple cross-walls (septa) running its length, sitting on a clear slide background next to a 25 µm scale bar that the spore exceeds many times over."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "No plant organ is visible in this Indiana image — the frame is a slide-mount of the pathogen itself, so it documents the causal organism rather than damage to any of the canonically listed organs.",
+              "image_quote": "The field of view is a pale gray microscope background with out-of-focus debris and a single isolated fungal filament; no leaf, stem, pod, or seed tissue is present."
+            },
+            {
+              "field": "other",
+              "canonical_says": "(not specified)",
+              "image_shows": "This Indiana record is a laboratory photomicrograph (with a 25 µm scale bar) rather than a field/canopy photograph, indicating the observation was confirmed by spore-level microscopy.",
+              "image_quote": "A vertical black bar labeled '25 µm' sits mid-frame as a calibration scale, and a Bugwood-style image ID '5522604' is printed in the lower-right corner over a uniform out-of-focus microscope field."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5522604",
+            "bugwood::5522605",
+            "bugwood::5522606",
+            "bugwood::5522607",
+            "bugwood::5522608",
+            "bugwood::5522609",
+            "bugwood::5522616",
+            "bugwood::5522617",
+            "bugwood::5522618"
+          ],
+          "state": "Indiana"
+        },
+        "Iowa": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Light purple spots ... that expand and deepen to reddish-purple or bronze, giving leaves a leathery, 'sunburned' appearance",
+              "image_shows": "Lesions here appear as fine brown-to-grayish pinpoint flecks and stipples rather than purple/bronze patches, and have not coalesced into the leathery sunburned look canonical describes.",
+              "image_quote": "The trifoliate leaf is largely green with dense peppering of small dark brown specks scattered across the upper surface, with no large purple or bronze patches."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "This site shows an early/mild stage — leaves remain predominantly green with only fine flecking, no necrotic coalescence and no defoliation evident.",
+              "image_quote": "The leaflets retain a healthy green ground color and intact margins; only tiny scattered specks are visible, with no holes, browning of large areas, or wilting."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Only foliage and a short section of petiole are visible in this frame; no pods, stems beyond the petiole, or seeds are shown to confirm those organs at this site.",
+              "image_quote": "The image frames a hand holding a single trifoliate leaf with its petiole; pods and main stems are not in view."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Purple-bronze discoloration on the leaf surface ... with dark spots along major leaf veins and petioles",
+              "image_shows": "Dark flecking here is concentrated in interveinal tissue and near minor veins rather than tracking the major veins, and the petiole shows only faint darkening.",
+              "image_quote": "Specks cluster between veins across the leaf blade, and the petiole below the leaflets is only lightly mottled rather than distinctly dark-streaked."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5624628",
+            "bugwood::5624629",
+            "bugwood::5624630",
+            "bugwood::5624631",
+            "bugwood::5626220",
+            "bugwood::5626221",
+            "bugwood::5626222",
+            "bugwood::5626224"
+          ],
+          "state": "Iowa"
+        },
+        "Kentucky": {
+          "deltas": [
+            {
+              "field": "spread_pattern",
+              "canonical_says": "symptoms begin on sun-exposed leaves in the upper canopy",
+              "image_shows": "Discoloration covers the entire leaflet uniformly across the lamina rather than being confined to discrete sun-exposed patches, indicating advanced whole-leaflet involvement at this Kentucky site.",
+              "image_quote": "The central leaflet is uniformly bronze-purple from tip to base with no green tissue remaining, while adjacent leaflets show the same coloration spreading inward from margins."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Light purple spots on upper leaf surfaces exposed to light that expand and deepen to reddish-purple or bronze",
+              "image_shows": "Lesions have coalesced into a continuous bronze-purple sheet over the whole leaflet rather than remaining as discrete spots, with veins highlighted in deeper purple against a bronzed lamina.",
+              "image_quote": "The leaflet shows no individual spots — instead a uniform bronzed-purple wash covers the blade with the major veins outlined in a darker reddish-purple."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Purple-bronze discoloration on the leaf surface caused by the light-dependent toxin cercosporin, with dark spots along major leaf veins and petioles",
+              "image_shows": "Numerous small irregular holes (shot-hole / tissue dropout) are visible across the affected leaflets, suggesting necrotic tissue has dropped out — a sign not listed in canonical.",
+              "image_quote": "The bronzed leaflet and surrounding leaves show many small ragged perforations through the lamina."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "red-brown spots may coalesce into necrotic areas causing defoliation",
+              "image_shows": "Severity at this site is advanced — full leaflet bronzing plus tissue dropout (perforations) is present, but the leaflet is still attached and turgid, i.e. pre-defoliation stage.",
+              "image_quote": "The whole leaflet is discolored and perforated yet still held upright on the petiole, with no shed leaves visible on the stem below."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5624627"
+          ],
+          "state": "Kentucky"
+        },
+        "North Carolina": {
+          "deltas": [
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "This image isolates only harvested seeds on a black studio background, with no foliage, stems, or pods present.",
+              "image_quote": "A pile of cream-colored soybean seeds arranged on black velvet, photographed off-plant."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "pink to purple discoloration on seed coats",
+              "image_shows": "Discoloration on these seeds appears as discrete purple patches/caps covering roughly a quarter to half of each affected seed coat rather than a uniform pink wash, and many seeds in the sample appear unblemished.",
+              "image_quote": "Individual seeds show sharply delimited violet-purple blotches concentrated on one side of the seed coat, while neighboring seeds in the same pile remain entirely cream."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Within this seed lot the infection is mixed — a substantial fraction of seeds carry visible purple staining while many others show none, indicating partial rather than uniform contamination of the harvest.",
+              "image_quote": "Roughly a third to a half of the visible seeds carry purple discoloration; the remainder are uniformly pale yellow."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Purple-bronze discoloration on the leaf surface caused by the light-dependent toxin cercosporin",
+              "image_shows": "The purple staining is frequently centered around the hilum and spreads outward across the seed coat, a hilum-associated pattern visible on threshed seed.",
+              "image_quote": "On many discolored seeds the violet pigment radiates from the hilum scar outward in a cap-like blotch."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5609825",
+            "bugwood::5609826",
+            "bugwood::5609829",
+            "bugwood::5609830",
+            "bugwood::5609831",
+            "bugwood::5609832",
+            "bugwood::5609833",
+            "bugwood::5609834",
+            "bugwood::5609835",
+            "bugwood::5609836",
+            "bugwood::5609837",
+            "bugwood::5609838",
+            "bugwood::5609839",
+            "bugwood::5609840",
+            "bugwood::5609841",
+            "bugwood::5609842",
+            "bugwood::5609843",
+            "bugwood::5609844",
+            "bugwood::5609845",
+            "bugwood::5609846",
+            "bugwood::5609847",
+            "bugwood::5609848",
+            "bugwood::5609849",
+            "bugwood::5609850",
+            "bugwood::5609851",
+            "bugwood::5609852",
+            "bugwood::5609853",
+            "bugwood::5609854",
+            "bugwood::5609855"
+          ],
+          "state": "North Carolina"
+        },
+        "Wisconsin": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Light purple spots on upper leaf surfaces exposed to light that expand and deepen to reddish-purple or bronze",
+              "image_shows": "Discoloration here is dominated by orange-bronze and rusty-tan tones across broad leaf areas with only small isolated purple patches, rather than the distinct purple spots canonical describes.",
+              "image_quote": "Upper leaves show diffuse orange-to-rust coloration covering most of the lamina, with one small dark purple blotch near the midrib of a central leaflet."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Advanced foliar stage with most upper-canopy leaflets fully discolored and beginning to yellow at the margins, indicating late-season progression toward defoliation.",
+              "image_quote": "Multiple leaflets are uniformly bronzed across their surfaces and surrounding leaves show yellowing margins and small necrotic holes."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "symptoms begin on sun-exposed leaves in the upper canopy",
+              "image_shows": "Discoloration is concentrated on the outer sun-exposed leaflets while shaded interior leaves remain green, consistent with but visually confirming the canopy-top distribution at this Wisconsin site.",
+              "image_quote": "Outward-facing leaflets are bronzed while leaves behind them in shadow remain green."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "dark spots along major leaf veins and petioles",
+              "image_quote": "Numerous small reddish-orange flecks are scattered across the green leaflets in the background, independent of the major veins.",
+              "image_shows": "In addition to the bronzing, fine rust-colored stippling is visible across still-green leaflets, a punctate fleck pattern not emphasized in the canonical description."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5624626",
+            "bugwood::5626223"
+          ],
+          "state": "Wisconsin"
+        }
+      }
+    },
+    {
+      "disease_name": "Charcoal Rot",
+      "pathogen_scientific_name": {
+        "value": "Macrophomina phaseolina",
+        "url": "https://content.ces.ncsu.edu/soybean-charcoal-rot",
+        "quote": "Charcoal rot, caused by the soil- and seed-borne fungus Macrophomina phaseolina , is an economically important disease on soybean",
+        "taxonomy_validated": false
+      },
+      "type_of_disease": {
+        "value": "Fungal",
+        "url": "https://content.ces.ncsu.edu/soybean-charcoal-rot",
+        "quote": "Charcoal rot, caused by the soil- and seed-borne fungus Macrophomina phaseolina"
+      },
+      "affected_parts": {
+        "value": [
+          "Root",
+          "Stem",
+          "Foliar",
+          "Pod",
+          "Seed",
+          "Vascular"
+        ],
+        "url": "https://u.osu.edu/osusoybeandisease/stem-diseases/charcoal-rot/extended-version/",
+        "quote": "On adult plants, M. phaseolina causes lesions on the root, stem, pod, and seed. Microsclerotia, which are produced in the vascular tissue and the pith"
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": "Symptoms vary by growth stage: brown to dark spots on cotyledons at seedling stage, reddish-brown circular to oblong lesions on unifoliate leaves turning dark brown to black, and mid- to late-season light brown to grey superficial stem lesions, with microsclerotia in vascular tissue, pith, and pods, and a marbled gray appearance in cross-sections of the lower stem and taproot.",
+          "url": "https://content.ces.ncsu.edu/soybean-charcoal-rot",
+          "quote": "At the seedling stage, typical symptoms include , brown to dark spots on cotyledons. At the unifoliate leaf stage (VC), circular to oblong, reddish-brown, lesions that eventually turn dark brown to black may be observed. Mid to late season aboveground symptoms include light brown to grey superficial lesions in the stem. A characteristic sign of the pathogen on soybean is the presence of microsclerotia in the vascular tissue, in the pith, and mature and dry pods. Cross-sections of the lower stem and taproot may become streaked with gray hyphae and microsclerotia, giving a marbled appearance"
+        },
+        "diagnostic_features": {
+          "value": "Silvery-grey color in the sub-epidermal tissue of stem and roots caused by microsclerotia formed inside the vascular system is typical and is the source of the common name 'charcoal rot'; plants wilt and die prematurely with leaves remaining attached to petioles; small black specks may form beneath the epidermis giving a charcoal-sprinkled appearance.",
+          "url": "https://u.osu.edu/osusoybeandisease/stem-diseases/charcoal-rot/extended-version/",
+          "quote": "This silvery-grey color in the sub epidermal tissue of stem and roots is typical and is the source of the common name of the disease \"charcoal rot.\" ... soybean plants will wilt (Figure 5) and die prematurely with leaves remaining attached to petioles. Lower stems and taproots display a darker color than healthy plants, and also exhibit internal grey discoloration due to the presence of microsclerotia when stems are split."
+        },
+        "look_alikes": {
+          "value": [],
+          "url": "",
+          "quote": ""
+        }
+      },
+      "treatments": {
+        "value": [
+          "Crop rotation to non-hosts (e.g., cereal grains) to reduce survival of microsclerotia in soils",
+          "Manage fields to reduce or avoid drought stress; use irrigation when feasible",
+          "Reduced tillage / planting in no-tilled soil to keep soils cooler and reduce moisture stress",
+          "Reduced seeding rates / lower plant population density to reduce drought stress",
+          "Ensure adequate fertilization",
+          "Select cultivars with lower susceptibility (no fully resistant cultivars are available)",
+          "Fungicides are not typically recommended for managing charcoal rot"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/charcoal-rot-soybean",
+        "quote": "Manage fields to reduce or avoid drought stress. Reduced tillage may reduce charcoal rot, perhaps due to cooler soils and less moisture stress. Rotation with crops that have relatively low susceptibility to charcoal rot, such as cereal grains, may be beneficial. Reduced seeding rates may also reduce drought stress and charcoal rot. Soybean cultivars may exhibit different levels of susceptibility, but none are fully resistant to this disease."
+      },
+      "confidence": "high",
+      "num_sources": 3,
+      "conflicts": [
+        {
+          "field": "affected_parts",
+          "canonical_value": "Root, Stem, Foliar, Pod, Seed, Vascular (union)",
+          "alternative_value": "NC State lists Foliar, Stem, Root, Pod, Vascular (no Seed); UMN lists Root, Stem, Foliar, Vascular (no Pod, no Seed); OSU lists Root, Stem, Pod, Seed, Vascular (no Foliar)",
+          "alternative_source_url": "https://extension.umn.edu/soybean-pest-management/charcoal-rot-soybean",
+          "note": "Different sources emphasized different affected tissues; canonical value is the union across all three extension sources"
+        }
+      ],
+      "regional_observations": {
+        "Alabama": {
+          "deltas": [
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Affected plants form a contiguous patch concentrated along the field edge/headland rows, with adjacent interior rows still green — a clear edge-row distribution rather than uniform field-wide collapse.",
+              "image_quote": "Several foreground rows along the dirt margin are uniformly brown and collapsed, while rows further into the field remain green."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "plants wilt and die prematurely with leaves remaining attached to petioles",
+              "image_shows": "At this Alabama site, entire rows are already at the dead/standing-dry stage with bleached-tan canopy, indicating advanced whole-plant death across the patch rather than scattered wilting individuals.",
+              "image_quote": "Long stretches of rows show plants reduced to dry, tan-brown standing skeletons with desiccated foliage still hanging on the stems."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Root; Stem; Foliar; Pod; Seed; Vascular",
+              "image_shows": "Only whole-canopy foliar/stem dieback is observable from this landscape view; no roots, pods, or vascular cross-sections are visible in this image.",
+              "image_quote": "The frame is a wide field shot showing only the above-ground canopy of soybean rows, with no exposed roots, pods, or stem cross-sections."
+            },
+            {
+              "field": "look_alikes",
+              "canonical_says": "(not specified)",
+              "image_shows": "From this distance the patch could be confused with drought scorch, sudden death syndrome, or stem canker collapse, since only generalized row-scale browning is visible without close-up diagnostic signs.",
+              "image_quote": "The image shows uniformly browned rows with no close-up of stems, microsclerotia, or leaf-lesion patterns to differentiate the cause."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5591031",
+            "bugwood::5591031"
+          ],
+          "state": "Alabama"
+        },
+        "Georgia": {
+          "deltas": [
+            {
+              "field": "affected_organs",
+              "canonical_says": "Root; Stem; Foliar; Pod; Seed; Vascular",
+              "image_shows": "Only a detached stem segment is documented here; no roots, foliage, pods or seeds are present in this Georgia specimen frame.",
+              "image_quote": "A single excised soybean stem laid horizontally on a plain gray studio cloth, with no leaves, pods, or root mass in view."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "marbled gray appearance in cross-sections of the lower stem and taproot",
+              "image_shows": "On this longitudinal stem face the discoloration is a single discrete, smoothly-bordered oblong silver-grey patch rather than a marbled or mottled pattern.",
+              "image_quote": "An elongated, almost lens-shaped pale silvery-grey area sits cleanly inside the brown stem cortex, with sharp boundaries and no streaking or marbling outside it."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "small black specks may form beneath the epidermis giving a charcoal-sprinkled appearance",
+              "image_shows": "Despite a well-developed silver-grey sub-epidermal patch, no individual black microsclerotia specks are resolvable on the exposed surface in this specimen.",
+              "image_quote": "The peeled-back area shows a uniform pale grey wash over the wood with no visible pepper-like black dots on it."
+            },
+            {
+              "field": "other",
+              "canonical_says": "(not specified)",
+              "image_shows": "This is a prepared laboratory specimen in which the outer epidermis/bark has been split and peeled back to expose the sub-epidermal microsclerotia layer, not an in-situ field symptom.",
+              "image_quote": "The left side of the stem is split open with cream-colored wood fibers fraying outward, and a flap of bark has been lifted to reveal the grey inner tissue beneath."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5472515",
+            "bugwood::5472516"
+          ],
+          "state": "Georgia"
+        },
+        "Kentucky": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "All five sampled plants from this Kentucky site show heavy, uniform sub-epidermal colonization extending many centimeters up the lower stem from the crown — indicating advanced, whole-field infection rather than isolated plants.",
+              "image_quote": "Five peeled soybean stems lie side-by-side, each displaying a long continuous silvery-grey patch of similar length and intensity along the lower stem."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Root; Stem; Foliar; Pod; Seed; Vascular",
+              "image_shows": "This photograph captures only the lower stem / taproot tissue (post-harvest, epidermis stripped); foliage, pods and seeds are absent from the frame, so it documents the below-ground / crown phase specifically.",
+              "image_quote": "The frame contains only detached basal stems and taproots laid on dark soil, with one specimen at right showing a sparse, brushy taproot remnant and no leaves or pods present."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Silvery-grey color in the sub-epidermal tissue of stem and roots caused by microsclerotia formed inside the vascular system",
+              "image_shows": "The diagnostic sign here is exposed by physically peeling/scraping the outer bark — the silvery layer is not visible externally on the intact bark above the peeled window, implying field scouting requires destructive sampling at this site.",
+              "image_quote": "On each stem the upper, un-peeled section retains intact tan-grey bark with no silvering, while a sharply bordered window of bark has been removed mid-stem to reveal the pale silvery tissue beneath."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Symptom expression in this Kentucky sample is uniform across plants pulled from the row — every stem in the diagnostic set carries the same pattern, suggesting field-wide rather than patchy distribution.",
+              "image_quote": "Five stems are arranged in parallel and each shows a comparably sized silvery lesion centered on the lower stem just above the root flare."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5368505",
+            "bugwood::5368506",
+            "bugwood::5368507",
+            "bugwood::5368508",
+            "bugwood::5369021",
+            "bugwood::5369022",
+            "bugwood::5369023",
+            "bugwood::5369024",
+            "bugwood::5430019",
+            "bugwood::5430020",
+            "bugwood::5430021",
+            "bugwood::5430070",
+            "bugwood::5430071",
+            "bugwood::5430072",
+            "bugwood::5430073",
+            "bugwood::5432158",
+            "bugwood::5432159",
+            "bugwood::5432160"
+          ],
+          "state": "Kentucky"
+        },
+        "South Dakota": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Silvery-grey color in the sub-epidermal tissue of stem and roots caused by microsclerotia",
+              "image_shows": "Exposed sub-epidermal stem tissue here reads as a pale cream/tan fibrous surface rather than silvery-grey, with the grey tone coming only from the dense black peppering on top of it.",
+              "image_quote": "Bark is peeled back to reveal a light tan, longitudinally fibrous inner stem surface densely covered in fine black specks."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Microsclerotia colonization at this South Dakota site is at an advanced stage, with the speckling fully saturating the exposed tissue rather than appearing as scattered specks.",
+              "image_quote": "The black specks form a near-continuous, uniformly dense salt-and-pepper carpet across the entire exposed cream-colored area."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "small black specks may form beneath the epidermis giving a charcoal-sprinkled appearance",
+              "image_quote": "The outer brown epidermis/bark is curled back at the edges of a roughly triangular window, exposing the speckled inner tissue underneath.",
+              "image_shows": "Diagnosis here required physically peeling/scraping back the intact outer epidermis — the charcoal speckling is not visible from outside the stem in this specimen."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Root; Stem; Foliar; Pod; Seed; Vascular",
+              "image_shows": "Only the lower stem (sub-epidermal/vascular layer) is documented in this image; no roots, leaves, pods, or seeds are shown.",
+              "image_quote": "The frame is a tight macro of a single stem segment with peeled bark; no other plant organs are in view."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5473572",
+            "bugwood::5473573"
+          ],
+          "state": "South Dakota"
+        },
+        "Virginia": {
+          "deltas": [
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "small black specks may form beneath the epidermis giving a charcoal-sprinkled appearance",
+              "image_shows": "Split-stem close-up reveals discrete black microsclerotia peppered along the exposed inner vascular/pith fibers rather than on an intact epidermis, demonstrating the sign as seen when the stem is opened lengthwise.",
+              "image_quote": "Tiny black dots are scattered across the pale, fibrous, longitudinally-split inner stem tissue between bleached vascular strands."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Root; Stem; Foliar; Pod; Seed; Vascular",
+              "image_shows": "This image documents only the lower stem/taproot tissue split open, with no foliage, pods, or seeds visible.",
+              "image_quote": "Frame is filled by a single longitudinally split, woody stem segment showing fibrous interior; no leaves, pods, or seeds appear."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "marbled gray appearance in cross-sections of the lower stem and taproot",
+              "image_shows": "In this longitudinal split, the interior shows a bleached silvery-white fibrous matrix with a darker brown streaked central band rather than a marbled cross-section pattern.",
+              "image_quote": "Inner stem is silvery-white and stringy along the upper half, with a brown longitudinal stripe of darker tissue running through the middle."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5411326",
+            "bugwood::5411327"
+          ],
+          "state": "Virginia"
+        }
+      }
+    },
+    {
+      "disease_name": "Downy Mildew",
+      "pathogen_scientific_name": {
+        "value": "Peronospora manshurica",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/downy-mildew-of-soybean",
+        "quote": "Downy mildew is caused by the oomycete Peronospora manshurica .",
+        "taxonomy_validated": false
+      },
+      "type_of_disease": {
+        "value": "Oomycete",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/downy-mildew-of-soybean",
+        "quote": "Downy mildew is caused by the oomycete Peronospora manshurica ."
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Pod",
+          "Seed"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/downy-mildew",
+        "quote": "The initial symptoms of downy mildew are small, light green spots (not water-soaked) on upper leaf surfaces. ... Infection of pods and seed can also occur. Seeds may become covered with a whitish coating of fungal hyphae and spores."
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": "Irregularly shaped pale green to light yellow spots on upper leaf surfaces that enlarge into pale to bright yellow spots and may coalesce into large irregular brown areas; older lesions turn brown with yellow-green margins, with fuzzy tan to gray tufts of fungal growth on the lower leaf surfaces, especially under wet and humid conditions.",
+          "url": "https://cropprotectionnetwork.org/encyclopedia/downy-mildew-of-soybean",
+          "quote": "Lesions occur on upper leaf surfaces as irregularly shaped, pale green to light yellow spots that enlarge into pale to bright yellow spots. Older lesions turn brown with yellow-green margins. ... On the leaf underside, fuzzy, gray tufts may be seen growing from lesions, particularly when humidity is high or leaves are wet"
+        },
+        "diagnostic_features": {
+          "value": "Fuzzy, tan-to-gray tufts of fungal growth on the underside of infected leaves distinguish downy mildew from other foliar soybean diseases; infected pods show no external symptoms but the inside of the pod and seed may be covered with a dried, whitish, crusty fungal mass; infected seed can be smaller, dull white, and have cracks in the seed coat.",
+          "url": "https://extension.umn.edu/soybean-pest-management/downy-mildew",
+          "quote": "Downy mildew can be distinguished from other foliar soybean diseases by the tufts of tan-colored fungal growth on the underside of infected leaves."
+        },
+        "look_alikes": {
+          "value": [],
+          "url": "",
+          "quote": ""
+        }
+      },
+      "treatments": {
+        "value": [
+          "Select resistant soybean varieties (many sources of resistance are available)",
+          "Use appropriate seed treatments",
+          "Bury infested crop residue where feasible and where disease has been severe",
+          "Rotate soybeans with a non-bean crop for at least one year"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/downy-mildew",
+        "quote": "Select resistant soybean varieties and use appropriate seed treatments. Bury infested residue where feasible and where disease has been severe. Rotate soybeans with a non-bean crop for at least one year."
+      },
+      "confidence": "high",
+      "num_sources": 2,
+      "conflicts": [
+        {
+          "field": "type_of_disease",
+          "canonical_value": "Oomycete",
+          "alternative_value": "null (UMN does not state type explicitly; describes pathogen as 'fungal-like organism')",
+          "alternative_source_url": "https://extension.umn.edu/soybean-pest-management/downy-mildew",
+          "note": "UMN refers to Peronospora manshurica as a 'fungal-like organism' without explicitly classifying it; Crop Protection Network correctly classifies it as an oomycete, which is consistent with current taxonomy"
+        },
+        {
+          "field": "pathogen_description",
+          "canonical_value": "oomycete",
+          "alternative_value": "fungal-like organism",
+          "alternative_source_url": "https://extension.umn.edu/soybean-pest-management/downy-mildew",
+          "note": "Terminology difference; both describe the same organism Peronospora manshurica"
+        }
+      ],
+      "regional_observations": {
+        "Iowa": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Irregularly shaped pale green to light yellow spots on upper leaf surfaces that enlarge into pale to bright yellow spots and may coalesce into large irregular brown areas",
+              "image_shows": "Lesions on this Iowa leaf are still small, discrete and pale yellow with no coalescence and no brown centers — the infection is captured at the early pale-yellow speck stage only.",
+              "image_quote": "The upper surface of the held leaf is dotted with many small, separated pale-yellow spots; none have merged and none show brown necrotic centers."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Severity at this site is light-to-moderate early-stage: many lesions are present but each is small and the leaf tissue between them remains fully green and intact.",
+              "image_quote": "Dozens of tiny yellow flecks are scattered over an otherwise green, undamaged leaf blade with no wilting, tearing, or large dead patches."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "On this leaflet the spots are uniformly scattered across the entire upper blade rather than concentrated along the margin or midrib.",
+              "image_quote": "Pale spots are distributed evenly from the leaf base to the tip and from midrib to margin on the leaflet being held up."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Fuzzy, tan-to-gray tufts of fungal growth on the underside of infected leaves",
+              "image_quote": "Only the upper leaf surface is shown in the photograph; the abaxial side with any fungal tufts is not visible.",
+              "image_shows": "The canonical diagnostic sign (lower-surface fuzzy tufts) cannot be confirmed from this image — only the upper-surface yellow speckling is documented here."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5624664",
+            "bugwood::5624665",
+            "bugwood::5624666",
+            "bugwood::5624667",
+            "bugwood::5624668",
+            "bugwood::5624669",
+            "bugwood::5624670"
+          ],
+          "state": "Iowa"
+        },
+        "Kentucky": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "pale green to light yellow spots on upper leaf surfaces that enlarge into pale to bright yellow spots",
+              "image_shows": "Lesions here are predominantly small, dried tan-to-grayish-brown flecks rather than the bright yellow chlorotic spots emphasized in canonical, suggesting a more advanced or sun-bleached stage of the same lesions.",
+              "image_quote": "Each leaflet is peppered with numerous discrete pale-tan to grayish spots, many with a dry, papery center, and almost no bright yellow halos are visible."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Infection on this Kentucky leaf is heavy — every leaflet of the trifoliate carries dozens of confluent lesions covering a large fraction of blade area.",
+              "image_quote": "All three leaflets show dense, near-continuous spotting across the lamina, with lesions visible right out to the leaf margin and tip.",
+              "field_quote": ""
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Lesions are uniformly distributed across the entire trifoliate rather than clustered along veins or margins, indicating systemic foliar coverage on this plant.",
+              "image_quote": "Spots are evenly scattered between veins on every leaflet with no zone of the blade left clean."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Fuzzy, tan-to-gray tufts of fungal growth on the underside of infected leaves",
+              "image_quote": "Several lesion centers have dropped out leaving small irregular holes in the leaflets, alongside the tan spots.",
+              "image_shows": "Some lesion centers have necrosed and fallen out, producing a shot-hole effect that is not noted in canonical."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5368994",
+            "bugwood::5368995",
+            "bugwood::5368996",
+            "bugwood::5368997"
+          ],
+          "state": "Kentucky"
+        },
+        "Louisiana": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "older lesions turn brown with yellow-green margins... may coalesce into large irregular brown areas",
+              "image_shows": "Very early/mild stage at this Louisiana site — only small discrete pale-yellow spots, no coalescence and no brown necrosis yet visible.",
+              "image_quote": "A handful of small, isolated pale-yellow flecks are scattered across an otherwise green leaf, with no brown areas, no merging, and no yellow-green-margined older lesions."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "pale green to light yellow spots... enlarge into pale to bright yellow spots and may coalesce",
+              "image_shows": "Lesions here are still pinpoint to roughly 2–4 mm, individually discrete, and have not enlarged or merged.",
+              "image_quote": "Each yellow spot is small and roughly round-to-irregular, separated from the next by clean green tissue with no expanding halos."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Low-density, scattered distribution across the upper leaf surface rather than dense or zonal infection.",
+              "image_quote": "Roughly six to eight small yellow spots are sparsely sprinkled over the upper face of a single leaflet, with large stretches of unaffected lamina between them."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Pod; Seed",
+              "image_shows": "Only the foliar phase is documented in this frame — a single soybean leaflet upper surface, no pods or seed in view.",
+              "image_quote": "The image is a close-up of one trifoliate leaflet's upper surface; no pods, stems, or seeds are included."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Fuzzy, tan-to-gray tufts of fungal growth on the underside of infected leaves",
+              "image_shows": "The signature underside sporulation cannot be confirmed from this frame because only the upper surface is shown.",
+              "image_quote": "The leaf is photographed from above; the abaxial (lower) surface where tan-gray tufts would appear is not visible."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5606587",
+            "bugwood::5606588",
+            "bugwood::5606589",
+            "bugwood::5606590",
+            "bugwood::5606591",
+            "bugwood::5606592",
+            "bugwood::5606593",
+            "bugwood::5606594",
+            "bugwood::5606595"
+          ],
+          "state": "Louisiana"
+        },
+        "Maine": {
+          "__image_ids__": [
+            "bugwood::5507075",
+            "bugwood::5507076",
+            "bugwood::5507077",
+            "bugwood::5507078",
+            "bugwood::5507079",
+            "bugwood::5507080",
+            "bugwood::5507081"
+          ],
+          "state": "Maine"
+        },
+        "North Carolina": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Irregularly shaped pale green to light yellow spots on upper leaf surfaces that enlarge into pale to bright yellow spots",
+              "image_shows": "Lesions on this NC leaf appear as a tight cluster of small, raised, blister-like puckered bumps on the upper surface with yellow-green halos, rather than flat irregular yellow spots — an early bumpy/embossed phase not described in canonical.",
+              "image_quote": "A patch near the leaf tip shows numerous small dome-like raised bumps, pale green-yellow at their centers, giving a quilted/puckered appearance rather than smooth flat lesions."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Symptoms are confined to a single localized cluster near the leaf tip/midsection while the rest of the lamina remains uniformly dark green, indicating focal rather than scattered distribution at this stage.",
+              "image_quote": "Only one discrete patch of yellowish puckered tissue is visible on an otherwise healthy-looking green leaf, with no other lesions across the blade."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "This is an early-stage infection — no coalescence into large brown areas and no browning of older lesions yet, just initial chlorotic blistering.",
+              "image_quote": "Lesions are still pale yellow-green with no brown necrotic centers or merged large patches visible."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Fuzzy, tan-to-gray tufts of fungal growth on the underside of infected leaves",
+              "image_shows": "Only the upper leaf surface is shown, so the diagnostic abaxial sporulation cannot be confirmed from this photograph.",
+              "image_quote": "The image is an adaxial (upper-surface) view of the leaf; the underside is not visible."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5609652",
+            "bugwood::5609653",
+            "bugwood::5609654",
+            "bugwood::5609655",
+            "bugwood::5609656",
+            "bugwood::5609657",
+            "bugwood::5609658",
+            "bugwood::5609659"
+          ],
+          "state": "North Carolina"
+        }
+      }
+    },
+    {
+      "disease_name": "Bacterial Blight",
+      "pathogen_scientific_name": {
+        "value": "Pseudomonas syringae pv. glycinea",
+        "url": "https://extensionpubs.unl.edu/publication/g2058/na/html/view",
+        "quote": "Bacterial blight of soybean is caused by the bacterium Pseudomonas syringae pv. glycinea",
+        "taxonomy_validated": false,
+        "ncbi_url": "",
+        "mycobank_url": ""
+      },
+      "type_of_disease": {
+        "value": "Bacterial",
+        "url": "https://extensionpubs.unl.edu/publication/g2058/na/html/view",
+        "quote": "Bacterial blight of soybean is caused by the bacterium Pseudomonas syringae pv. glycinea"
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Petiole",
+          "Pod",
+          "Seed",
+          "Whole plant"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
+        "quote": "Bacterial blight can occur on all above ground plant parts, but is most evident on leaves in the mid to upper canopy. ... Infection can also occur on stems, petioles, pods, and seeds in infected pods. Infected seedlings may be stunted or killed in severe cases."
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": "Infections begin as small, angular, water-soaked spots that turn yellow and then brown as the tissue dies; spots are surrounded by yellowish-green halos and often merge to form large dead patches that fall out, giving leaves a ragged appearance.",
+          "url": "https://extension.umn.edu/soybean-pest-management/bacterial-blight-soybean",
+          "quote": "Infections begin as small, angular, water-soaked spots that turn yellow and then brown as the tissue dies. The spots darken and are surrounded by yellowish-green halos. Spots often merge to form large, dead patches on the leaves. The dead tissue may fall out giving the leaves a ragged appearance."
+        },
+        "diagnostic_features": {
+          "value": "Angular, vein-limited lesions with water-soaked tissue and a characteristic yellowish-green halo; bacterial blight is most common in the mid to upper canopy on younger leaves, with green leaves below the affected area, distinguishing it from brown spot which appears on older, lower leaves.",
+          "url": "https://extensionpubs.unl.edu/publication/g2058/na/html/view",
+          "quote": "Symptoms in later growth stages include angular lesions, which begin as small yellow to brown spots on the leaves ... A yellowish-green \"halo\" will appear around the edge of the water-soaked tissue ... However, bacterial blight will be in the mid to upper canopy and have green leaves below the affected area as the crop goes into the flowering stage of development."
+        },
+        "look_alikes": {
+          "value": [
+            "Septoria brown spot (Septoria glycines)",
+            "Soybean rust",
+            "Bacterial pustule"
+          ],
+          "url": "https://extensionpubs.unl.edu/publication/g2058/na/html/view",
+          "quote": "Both of these foliar diseases can start in the lower portion of the canopy and may be confused with Septoria leaf spot or soybean rust. ... Symptoms of bacterial pustule are very similar to those of bacterial blight during the early stages of development"
+        }
+      },
+      "treatments": {
+        "value": [
+          "Plant resistant or less-susceptible soybean varieties",
+          "Plant pathogen-free seed",
+          "Rotate soybeans with non-host crops",
+          "Avoid field cultivation when foliage is wet",
+          "Incorporate crop residue with tillage (deep tillage where disease is severe) to reduce inoculum",
+          "Copper fungicides labeled for bacterial blight, applied early in the disease cycle"
+        ],
+        "url": "https://extensionpubs.unl.edu/publication/g2058/na/html/view",
+        "quote": "Resistance. Cultivars that are not highly susceptible to the disease should be considered in fields with a history of bacterial disease problems. Crop rotation. Crop rotation can be an effective method to avoid inoculum from a previously infected crop. Tillage. Incorporating crop residue by tillage will reduce the amount of inoculum available in the spring to infect plants. Cultivation. To prevent the spread of disease, limit cultivation to times when the foliage is dry. Fungicides. Copper fungicides are labeled for con- trol of bacterial blight on soybeans but need to be applied early in the disease cycle to be effective."
+      },
+      "confidence": "high",
+      "num_sources": 3,
+      "conflicts": [
+        {
+          "field": "affected_parts",
+          "canonical_value": "Foliar, Stem, Petiole, Pod, Seed, Whole plant",
+          "alternative_value": "Foliar only",
+          "alternative_source_url": "https://content.ces.ncsu.edu/bacterial-blight-of-soybean",
+          "note": "NC State Extension only explicitly describes foliar (leaf) symptoms; UMN and UNL document infection of stems, petioles, pods, seeds, and whole-plant stunting/death of seedlings."
+        },
+        {
+          "field": "visual_symptoms.look_alikes",
+          "canonical_value": "Septoria brown spot, soybean rust, bacterial pustule",
+          "alternative_value": "Only Septoria brown spot (Septoria glycines)",
+          "alternative_source_url": "https://content.ces.ncsu.edu/bacterial-blight-of-soybean",
+          "note": "NC State and UMN list only Septoria brown spot as a look-alike, while UNL G2058 additionally lists soybean rust and bacterial pustule."
+        }
+      ],
+      "regional_observations": {
+        "Illinois": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "spots ... often merge to form large dead patches that fall out, giving leaves a ragged appearance",
+              "image_shows": "Disease at this site is at an advanced shot-hole stage — numerous lesions have already dropped out, leaving tan-margined holes and a tattered lamina across roughly a quarter of the leaf surface.",
+              "image_quote": "Multiple irregular gaps with cream-tan ragged borders are visible mid-leaf and along the lower-right margin where necrotic tissue has detached."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "small, angular, water-soaked spots that turn yellow and then brown",
+              "image_shows": "Two distinct lesion size classes coexist on the same leaf: dense pinpoint dark-brown specks (<1 mm) peppering the lamina, alongside larger 5–15 mm coalesced angular necrotic patches.",
+              "image_quote": "Fine dark stippling covers much of the green tissue while several centimeter-scale brown blotches occupy the leaf center and margins."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Angular, vein-limited lesions with water-soaked tissue and a characteristic yellowish-green halo",
+              "image_shows": "The expected yellowish-green halo is largely absent here — necrotic spots sit directly against fully green lamina with only a thin tan rim, no broad chlorotic surround.",
+              "image_quote": "Brown lesions and shot-holes are bordered by sharp tan edges and otherwise normal green tissue, with no diffuse yellow zone visible around them."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Petiole; Pod; Seed; Whole plant",
+              "image_shows": "Only a single detached/held leaf is shown; stem, petiole, pods and seed are not in frame, so this image documents the foliar phase exclusively.",
+              "image_quote": "Frame contains one trifoliate leaflet held against an out-of-focus canopy background, with no stems, petioles or pods visible."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5609905",
+            "bugwood::5609906"
+          ],
+          "state": "Illinois"
+        },
+        "Indiana": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "small, angular, water-soaked spots that turn yellow and then brown",
+              "image_shows": "Lesions on this leaf are predominantly tiny pinpoint to ~1-2 mm punctate flecks that look dark reddish-brown to purple-brown rather than the larger angular brown spots canonical describes.",
+              "image_quote": "The lamina is peppered with dozens of small, near-circular dark purple-brown specks scattered across both interveinal and vein-adjacent tissue."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "spots ... often merge to form large dead patches that fall out, giving leaves a ragged appearance",
+              "image_shows": "Tissue dropout has only just begun on this Indiana leaf — a few small irregular holes are present in the upper-left, but most lesions are still discrete and have not yet coalesced into the large ragged patches canonical describes.",
+              "image_quote": "Three or four small irregular holes appear near the upper-left margin while the rest of the leaf still holds together with isolated spots."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Petiole; Pod; Seed; Whole plant",
+              "image_shows": "Only a single detached trifoliolate leaflet is documented here; no stem, petiole, pod, or whole-plant symptoms are visible in this Indiana frame.",
+              "image_quote": "A hand holds one isolated soybean leaflet against an out-of-focus field background, with no other plant parts in view."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Angular, vein-limited lesions with water-soaked tissue and a characteristic yellowish-green halo",
+              "image_shows": "Yellow halos here surround clusters or coalescing zones of multiple small spots rather than ringing each individual lesion, and many specks sit mid-interveinal rather than being strictly vein-limited.",
+              "image_quote": "Several broad yellow blotches each enclose a group of dark punctate spots, while many other tiny dark flecks lie isolated in the green lamina with no halo."
+            },
+            {
+              "field": "look_alikes",
+              "canonical_says": "Septoria brown spot (Septoria glycines); Soybean rust; Bacterial pustule",
+              "image_shows": "The dark, almost purplish punctate flecking pattern visible here could readily be mistaken for frogeye leaf spot or early Cercospora purple seed-stain foliar phase, neither of which canonical lists.",
+              "image_quote": "Many lesions are small dark dots with a faintly purplish cast rather than the tan necrotic centers usually associated with bacterial blight."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5607299"
+          ],
+          "state": "Indiana"
+        },
+        "Iowa": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "small, angular, water-soaked spots that turn yellow and then brown... often merge to form large dead patches that fall out, giving leaves a ragged appearance",
+              "image_shows": "Lesions on this Iowa leaf are predominantly tiny pinpoint spots (~1–2 mm) with disproportionately wide, bright yellow halos and only small dark centers — most have not yet coalesced or dropped out.",
+              "image_quote": "Dozens of small dark specks each ringed by a vivid yellow halo are scattered across an otherwise intact green leaf, with only a few lesions in the upper-left merged into a darker brown-purple patch."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Very high lesion count per leaf (50+ visible spots) but the leaf blade is still fully intact with no shot-holing or ragged margins — an early-to-mid infection at high density rather than late-stage tissue loss.",
+              "image_quote": "The leaf surface is densely peppered with halo-ringed lesions yet shows no holes, tearing, or missing tissue."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "most common in the mid to upper canopy on younger leaves",
+              "image_shows": "Within this single leaf the lesions are uniformly scattered across both halves of the blade rather than clustered along veins or at the margin.",
+              "image_quote": "Spots appear evenly distributed from near the midrib outward to the leaf edge on both lobes."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Petiole; Pod; Seed; Whole plant",
+              "image_shows": "Only foliar tissue is documented in this Iowa frame; the visible petiole and adjacent leaves in the background appear unblemished.",
+              "image_quote": "A single soybean leaflet fills the frame; surrounding leaves and the petiole stub at top show no comparable spotting."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5623563",
+            "bugwood::5623564"
+          ],
+          "state": "Iowa"
+        },
+        "North Carolina": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Very heavy infection on this NC leaflet — lesions densely pepper essentially the entire blade rather than appearing as a few scattered spots.",
+              "image_quote": "The leaf surface is covered by dozens of small dark spots distributed from tip to base and margin to midrib, with little uninfected tissue remaining."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "small, angular, water-soaked spots that turn yellow and then brown as the tissue dies",
+              "image_quote": "Most individual spots appear roughly circular to irregular with reddish-brown centers, only the larger coalesced patches in the upper half of the blade show clearly angular, vein-limited margins.",
+              "image_shows": "Many lesions here are small and round/irregular rather than the classic angular shape; angularity is mostly visible only where lesions have merged into larger patches."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Angular, vein-limited lesions with water-soaked tissue and a characteristic yellowish-green halo",
+              "image_shows": "Beyond per-lesion halos, this leaf shows a broad diffuse yellow chlorotic zone on the left side of the blade independent of individual spot halos.",
+              "image_quote": "A large pale-yellow patch occupies a wing of the leaf on the left, distinct from the small yellow rings encircling individual brown spots elsewhere."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "spots ... often merge to form large dead patches that fall out, giving leaves a ragged appearance",
+              "image_shows": "Despite extensive coalescence and necrosis in the upper half of this leaflet, the dead tissue has not yet dropped out — only a single small shot-hole is present.",
+              "image_quote": "The merged brown patches remain in place on the leaf with intact margins, and only one small hole is visible near the upper-left lesion cluster."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5609632",
+            "bugwood::5609633",
+            "bugwood::5609634",
+            "bugwood::5609635",
+            "bugwood::5609636",
+            "bugwood::5609637",
+            "bugwood::5609638",
+            "bugwood::5609639",
+            "bugwood::5609640"
+          ],
+          "state": "North Carolina"
+        },
+        "North Dakota": {
+          "__image_ids__": [
+            "bugwood::5609641",
+            "bugwood::5609642",
+            "bugwood::5609643",
+            "bugwood::5609644"
+          ],
+          "state": "North Dakota"
+        }
+      }
+    },
+    {
       "disease_name": "Bacterial Pustule Of Soybean Disease",
       "pathogen_scientific_name": {
         "value": "Xanthomonas axonopodis pv. glycines",
-        "url": "https://extension.umn.edu/pest-management/bacterial-pustule-soybean",
-        "quote": "Bacterial pustule is caused by the bacterium  Xanthomonas axonopodis  pv.  glycines .",
+        "url": "https://u.osu.edu/osusoybeandisease/foliar-diseases/bacterial-blight/extended-version/",
+        "quote": "Bacterial Pustule is caused by the bacteria Xanthomonas axonopodis (syn. campestris ) pv glycines .",
         "taxonomy_validated": false
       },
       "type_of_disease": {
         "value": "Bacterial",
-        "url": "https://extension.umn.edu/pest-management/bacterial-pustule-soybean",
-        "quote": "Bacterial pustule is caused by the bacterium  Xanthomonas axonopodis  pv.  glycines ."
+        "url": "https://cals.cornell.edu/field-crops/soybeans/diseases-soybeans/bacterial-pustule",
+        "quote": "Foliar fungicides are not effective against this bacterial disease."
       },
       "affected_parts": {
         "value": [
@@ -23,48 +1247,180 @@
       },
       "visual_symptoms": {
         "summary": {
-          "value": "Symptoms begin as small, light green spots (without water-soaking); light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. Lesions can grow together into large, irregular patches of dead tissue, giving leaves a ragged appearance, and small raised spots may also develop on pods.",
+          "value": "Symptoms begin as small, light green or yellowish spots (without water-soaking), with light-colored raised blisters (pustules) developing in the center of lesions on both upper and lower leaf surfaces; lesions can coalesce into large irregular patches of dead tissue, giving leaves a ragged appearance and possibly causing premature defoliation. Small raised spots may also develop on pods.",
           "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
           "quote": "Symptoms begin as small, light green spots (without water-soaking). Light-colored, raised blisters (pustules) often develop in the center of lesions on both the upper and lower surface of leaves. The lesions can grow together into large, irregular patches of dead tissue. Loss of tissue in the infected areas may give the leaves a ragged appearance like bacterial blight. Small raised spots may also develop on pods."
         },
         "diagnostic_features": {
-          "value": "Bacterial pustule can be differentiated by a lack of water soaking at the initial site of infection, less chlorosis around lesions, and by the formation of tiny tan bumps on the undersides of leaves. Unlike soybean rust, bacterial pustule does not have an opening in the pustules or masses of spores.",
-          "url": "https://extension.umn.edu/pest-management/bacterial-pustule-soybean",
-          "quote": "Bacterial pustule can be differentiated by a lack of water soaking at the initial site of infection, less chlorosis around lesions, and by the formation of tiny tan bumps on the undersides of leaves. The pustules can be mistaken for those of soybean rust, however, bacterial pustule does not have an opening in the pustules or masses of spores like those of soybean rust."
+          "value": "Bacterial pustules will not have a natural opening in the pustule, or masses of spores like those of soybean rust; raised necrotic centers and lack of spores when observed under a microscope distinguish bacterial pustules from soybean rust.",
+          "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+          "quote": "Bacterial pustules will differ from those of soybean rust, however, because they will not have a natural opening in the pustule, or masses of spores like those of soybean rust."
         },
         "look_alikes": {
           "value": [
+            "soybean rust",
             "bacterial blight",
-            "soybean rust"
+            "brown spot"
           ],
-          "url": "https://extension.umn.edu/pest-management/bacterial-pustule-soybean",
-          "quote": "Early symptoms of bacterial pustule look similar to bacterial blight... The pustules can be mistaken for those of soybean rust"
+          "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+          "quote": "Because this pathogen produces a pustule, it can easily be confused with soybean rust, a much more serious disease. ... Loss of tissue in the infected areas may give the leaves a ragged appearance like bacterial blight."
         }
       },
+      "treatments": {
+        "value": [
+          "Use resistant cultivars / replace susceptible varieties with resistant ones",
+          "Use disease-free / certified, pathogen-free seed; do not use seed from infected plants",
+          "Avoid moving equipment through fields or scouting / cultivating when foliage is wet",
+          "Crop rotation out of soybeans until infested debris has decomposed",
+          "Tillage to eliminate inoculum in crop residue (can shorten rotation where soil erosion is not an issue)",
+          "Copper-based sprays can be used to control bacterial diseases of soybean",
+          "Foliar fungicides are not effective against this bacterial disease",
+          "In low-pressure regions (e.g., NY) outbreaks rarely reach epidemic proportions and require no management"
+        ],
+        "url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
+        "quote": "There are high levels of resistance to bacterial pustule in most soybean varieties. Should bacterial pustule develop in a field, a note of the variety should be made, and it should be replaced in future years with resistant ones. Since the disease can be seed borne, it is important to use disease-free, certified seed. If a field develops bacteria pustule, it should be rotated out of soybeans until all infested debris has decomposed. Tillage can shorten the length of rotation where soil erosion is not an issue. Avoid moving equipment through fields or scouting when the foliage is wet. Foliar fungicides are not effective against bacterial pustule because it is caused by a bacterial pathogen, not a fungus."
+      },
       "confidence": "high",
-      "num_sources": 2,
+      "num_sources": 3,
       "conflicts": [
         {
           "field": "pathogen_scientific_name",
           "canonical_value": "Xanthomonas axonopodis pv. glycines",
           "alternative_value": "Xanthomonas campestris pv. glycines",
           "alternative_source_url": "https://soybeanresearchinfo.com/soybean-disease/bacterial-pustule/",
-          "note": "Both names appear in extension literature as synonyms for the same pathogen; no NCBI/MycoBank validation was provided to select a current accepted name."
+          "note": "SRIN uses the synonym name Xanthomonas campestris pv. glycines; OSU explicitly notes 'Xanthomonas axonopodis (syn. campestris) pv glycines'. Both OSU and Cornell agree on Xanthomonas axonopodis pv. glycines as the canonical name."
+        },
+        {
+          "field": "affected_parts",
+          "canonical_value": "Foliar, Pod",
+          "alternative_value": "Foliar only",
+          "alternative_source_url": "https://cals.cornell.edu/field-crops/soybeans/diseases-soybeans/bacterial-pustule",
+          "note": "OSU and Cornell describe pustule as primarily a foliar disease; SRIN additionally notes pod symptoms ('Small raised spots may also develop on pods')."
         }
-      ]
+      ],
+      "regional_observations": {
+        "Iowa": {
+          "deltas": [
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Symptomatic plants appear as discrete patches of yellowed/chlorotic foliage scattered within an otherwise green canopy rather than uniform field-wide infection, suggesting a focal/patchy distribution at this Iowa site.",
+              "image_quote": "A wide field view shows mostly dark-green soybean canopy with one prominent cluster of pale-yellow, chlorotic plants in the right-center foreground."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "lesions can coalesce into large irregular patches of dead tissue, giving leaves a ragged appearance and possibly causing premature defoliation",
+              "image_shows": "Affected plants here show whole-plant chlorosis and thinning rather than just leaf-level ragged lesions, indicating advanced canopy-level decline in the focal patch.",
+              "image_quote": "Plants in the affected patch are uniformly yellow-green with sparse, drooping leaves compared to the dense dark-green canopy around them."
+            },
+            {
+              "field": "other",
+              "canonical_says": "(not specified)",
+              "image_shows": "Heavy interplanting of broadleaf weeds and grasses is visible around the symptomatic patch, a field-condition observation not addressed in canonical text.",
+              "image_quote": "Tall grassy and broadleaf weeds protrude through and between the soybean rows, especially around the chlorotic patch."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5623579",
+            "bugwood::5623580",
+            "bugwood::5623581",
+            "bugwood::5623582",
+            "bugwood::5623583",
+            "bugwood::5623584",
+            "bugwood::5623585",
+            "bugwood::5623586",
+            "bugwood::5623587",
+            "bugwood::5623588"
+          ],
+          "state": "Iowa"
+        },
+        "Kentucky": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "lesions can coalesce into large irregular patches of dead tissue, giving leaves a ragged appearance and possibly causing premature defoliation",
+              "image_shows": "Image is a side-by-side comparison series of four detached leaflets staged next to a 6-inch ruler, ranging from light scattered flecking to one leaflet with roughly 40-50% of its blade consumed by coalesced brown necrosis",
+              "image_quote": "Four soybean leaflets are laid on cardboard with a ruler; the leftmost shows only minor speckling while the rightmost is dominated by large brown coalesced lesions"
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "lesions can coalesce into large irregular patches of dead tissue, giving leaves a ragged appearance",
+              "image_shows": "Necrotic centers have dropped out producing actual perforations (shot-holing) and torn margins, beyond the 'ragged appearance' canonical describes",
+              "image_quote": "Several leaflets show clean round holes through the blade and torn jagged edges where necrotic tissue is missing"
+            },
+            {
+              "field": "other",
+              "canonical_says": "(not specified)",
+              "image_shows": "One advanced leaflet is markedly curled and distorted in addition to being lesioned, a deformation not noted in canonical",
+              "image_quote": "The second leaflet from the left is crumpled and rolled rather than lying flat like the others"
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Lesions are distributed across the entire leaf blade including the center and along the midrib, not confined to margins or tip",
+              "image_quote": "Brown flecks and coalesced patches appear scattered uniformly over the laminae of all four leaflets, with no margin-only or vein-restricted pattern"
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5368281",
+            "bugwood::5368282",
+            "bugwood::5368283",
+            "bugwood::5368284",
+            "bugwood::5368285",
+            "bugwood::5368286",
+            "bugwood::5368287",
+            "bugwood::5368288",
+            "bugwood::5368289",
+            "bugwood::5368290"
+          ],
+          "state": "Kentucky"
+        },
+        "South Dakota": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Symptoms begin as small, light green or yellowish spots (without water-soaking), with light-colored raised blisters (pustules) developing in the center of lesions on both upper and lower leaf surfaces; lesions can coalesce into large irregular patches of dead tissue, giving leaves a ragged appearance and possibly causing premature defoliation.",
+              "image_shows": "Lesions in this leaf are predominantly small, discrete reddish-brown specks scattered across the lamina, with only the upper-left region showing coalescence into a large dark-brown necrotic patch.",
+              "image_quote": "I see numerous tiny rust-brown pinpoint spots peppering the green leaf surface, plus one prominent dark-brown coalesced blotch near the leaf base/upper-left."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Severity is advanced enough at this site that necrotic tissue has dropped out, leaving two visible shot-holes (tears) in the lamina.",
+              "image_quote": "Two ragged holes are visible — one mid-leaf near the midrib and another along the lower-right margin — where dead tissue has fallen away."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "On this single leaf, lesions are distributed fairly uniformly across the entire blade rather than clustered at the margins or tip, with one heavier necrotic concentration near the leaf base.",
+              "image_quote": "Small spots cover the whole upper and lower halves of the leaf evenly, while the heaviest browning is concentrated in one zone adjacent to the petiole/midrib."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Pod",
+              "image_shows": "Only foliar tissue is visible in this image — no pods are shown, so the pod component of canonical cannot be confirmed here.",
+              "image_quote": "The frame contains a single detached/held trifoliate leaflet against a human hand and out-of-focus background; no pods, stems, or other organs are in view."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5473569"
+          ],
+          "state": "South Dakota"
+        }
+      }
     },
     {
-      "disease_name": "Bean Pod Mottle Virus",
+      "disease_name": "Frogeye Leaf Spot",
       "pathogen_scientific_name": {
-        "value": "Bean pod mottle virus",
-        "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
-        "quote": "Bean pod mottle is caused by the comovirus Bean pod mottle virus.",
+        "value": "Cercospora sojina",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
+        "quote": "Frogeye leaf spot is caused by the fungus Cercospora sojina .",
         "taxonomy_validated": false
       },
       "type_of_disease": {
-        "value": "Viral",
-        "url": "https://extension.umn.edu/soybean-pest-management/bean-pod-mottle-virus-soybean",
-        "quote": "Bean pod mottle virus (BPMV) is a widespread viral disease in the U.S. soybean growing areas transmitted by leaf-feeding beetles."
+        "value": "Fungal",
+        "url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
+        "quote": "Frogeye leaf spot is caused by the fungus Cercospora sojina ."
       },
       "affected_parts": {
         "value": [
@@ -73,39 +1429,736 @@
           "Pod",
           "Seed"
         ],
-        "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
-        "quote": "Symptoms of BPMV are green to yellow mottling (blotchiness) of younger leaves in the upper canopy. In severe cases leaves may show puckering and distortion and plants can be stunted. Pods can be misshapen with mottling and reduced in size. Infected plants may have green stems after the pods have matured. Seed from infected plants may appear smoky in color or have reduced size and quality due to seed coat mottling which will be brown or black depending on hilum color."
+        "url": "https://extension.umn.edu/soybean-pest-management/frogeye-leaf-spot",
+        "quote": "Symptoms of frogeye leaf spot are most visible and typically seen on leaves, but can also occur on stems, pods, and seeds."
       },
       "visual_symptoms": {
         "summary": {
-          "value": "Green to yellow mottling (blotchiness) of younger leaves in the upper canopy, with possible puckering, distortion, and stunting; pods can be misshapen and mottled and reduced in size, and seed may appear smoky or have seed coat mottling (brown or black depending on hilum color).",
-          "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
-          "quote": "Symptoms of BPMV are green to yellow mottling (blotchiness) of younger leaves in the upper canopy. In severe cases leaves may show puckering and distortion and plants can be stunted. Pods can be misshapen with mottling and reduced in size. Infected plants may have green stems after the pods have matured. Seed from infected plants may appear smoky in color or have reduced size and quality due to seed coat mottling which will be brown or black depending on hilum color."
+          "value": "Lesions on leaves begin as small, dark, water-soaked spots that develop into brown spots surrounded by a darker reddish-brown or purple ring, with centers that turn light brown or gray as they age.",
+          "url": "https://extension.umn.edu/soybean-pest-management/frogeye-leaf-spot",
+          "quote": "Lesions on leaves begin as small, dark, water-soaked spots. They develop into brown spots surrounded by a darker reddish-brown or purple ring. The centers of the lesions turn light brown or light gray as they age."
         },
         "diagnostic_features": {
-          "value": "Green stems after pods have matured, along with seed coat mottling (brown or black depending on hilum color) and smoky seed appearance; because BPMV is caused by a virus there are no physical signs of the pathogen, so confirmation requires serological testing (ELISA).",
-          "url": "https://cropwatch.unl.edu/plant-disease/soybean/bean-pod-mottle-virus/",
-          "quote": "Infected plants may have green stems after the pods have matured. Seed from infected plants may appear smoky in color or have reduced size and quality due to seed coat mottling which will be brown or black depending on hilum color. The only way to confirm the presence of BPMV is with serological testing (ELISA)."
+          "value": "Distinguished from other soybean foliar diseases by the reddish-brown or purple ring surrounding the round leaf spots; centers may turn white with black specks (fungal fruiting structures) or fall away leaving a 'shot hole' appearance.",
+          "url": "https://extension.umn.edu/soybean-pest-management/frogeye-leaf-spot",
+          "quote": "Frogeye leaf spot can be distinguished from other soybean foliar diseases by the reddish-brown or purple ring surrounding the round leaf spots."
+        },
+        "look_alikes": {
+          "value": [],
+          "url": "",
+          "quote": ""
+        }
+      },
+      "treatments": {
+        "value": [
+          "Plant resistant soybean varieties",
+          "Use pathogen-free seed",
+          "Rotate soybeans with a non-host crop (e.g., alfalfa, corn, small grains)",
+          "Tillage / bury infested residue to reduce survival of C. sojina",
+          "Foliar fungicides applied during late flowering and early pod set to pod filling stages",
+          "Seed treatment fungicides may provide some control"
+        ],
+        "url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
+        "quote": "Resistant soybean varieties are available and should be used where disease is a potential problem... Rotating to a non-host crop and tillage will reduce survival of C. sojina . Crops not susceptible to this pathogen are alfalfa, corn, and small grains. Foliar fungicides applied during late flowering and early pod set to pod filling stages can reduce frogeye leaf spot."
+      },
+      "confidence": "high",
+      "num_sources": 2,
+      "conflicts": [
+        {
+          "field": "affected_parts",
+          "canonical_value": "[Foliar, Stem, Pod, Seed]",
+          "alternative_value": "[Foliar, Stem, Pod]",
+          "alternative_source_url": "https://cropprotectionnetwork.org/encyclopedia/frogeye-leaf-spot-of-soybean",
+          "note": "CPN encyclopedia mentions leaves, stems, and pods only; UMN Extension also includes seeds. Took the more comprehensive list."
+        }
+      ],
+      "regional_observations": {
+        "Alabama": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Very high lesion density at this Alabama site — dozens of coalescing spots cover most of the leaf blade with several enlarged necrotic blotches and shot-hole perforations.",
+              "image_quote": "The held leaf is peppered across nearly its entire surface with small ringed spots, with multiple irregular brown necrotic patches and torn-out holes near the midrib and margins."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Lesions on leaves begin as small, dark, water-soaked spots that develop into brown spots surrounded by a darker reddish-brown or purple ring, with centers that turn light brown or gray as they age.",
+              "image_shows": "Lesions here are notably small and uniform (roughly 2–4 mm), with pale gray-tan centers and thin reddish-brown halos, and many have coalesced into larger irregular brown necrotic blotches.",
+              "image_quote": "Numerous tiny round spots with light gray centers and dark rims are scattered uniformly across the leaf, with several spots merged into larger ragged brown patches."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Distinguished from other soybean foliar diseases by the reddish-brown or purple ring surrounding the round leaf spots; centers may turn white with black specks (fungal fruiting structures) or fall away leaving a 'shot hole' appearance.",
+              "image_shows": "Multiple lesion centers have dropped out, producing visible shot-hole perforations across the blade — the canonical 'shot hole' stage is dominant in this specimen.",
+              "image_quote": "Several small round holes are punched through the leaf where lesion centers have fallen away, visible against the background foliage and the holder's fingers."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Distribution on this leaf is uniform across the entire blade rather than confined to tip, margin, or interveinal zones, and surrounding canopy leaves visible behind the hand also show spotting.",
+              "image_quote": "Spots cover the leaf evenly from base to tip and across both sides of the midrib, and the out-of-focus leaves in the background also carry similar pale flecks."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5582257",
+            "bugwood::5582258",
+            "bugwood::5582259",
+            "bugwood::5582257",
+            "bugwood::5582258",
+            "bugwood::5582259"
+          ],
+          "state": "Alabama"
+        },
+        "Illinois": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Late-stage infection on a heavily chlorotic, senescing leaf with widespread fine purple-brown flecking around a smaller number of mature, discrete frogeye lesions.",
+              "image_quote": "The leaf is largely yellow with only patches of green remaining, peppered with dense tiny dark specks and roughly a dozen well-formed circular spots."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Only foliar tissue is visible in this frame; no stems, pods, or seeds are shown to assess.",
+              "image_quote": "A single soybean leaflet fills the frame, with out-of-focus canopy foliage in the background and no pods or stems in view."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Lesions on leaves begin as small, dark, water-soaked spots that develop into brown spots surrounded by a darker reddish-brown or purple ring, with centers that turn light brown or gray as they age.",
+              "image_shows": "Alongside the typical ringed spots, the lamina carries abundant pinpoint dark-purple flecks (well under 1 mm) that are not the classic ringed lesions described in canonical.",
+              "image_quote": "Hundreds of tiny purple-black specks are scattered across the yellowing blade, distinct from the larger gray-centered, purple-ringed circular lesions."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Lesions and flecking are distributed fairly uniformly across the entire leaflet rather than concentrated along veins or margins.",
+              "image_quote": "Both the ringed spots and the fine specks appear from leaf base to tip and across both halves of the lamina."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5609900",
+            "bugwood::5609901",
+            "bugwood::5609902",
+            "bugwood::5609903",
+            "bugwood::5609904"
+          ],
+          "state": "Illinois"
+        },
+        "Indiana": {
+          "deltas": [
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Only foliar tissue is documented here — a single trifoliate leaflet held in hand; no stem, pod, or seed visible in this Indiana frame.",
+              "image_quote": "A hand holds one detached soybean leaflet against a turf background, with no petioles, stems, or pods in view."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Lesions are clustered on the distal half of the leaflet (toward the tip and along the midrib) while the basal third near the petiole is nearly clean — a markedly uneven within-leaflet distribution.",
+              "image_quote": "Twenty-plus small spots crowd the right/tip half of the blade and thin out abruptly toward the leaflet base held by the thumb."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "small, dark, water-soaked spots that develop into brown spots surrounded by a darker reddish-brown or purple ring, with centers that turn light brown or gray as they age",
+              "image_shows": "Lesions here are uniformly small (roughly 2-4 mm), and the borders read as plain medium-brown — the distinctive reddish-brown or purple halo called out in canonical is not pronounced on this Indiana leaflet.",
+              "image_quote": "Round tan-gray centers are ringed by a thin brown margin against green tissue, with no obvious purple or reddish cast around the spots."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Mid-stage, moderate density: many discrete lesions with a few beginning to coalesce, but no shot-hole perforations, no necrotic blighting, and the surrounding lamina remains green and turgid.",
+              "image_quote": "Lesion centers are intact (none have dropped out), and the leaf blade away from the spotted zone is unblemished green."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "centers may turn white with black specks (fungal fruiting structures) or fall away leaving a 'shot hole' appearance",
+              "image_shows": "On this leaflet the centers are tan-gray and still in place; no black pycnidial specks and no shot-holes are visible at this resolution, consistent with lesions that have not yet reached the late sporulating stage.",
+              "image_quote": "Spot centers appear smooth and matte tan-gray, without dark pinpoint dots or punched-out holes."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5607296",
+            "bugwood::5607297",
+            "bugwood::5607298"
+          ],
+          "state": "Indiana"
+        },
+        "Iowa": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Heavy infection with dozens of lesions on a single leaflet, indicating advanced disease pressure at this Iowa site.",
+              "image_quote": "The leaflet is densely peppered with 40+ discrete round spots distributed across nearly the entire blade."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Lesions are uniformly scattered across the entire leaflet surface rather than clustered along veins or margins.",
+              "image_quote": "Spots cover the leaf evenly from base to tip, on both sides of the midrib, with no preferential clustering."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "centers may turn white with black specks (fungal fruiting structures) or fall away leaving a 'shot hole' appearance",
+              "image_shows": "The shot-hole stage dominates here — a large fraction of lesions have already lost their centers, leaving clean perforations rather than intact gray-centered spots.",
+              "image_quote": "Roughly a third of the lesions are open holes through the lamina, with only the reddish-brown ring remaining around an empty perforation."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Only foliar tissue is visible in this frame; no stem, pod, or seed symptoms are documented in this image.",
+              "image_quote": "The photograph shows a single soybean leaflet in close-up with adjacent foliage in the background — no pods or stems are in view."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5625040",
+            "bugwood::5625045"
+          ],
+          "state": "Iowa"
+        },
+        "Kentucky": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Very heavy infection at this Kentucky site — dozens of lesions densely cover a single leaflet, with additional spotted leaves visible in the background indicating canopy-wide pressure.",
+              "image_quote": "The foreground leaflet bears 50+ discrete spots across its blade and adjacent out-of-focus leaves carry similar spotting."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Lesions on leaves begin as small, dark, water-soaked spots that develop into brown spots surrounded by a darker reddish-brown or purple ring, with centers that turn light brown or gray as they age.",
+              "image_shows": "Beyond the canonical round form, many lesions here are irregular/angular and several have coalesced into larger blotches with lobed margins.",
+              "image_quote": "Lower-left and mid-leaf show multiple tan-centered spots merged into compound lesions with irregular, scalloped outlines rather than discrete circles."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "centers that turn light brown or gray as they age",
+              "image_shows": "Mature centers at this site are distinctly silvery-gray and sunken, contrasting sharply with the surrounding reddish-brown rim.",
+              "image_quote": "Several lesions on the left half of the leaf display pale silver-gray centers ringed by a narrow dark reddish-brown halo."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Lesions are uniformly scattered across the entire leaflet surface (tip, margin, midrib zone) rather than concentrated at one region.",
+              "image_quote": "Spots appear edge-to-edge from the leaf tip through the base on both sides of the midrib with no spared area."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5625043",
+            "bugwood::5625044"
+          ],
+          "state": "Kentucky"
+        },
+        "Louisiana": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "brown spots surrounded by a darker reddish-brown or purple ring",
+              "image_shows": "Several lesions on this Louisiana leaflet are encircled by a bright yellow chlorotic halo outside the reddish-brown ring, a feature not noted in canonical.",
+              "image_quote": "Multiple round spots on the leaf show a distinct yellow ring of chlorotic tissue surrounding the brown/purple lesion border."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "centers may turn white with black specks ... or fall away leaving a 'shot hole' appearance",
+              "image_shows": "At least two lesions on this leaflet have already dropped out, producing actual shot-holes visible against the green background.",
+              "image_quote": "Two lesions appear as clean perforations through the lamina, with no remaining necrotic tissue in the center."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Only foliar tissue is symptomatic in this frame; the visible petiole and stem appear green and unblemished.",
+              "image_quote": "The image shows a single attached leaflet plus a short section of green petiole/stem with no lesions on the stem."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Moderate to heavy lesion density on this single leaflet, with roughly a dozen discrete spots and patchy interveinal chlorosis between them.",
+              "image_quote": "About 10-12 lesions are scattered across the lamina, with yellowing tissue extending between several of the larger spots."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Lesions are scattered fairly uniformly across the leaflet from base to tip rather than clustered along the margin or midrib.",
+              "image_quote": "Spots appear in both interveinal areas and near the midrib, distributed across the upper and lower halves of the leaflet."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5606586",
+            "bugwood::5625042"
+          ],
+          "state": "Louisiana"
+        },
+        "Mississippi": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Heavy lesion load with dozens of coalescing spots across nearly every visible leaflet, indicating advanced/severe infection at this Mississippi site.",
+              "image_quote": "The central leaflet and surrounding foliage are densely peppered with small round spots, many overlapping, leaving little uninfected leaf area."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Lesions on leaves begin as small, dark, water-soaked spots that develop into brown spots surrounded by a darker reddish-brown or purple ring, with centers that turn light brown or gray as they age.",
+              "image_shows": "Lesions here are notably small and uniform (roughly 2-4 mm), with pale tan-gray centers tightly bounded by thin purple-red halos, rather than the larger brown spots described.",
+              "image_quote": "Hundreds of pinhead- to match-head-sized round spots with light gray-tan centers and crisp purple ring margins are visible across the leaflet surface."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Lesions are uniformly distributed across both upper and lower canopy leaflets in the frame, not confined to one stratum.",
+              "image_quote": "Every leaflet visible in the photo - upper, central, and lower - carries similar lesion density."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Distinguished from other soybean foliar diseases by the reddish-brown or purple ring surrounding the round leaf spots; centers may turn white with black specks (fungal fruiting structures) or fall away leaving a 'shot hole' appearance.",
+              "image_shows": "Several lesions have already dropped out as clean shot-holes, confirming the canonical 'shot hole' progression is present at this site.",
+              "image_quote": "Multiple small black perforations are visible on the central leaflet where lesion centers have fallen away."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Only foliar tissue is visible and affected here; no stems, pods, or seeds are shown in the frame.",
+              "image_quote": "The image frames only trifoliate leaves against a soil/grass background - no pods or stem nodes are in view."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5625039"
+          ],
+          "state": "Mississippi"
+        },
+        "Nebraska": {
+          "__image_ids__": [
+            "bugwood::5631726",
+            "bugwood::5631727"
+          ],
+          "state": "Nebraska"
+        }
+      }
+    },
+    {
+      "disease_name": "Root And Stem Rot",
+      "pathogen_scientific_name": {
+        "value": "Phytophthora sojae",
+        "url": "https://content.ces.ncsu.edu/phytopthora-root-and-stem-rot-of-soybean",
+        "quote": "Phytophthora root and stem rot of soybean is caused by Phytophthora sojae .",
+        "taxonomy_validated": false
+      },
+      "type_of_disease": {
+        "value": "Oomycete",
+        "url": "https://content.ces.ncsu.edu/phytopthora-root-and-stem-rot-of-soybean",
+        "quote": "P. sojae is not a true fungus, but belongs to a group of fungal like organisms called oomycetes (water molds)."
+      },
+      "affected_parts": {
+        "value": [
+          "Seed",
+          "Root",
+          "Stem",
+          "Foliar",
+          "Vascular",
+          "Whole plant"
+        ],
+        "url": "https://content.ces.ncsu.edu/phytopthora-root-and-stem-rot-of-soybean",
+        "quote": "Seeds, seedlings, and plants in all stages of growth are susceptible to disease... Infections begin in the roots and then spreads upward to the lower nodes of the plant... The roots and lower stem turn a dark brown color, the leaves of the plant turn yellow and necrotic... As P. sojae colonizes the plant, the vascular system and lower stem tissues can occur on the lower stems."
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": "Early-season seed rot and pre-/postemergence damping off; on older plants, infected stems appear bruised and soft, secondary roots are rotted, leaves turn yellow and plants wilt and die, with a characteristic dark brown lesion on the lower stem extending up from the taproot.",
+          "url": "https://cropprotectionnetwork.org/encyclopedia/phytophthora-root-and-stem-rot-of-soybean",
+          "quote": "Early season symptoms include seed rot and pre- and postemergence damping off. The most characteristic symptom of Phytophthora root and stem rot is a dark brown lesion on the lower stem that extends up from the taproot of the plant."
+        },
+        "diagnostic_features": {
+          "value": "A dark chocolate-brown discoloration of the stem extends from below the soil line upward, often reaching several nodes and girdling the stem; wilted yellow leaves typically remain attached to the plant after death; plants are often killed in patches or sections of rows.",
+          "url": "https://extension.umn.edu/soybean-pest-management/phytophthora-root-and-stem-rot-soybean",
+          "quote": "a dark chocolate-brown discoloration of the stem often extends from below the soil line upward into lower parts of the plant. Leaves turn yellow, wilt, and typically stay attached after plant death. Plants are often killed in patches or in sections of rows."
         },
         "look_alikes": {
           "value": [
-            "soybean mosaic virus"
+            "Pythium (similar damage on seeds and seedlings)",
+            "Stem canker (usually starts at a node and spreads up and down the stem)"
           ],
-          "url": "https://extension.umn.edu/soybean-pest-management/bean-pod-mottle-virus-soybean",
-          "quote": "BPMV can interact with the soybean mosaic virus to create severe symptoms in plants infected by both viruses."
+          "url": "https://extension.umn.edu/soybean-pest-management/phytophthora-root-and-stem-rot-soybean",
+          "quote": "It is important to recognize that Pythium is a related pathogen that causes similar damage and symptoms on seeds and seedlings... This disease can be confused with stem canker, which usually starts at a node and spreads up and down the stems of infected plants."
         }
+      },
+      "treatments": {
+        "value": [
+          "Plant resistant cultivars (Rps genes such as Rps1c, Rps1k, Rps1a, Rps3) for race-specific resistance",
+          "Plant cultivars with high levels of field tolerance / partial resistance where Rps genes are overcome",
+          "Improve soil drainage / reduce saturated soil conditions",
+          "Apply seed treatments or soil-applied fungicides targeting oomycetes (mefenoxam / Apron XL or metalaxyl / Apron at highest labeled rates)",
+          "Crop rotation and tillage may provide some benefit"
+        ],
+        "url": "https://extension.umn.edu/soybean-pest-management/phytophthora-root-and-stem-rot-soybean",
+        "quote": "Try to create a field environment that reduces the likelihood of saturated soil by taking steps to increase drainage where possible. Treatment of seed with the highest labeled rates of fungicidal compounds such as mefenoxam (Apron XL®) or metalaxyl (Apron®) can be beneficial. In all areas where Phytophthora root and stem rot has been a problem, resistant cultivars should be planted... Crop rotation and tillage may be of some benefit."
+      },
+      "confidence": "high",
+      "num_sources": 3,
+      "conflicts": [
+        {
+          "field": "type_of_disease",
+          "canonical_value": "Oomycete",
+          "alternative_value": "null",
+          "alternative_source_url": "https://extension.umn.edu/soybean-pest-management/phytophthora-root-and-stem-rot-soybean",
+          "note": "UMN Extension describes P. sojae as 'a fungal-like pathogen' but does not explicitly classify it; NC State and CPN both classify it as Oomycete."
+        },
+        {
+          "field": "affected_parts",
+          "canonical_value": "[Seed, Root, Stem, Foliar, Vascular, Whole plant]",
+          "alternative_value": "[Seed, Root, Stem]",
+          "alternative_source_url": "https://cropprotectionnetwork.org/encyclopedia/phytophthora-root-and-stem-rot-of-soybean",
+          "note": "CPN lists only seed, root, stem; NC State and UMN additionally describe foliar yellowing/wilting, vascular involvement, and whole-plant death. Took the union."
+        }
+      ],
+      "regional_observations": {
+        "Illinois": {
+          "deltas": [
+            {
+              "field": "spread_pattern",
+              "canonical_says": "plants are often killed in patches or sections of rows",
+              "image_shows": "Dead/collapsed plants form continuous linear strips along entire row segments in the foreground, while adjacent rows remain fully green and healthy — a strongly row-aligned (likely drainage- or compaction-following) pattern rather than scattered patches.",
+              "image_quote": "Several rows in the lower-left and middle of the field are bleached tan/straw-colored with collapsed plants for their full visible length, sandwiched between rows of vigorous dark-green soybeans."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "leaves turn yellow and plants wilt and die",
+              "image_shows": "Affected rows at this Illinois site are already past the yellow-wilt stage — plants are fully desiccated, tan/bleached, and lying flat, indicating late-stage stand loss rather than active wilting.",
+              "image_quote": "The diseased rows show no green tissue and no upright wilted plants; the foliage is uniformly straw-tan and largely flattened to the soil surface."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Seed; Root; Stem; Foliar; Vascular; Whole plant",
+              "image_shows": "At this site the visible damage is whole-plant stand loss seen at field scale; no individual stem lesions, roots, or seeds are visible in the frame.",
+              "image_quote": "The image is a wide field shot showing entire plants collapsed in rows, with no close-up of stem, root, seed, or leaf surfaces."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5626218"
+          ],
+          "state": "Illinois"
+        },
+        "Iowa": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "dark brown lesion on the lower stem extending up from the taproot",
+              "image_shows": "The dark brown stem discoloration extends well above the soil line into the upper stem and persists past multiple nodes, with a sharp transition between healthy green tissue above and chocolate-brown necrotic tissue below.",
+              "image_quote": "A close-up of a hairy soybean stem shows a continuous dark chocolate-brown lesion running vertically along the main stem, with green upper internodes meeting the brown necrotic zone in a clearly demarcated boundary."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Foliar collapse here is whole-plant — dead curled brown leaflets surround the plant on multiple sides at mid-canopy rather than being confined to lower foliage.",
+              "image_quote": "Multiple wilted, curled, tan-brown leaflets hang attached around the stem at several heights, framing the diseased stem on both sides of the frame."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "wilted yellow leaves typically remain attached to the plant after death",
+              "image_quote": "The attached dead leaves in this image are uniformly tan-brown and dry-curled rather than yellow, hanging stiff against the stem.",
+              "image_shows": "At this Iowa site the retained-leaf sign has progressed past the yellow stage to fully necrotic tan-brown curled leaflets still clinging to the plant."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Seed; Root; Stem; Foliar; Vascular; Whole plant",
+              "image_shows": "Visible evidence here is restricted to stem and foliar tissue — pubescent main stem, lateral petioles, and attached leaves; roots and seeds are not in frame.",
+              "image_quote": "The photograph shows only the above-ground hairy stem, branching petioles, and dead attached leaflets; no soil, root crown, or seed is visible."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5626213",
+            "bugwood::5626214",
+            "bugwood::5626215"
+          ],
+          "state": "Iowa"
+        },
+        "Kentucky": {
+          "deltas": [
+            {
+              "field": "spread_pattern",
+              "canonical_says": "plants are often killed in patches or sections of rows",
+              "image_shows": "A single discrete oval-shaped dead patch sits in the middle of an otherwise uniformly green, healthy soybean field, with the dead zone spanning multiple adjacent rows rather than scattered individual plants.",
+              "image_quote": "A tan/straw-colored patch of collapsed soybean plants is clearly bordered on all sides by vigorous green canopy of equal height."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "leaves turn yellow and plants wilt and die",
+              "image_shows": "Plants in the affected patch are past the wilting stage — they are fully desiccated and tan/bleached, indicating complete mortality of that section of the field.",
+              "image_quote": "The plants inside the patch have lost all green color and lie low and brown/straw-colored, while surrounding rows are full and green."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Seed; Root; Stem; Foliar; Vascular; Whole plant",
+              "image_shows": "At this field-scale view only whole-plant collapse and canopy-level death are visible; no individual stem lesions, foliar chlorosis pattern, or root tissue can be resolved.",
+              "image_quote": "The image is a wide landscape shot showing a field-level dead zone; no close-up of stems, leaves, or roots is visible."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5543798",
+            "bugwood::5543799",
+            "bugwood::5543800",
+            "bugwood::5543801",
+            "bugwood::5543802",
+            "bugwood::5543803",
+            "bugwood::5543804",
+            "bugwood::5626217",
+            "bugwood::5626219"
+          ],
+          "state": "Kentucky"
+        },
+        "South Dakota": {
+          "deltas": [
+            {
+              "field": "spread_pattern",
+              "canonical_says": "plants are often killed in patches or sections of rows",
+              "image_shows": "A single isolated dead/dying plant stands within an otherwise green canopy, with no visible neighboring affected plants in this frame.",
+              "image_quote": "One upright soybean plant with collapsed brown leaves at center, surrounded by healthy green vegetation on all sides."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "leaves turn yellow and plants wilt and die",
+              "image_shows": "Plant is at a late terminal stage — leaves are fully necrotic tan/brown and shriveled rather than merely yellow-wilted, indicating death has already occurred.",
+              "image_quote": "All leaves on the plant are dry, curled, and tan-brown; no green tissue remains on the foliage."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "wilted yellow leaves typically remain attached to the plant after death",
+              "image_shows": "Confirms leaf retention after death — desiccated brown leaves are still firmly attached to the upright stem and have not abscised.",
+              "image_quote": "Shriveled brown leaflets hang attached along the entire length of the standing main stem."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Seed; Root; Stem; Foliar; Vascular; Whole plant",
+              "image_shows": "Image shows the above-ground whole-plant phase only — stem standing erect with attached dead foliage; roots and soil-line lesion are not exposed in this frame.",
+              "image_quote": "Standing erect stem with attached dead leaves visible above bare soil; no excavated root tissue or lower-stem lesion is shown."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5473575"
+          ],
+          "state": "South Dakota"
+        },
+        "Wisconsin": {
+          "__image_ids__": [
+            "bugwood::5626212",
+            "bugwood::5626216"
+          ],
+          "state": "Wisconsin"
+        }
+      }
+    },
+    {
+      "disease_name": "Soybean Rust",
+      "pathogen_scientific_name": {
+        "value": "Phakopsora pachyrhizi",
+        "url": "https://ohioline.osu.edu/factsheet/plpath-soy-2",
+        "quote": "Soybean rust (SBR), caused by the fungus Phakopsora pachyrhizi , is one of the most important diseases of soybean in several regions around the world.",
+        "taxonomy_validated": false
+      },
+      "type_of_disease": {
+        "value": "Fungal",
+        "url": "https://content.ces.ncsu.edu/asian-soybean-rust",
+        "quote": "The causal agent is the basidiomycete fungus, Phakopsora pachyrhizi."
+      },
+      "affected_parts": {
+        "value": [
+          "Foliar",
+          "Stem",
+          "Pod"
+        ],
+        "url": "https://content.ces.ncsu.edu/asian-soybean-rust",
+        "quote": "Lesions tend to be angular with 2-5 mm diameter, and can affect not only leaves, but may be observed on petioles, pods, and stems"
+      },
+      "visual_symptoms": {
+        "summary": {
+          "value": "Symptoms begin as very small tan to brown, brick red, gray-green, or reddish-brown angular lesions (2-5 mm) on the lower-canopy leaves; small pustules develop within the lesions on the underside of leaves and break open to release masses of tan urediniospores. Lesions may also occur on petioles, pods, and stems. Heavily infected plants turn yellow, defoliate prematurely, and may mature early.",
+          "url": "https://content.ces.ncsu.edu/asian-soybean-rust",
+          "quote": "A common symptom of soybean rust is the formation of gray-green, tan to dark-brown, or reddish-brown lesions that may become erumpant under the lesions on leaflets. Lesions tend to be angular with 2-5 mm diameter, and can affect not only leaves, but may be observed on petioles, pods, and stems ( Figure 1 ). Lesions are associated with leaf chlorosis; high lesion density can cause defoliation and early maturity of the plant"
+        },
+        "diagnostic_features": {
+          "value": "Small angular lesions (2-5 mm) on the underside of lower-canopy leaves containing pustules that break open to release masses of tan urediniospores; pustules and spore masses are visible with a 20x hand lens. SBR is most often found in the lower canopy at or after flowering stage.",
+          "url": "https://extension.umn.edu/soybean-pest-management/soybean-rust",
+          "quote": "Small pustules (blisters) develop in the lesions, which break open and release masses of tan spores. The lesions and pustules, which can be seen with a 20X hand lens, may also appear on pods and stems."
+        },
+        "look_alikes": {
+          "value": [
+            "Other common leaf diseases of soybean (early symptoms, before pustules develop)"
+          ],
+          "url": "https://extension.umn.edu/soybean-pest-management/soybean-rust",
+          "quote": "Early symptoms of soybean rust (before pustules develop) are difficult to distinguish from other common leaf diseases on soybean."
+        }
+      },
+      "treatments": {
+        "value": [
+          "The primary management of rust is through the use of fungicide applications",
+          "Fungicide applications made between R3 and R5 may provide the most yield protection for soybeans",
+          "Different modes of action should be used if more than one fungicide is needed in a growing season to manage fungicide resistance",
+          "Fungicides are likely not needed if soybean rust is not within 100 miles of a field",
+          "Regularly scout fields throughout the growing season to monitor for foliar diseases like rust",
+          "Scout the lower canopy of fields weekly, especially during wet weather after soybeans begin to flower",
+          "Soybean rust must be diagnosed at an early stage to be successfully managed; cultural practices have had little effect on the disease",
+          "Soybean varieties resistant to soybean rust are in development",
+          "If SBR is identified prior to the R5 growth stage, fungicide application would be recommended to prevent potential loss in yield",
+          "Strobilurin and triazole fungicides are the two classes currently recommended to control SBR",
+          "Careful and diligent scouting of both soybean fields and kudzu patches in the southern states",
+          "Sentinel plots are scouted weekly for SBR and act as an early warning system for growers"
+        ],
+        "url": "https://content.ces.ncsu.edu/asian-soybean-rust",
+        "quote": "The primary management of rust is through the use of fungicide applications. Fungicide applications made between R3 and R5 may provide the most yield protection for soybeans. Several fungicides are effective at reducing damages caused by rust, and efficacy can be found on the NC State Soybean Extension portal . Fungicide resistance is a concern with foliar pathogens, and different modes of action should be used if more than one fungicide is needed in a growing season. Fungicides are likely not needed if soybean rust is not within 100 miles of a field."
       },
       "confidence": "high",
       "num_sources": 3,
       "conflicts": [
         {
           "field": "disease_name",
-          "canonical_value": "Bean Pod Mottle Virus",
-          "alternative_value": "Bean Pod Mottle",
-          "alternative_source_url": "https://content.ces.ncsu.edu/bean-pod-mottle-virus",
-          "note": "NC State Extension uses 'Bean Pod Mottle' as the disease name, while UMN and Nebraska CropWatch use 'Bean Pod Mottle Virus'."
+          "canonical_value": "Soybean Rust",
+          "alternative_value": "Asian soybean rust",
+          "alternative_source_url": "https://content.ces.ncsu.edu/asian-soybean-rust",
+          "note": "NC State uses 'Asian soybean rust' to specify the aggressive Phakopsora pachyrhizi-caused form; UMN notes a second milder species P. meibomiae also causes soybean rust."
+        },
+        {
+          "field": "pathogen_scientific_name",
+          "canonical_value": "Phakopsora pachyrhizi",
+          "alternative_value": "Phakopsora pachyrhizi and Phakopsora meibomiae (two species cause soybean rust)",
+          "alternative_source_url": "https://extension.umn.edu/soybean-pest-management/soybean-rust",
+          "note": "UMN identifies two causal species: P. pachyrhizi (aggressive Asian pathogen) and P. meibomiae (mild pathogen). NC State and Ohio State name only P. pachyrhizi."
+        },
+        {
+          "field": "affected_parts",
+          "canonical_value": "Foliar, Stem, Pod",
+          "alternative_value": "Foliar (only)",
+          "alternative_source_url": "https://ohioline.osu.edu/factsheet/plpath-soy-2",
+          "note": "Ohio State describes only foliar symptoms; NC State and UMN report lesions on petioles, pods, and stems as well."
         }
-      ]
+      ],
+      "regional_observations": {
+        "Alabama": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "Heavily infected plants turn yellow, defoliate prematurely, and may mature early.",
+              "image_shows": "Two detached leaves shown side-by-side display extensive coalescing tan-brown necrosis covering most of one leaf and dense yellowing/bronzing across the second, indicating an advanced, near-defoliation stage rather than early angular lesions.",
+              "image_quote": "The left leaf is largely tan-brown with widespread necrotic patches, the right leaf shows pervasive yellow-orange mottling with scattered dark fleck clusters, and a few holes have already torn through the tissue."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Symptoms begin as very small tan to brown, brick red, gray-green, or reddish-brown angular lesions (2-5 mm) on the lower-canopy leaves",
+              "image_shows": "Individual 2-5 mm angular lesions are no longer discrete here — they have merged into broad irregular tan/brown necrotic blotches and diffuse rust-colored stippling across the lamina.",
+              "image_quote": "The leaf surfaces show large coalesced brown patches and a fine peppering of small dark-brown specks rather than isolated angular spots."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "Small angular lesions (2-5 mm) on the underside of lower-canopy leaves containing pustules that break open to release masses of tan urediniospores",
+              "image_shows": "The leaves are held to display the upper surface, where rust-colored pustule clusters are visible bleeding through as fine reddish-brown stippling against the yellowing lamina.",
+              "image_quote": "Numerous tiny rust-brown dots are densely scattered across the upper leaf surface, concentrated between veins and visible without magnification."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod",
+              "image_shows": "Only foliar tissue is visible in this image; no stems or pods are shown, so the photograph documents leaf-only evidence at this site.",
+              "image_quote": "Two soybean leaflets are held in a hand against a background of green canopy, with no stems or pods in frame."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "SBR is most often found in the lower canopy at or after flowering stage.",
+              "image_shows": "Both detached leaves are uniformly affected across the entire lamina rather than showing a basal-only or marginal gradient, indicating whole-leaf colonization at this advanced stage.",
+              "image_quote": "Discoloration and stippling extend from leaf base to tip and from midrib to margin on both leaflets without a clear front of progression."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5440185",
+            "bugwood::5440186",
+            "bugwood::5440187",
+            "bugwood::5440188",
+            "bugwood::5440189",
+            "bugwood::5440185",
+            "bugwood::5440186",
+            "bugwood::5440187",
+            "bugwood::5440188",
+            "bugwood::5440189"
+          ],
+          "state": "Alabama"
+        },
+        "Florida": {
+          "deltas": [
+            {
+              "field": "severity",
+              "canonical_says": "Heavily infected plants turn yellow, defoliate prematurely, and may mature early.",
+              "image_shows": "This Florida leaf is at a very advanced stage — multiple lesions have necrosed and dropped out, leaving roughly half a dozen ragged shot-holes through the lamina.",
+              "image_quote": "The leaf has several irregular holes where tissue has fallen away, surrounded by densely pustuled tan-orange areas."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "very small tan to brown, brick red, gray-green, or reddish-brown angular lesions (2-5 mm)",
+              "image_shows": "Pustules here are not confined to discrete 2-5 mm angular lesions but form a near-uniform tan-orange stippling that coalesces across most of the abaxial surface.",
+              "image_quote": "The underside of the leaf is broadly speckled with tiny orange-tan pustules with no clear angular lesion boundaries between them."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "SBR is most often found in the lower canopy at or after flowering stage.",
+              "image_shows": "Within this single leaf the pustules are distributed uniformly from tip to base and across both sides of the midrib rather than clustered in patches.",
+              "image_quote": "Rust-colored pustules cover the entire underside of the leaf evenly, with no spared zones along the margins or midrib."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "pustules and spore masses are visible with a 20x hand lens",
+              "image_shows": "Pustules and tan urediniospore masses are dense enough here to be obvious to the naked eye without magnification.",
+              "image_quote": "The orange-tan spore dusting is visible as discrete granular specks across the leaf surface in an unmagnified field photograph."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5202010",
+            "bugwood::5202011",
+            "bugwood::5202012",
+            "bugwood::5202013",
+            "bugwood::5202014",
+            "bugwood::5202017",
+            "bugwood::5202018",
+            "bugwood::5202019",
+            "bugwood::5202022",
+            "bugwood::5605448",
+            "bugwood::5605449"
+          ],
+          "state": "Florida"
+        },
+        "Kentucky": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "small pustules develop within the lesions on the underside of leaves and break open to release masses of tan urediniospores",
+              "image_shows": "Pustules at this Kentucky site appear dark brown to nearly black rather than tan, suggesting aged/mature pustules with darkened spore masses rather than freshly erupted tan urediniospores.",
+              "image_quote": "Within each angular tan lesion sits a dense cluster of granular, dark brown-to-black raised pustules that read as nearly black against the surrounding lesion tissue."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "SBR is most often found in the lower canopy at or after flowering stage",
+              "image_shows": "On this leaf the lesions are concentrated along and immediately flanking the midrib and lateral veins, with the heaviest pustule cluster sitting directly on a major vein junction.",
+              "image_quote": "The densest, darkest pustule patch straddles the junction of the midrib and a lateral vein, with smaller lesions strung out along the same vein corridors and fewer in the inter-veinal blade."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "pustules and spore masses are visible with a 20x hand lens",
+              "image_quote": "Fine white trichomes and the polygonal vein reticulation of the abaxial leaf surface are visible across the frame, with pustules sitting in the depressions between veinlets.",
+              "image_shows": "The image is taken on the abaxial (underside) leaf surface — confirmed by the dense trichomes and vein reticulation visible alongside the pustules — consistent with canonical placement of pustules on the leaf underside."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5369087",
+            "bugwood::5369088",
+            "bugwood::5369089",
+            "bugwood::5369090",
+            "bugwood::5369091",
+            "bugwood::5369092",
+            "bugwood::5369093",
+            "bugwood::5369094",
+            "bugwood::5369095",
+            "bugwood::5369096",
+            "bugwood::5369097"
+          ],
+          "state": "Kentucky"
+        }
+      }
     },
     {
       "disease_name": "Sclerotinia Timber Rot",
@@ -128,44 +2181,266 @@
           "Seed"
         ],
         "url": "https://ohioline.osu.edu/factsheet/plpath-soy-3",
-        "quote": "ascospores are produced and forcibly ejected into the air where they are spread by wind or splashing rainwater to stems, branches, flowers and pods... Sclerotia produced inside stems (C) and inside pods (D)... If the seeds were infected during the early stages of development, they may have a flat and shriveled appearance... mycelia can grow through leaves, stems and petioles."
+        "quote": "Diseased plants first appear wilted and with grayish green leaves that later turn brown to tan (Figure 2). The stems also have grayish to bleached white lesions that are covered by white fluffy mycelia under conditions of high moisture (Figures 3A and 3B). In later stages, sclerotia can be observed inside or outside of the stems and pods (Figures 3C and 3D). If the seeds were infected during the early stages of development, they may have a flat and shriveled appearance, or may be replaced by sclerotia."
       },
       "visual_symptoms": {
         "summary": {
-          "value": "Diseased plants appear wilted with grayish green leaves that turn brown to tan; stems develop water-soaked lesions that progress above and below nodes, eventually becoming bleached, stringy, and pithy. White fluffy/cottony mycelia and black sclerotia form on and inside infected stems and pods, and severe infection causes wilting, lodging, and plant death.",
-          "url": "https://cropprotectionnetwork.org/publications/an-overview-of-white-mold",
-          "quote": "Symptoms of white mold include water-soaked stem lesions that progress above and below infected nodes and eventually encircle the stem. Over time, infected stems are often killed and become bleached and stringy (Figure 3). Lesions can also occur on pods, petioles, and, in rare cases, on leaves. ... Severe infection weakens the plant and can result in wilting, lodging, and plant death (Figure 4). ... Signs of the fungus that can assist in diagnosis include white cottony mycelia (fungal growth) and sclerotia (Figure 5) on and inside infected plant stems and pods."
+          "value": "Diseased plants first appear wilted with grayish green leaves that turn brown to tan; stems develop grayish to bleached white lesions covered by white fluffy mycelia under high moisture, and sclerotia form inside or outside stems and pods.",
+          "url": "https://ohioline.osu.edu/factsheet/plpath-soy-3",
+          "quote": "Diseased plants first appear wilted and with grayish green leaves that later turn brown to tan (Figure 2). The stems also have grayish to bleached white lesions that are covered by white fluffy mycelia under conditions of high moisture (Figures 3A and 3B). In later stages, sclerotia can be observed inside or outside of the stems and pods (Figures 3C and 3D)."
         },
         "diagnostic_features": {
-          "value": "Bleached, pithy, stringy stems that shred easily, covered with white cottony/fluffy mycelia under high moisture; hard, black, irregularly shaped sclerotia (with pink to white center, resembling mouse droppings) form inside or outside stems and pods; tan, cup-shaped apothecia (1/8 to 1/4 inch) on the soil surface.",
-          "url": "https://cropprotectionnetwork.org/publications/an-overview-of-white-mold",
-          "quote": "Signs of the fungus that can assist in diagnosis include white cottony mycelia (fungal growth) and sclerotia (Figure 5) on and inside infected plant stems and pods. These signs of S. sclerotiorum and symptoms of white mold distinguish it from most other soybean diseases. ... sclerotia, which are hard, black survival structures that resemble mouse droppings residing in the soil. ... Apothecia are small (approximately 1⁄8- to 1⁄4-inch (3-6 mm) in diameter), tan, cup-shaped mushrooms"
+          "value": "White fluffy mycelia covering grayish to bleached white stem lesions under high moisture, with black, hard, irregular sclerotia (with pink to white center) produced inside or outside stems and pods; infected seeds may be flat and shriveled or replaced by sclerotia.",
+          "url": "https://ohioline.osu.edu/factsheet/plpath-soy-3",
+          "quote": "This fungus produces a survival structure called a sclerotium (pl. sclerotia), which is black, hard and irregular in shape with a pink to white center (Figure 1A)... The stems also have grayish to bleached white lesions that are covered by white fluffy mycelia under conditions of high moisture (Figures 3A and 3B). In later stages, sclerotia can be observed inside or outside of the stems and pods (Figures 3C and 3D). If the seeds were infected during the early stages of development, they may have a flat and shriveled appearance, or may be replaced by sclerotia."
         },
         "look_alikes": {
           "value": [
-            "other stem and root rot diseases",
-            "bird's nest fungus"
+            "Bird's nest fungi"
           ],
-          "url": "https://cropwatch.unl.edu/plant-disease/soybean/sclerotinia-stem-rot/",
-          "quote": "It is important to observe stems and pods for white mycelium and sclerotia to differentiate Sclerotinia stem rot from other stem and root rot diseases."
+          "url": "https://cropprotectionnetwork.org/encyclopedia/white-mold-of-soybean",
+          "quote": "Bird's nest fungi can be confused with white mold apothecia."
         }
+      },
+      "treatments": {
+        "value": [
+          "Cultivars with high levels of partial resistance are commercially available; no complete resistance is reported.",
+          "Selection of a soybean cultivar should take into account an open canopy of upright leaves to minimize a favorable environment.",
+          "Use of long crop rotation with non-host crops such as corn, wheat, or small grains to minimize inoculum build-up.",
+          "Avoid rotation with beans, peas, sunflowers, and cole crops (Brassicaceae) in fields with white mold risk.",
+          "Good weed management is critical because many broadleaf weeds are hosts for the pathogen.",
+          "Some herbicides may suppress the activity of the fungus or disrupt germination of sclerotia.",
+          "Tillage is recommended for fields with first occurrence to bury sclerotia; reduced tillage is preferred for fields with a long history of the disease.",
+          "Reduction of seeding rate may improve air circulation, reducing humidity and increasing temperature within the canopy.",
+          "Increasing row spacing to 30 inch rows may avoid complete canopy closure; low plant populations or wide rows may help reduce severity.",
+          "Where irrigation is used, reduce irrigation frequency during flowering.",
+          "Foliar fungicides such as Boscalid have provided good efficacy in reducing disease incidence and severity; rotation of active ingredients should be considered. Application timing is critical (immediately before infection); efficacy can be inconsistent.",
+          "Lactofen is an herbicide able to modify soybean canopy, delay flowering and induce systemic acquired resistance response.",
+          "Biological control with antagonistic fungi (e.g., Coniothyrium minitans) may be applied to soil to colonize and reduce sclerotia numbers.",
+          "Avoid introduction of sclerotia in the field; seed should be free of Sclerotinia contamination and infection.",
+          "Seed-lots can be cleaned by spiral separators and gravity tables.",
+          "Avoid harvesting heavily infested fields until the end of the season as combines can become contaminated with sclerotia.",
+          "Seed treatments with fungicides could be used to treat infected seed."
+        ],
+        "url": "https://ohioline.osu.edu/factsheet/plpath-soy-3",
+        "quote": "Host resistance: There is no complete resistance reported for Sclerotinia stem rot of soybean. However, cultivars with high levels of partial resistance are commercially available... Use of long crop rotation... Corn and wheat can be used in crop rotation with soybean to minimize inoculum build-up over time... Tillage is recommended for fields with first occurrence of Sclerotinia stem rot in order to bury the sclerotia... Boscalid has provided good efficacy in reducing disease incidence and severity compared to the untreated control... Lactofen is an herbicide able to modify soybean canopy... Biological control with the fungus Coniothyrium minitans... Avoid introduction of sclerotia in the field... Seed treatments with fungicides could be used to treat infected seed."
       },
       "confidence": "high",
       "num_sources": 3,
-      "conflicts": []
+      "conflicts": [
+        {
+          "field": "disease_name",
+          "canonical_value": "Sclerotinia Stem Rot (White Mold) of Soybean",
+          "alternative_value": "White Mold of Soybean",
+          "alternative_source_url": "https://cropprotectionnetwork.org/encyclopedia/white-mold-of-soybean",
+          "note": "Crop Protection Network uses 'White Mold of Soybean' as the primary name; UMN uses 'Sclerotinia stem rot (white mold) on soybean'. All three refer to the same disease caused by Sclerotinia sclerotiorum."
+        },
+        {
+          "field": "affected_parts",
+          "canonical_value": "Foliar, Stem, Pod, Seed",
+          "alternative_value": "Stem, Pod, Seed (no Foliar)",
+          "alternative_source_url": "https://extension.umn.edu/soybean-pest-management/sclerotinia-stem-rot-white-mold-soybean",
+          "note": "UMN Extension does not explicitly list foliar tissue as affected; Ohioline and Crop Protection Network describe foliar symptoms (yellowing, wilting, leaves turning brown/tan)."
+        }
+      ],
+      "regional_observations": {
+        "Illinois": {
+          "deltas": [
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Infection is localized to a single bleached stem at this Illinois site while immediately adjacent plants still bear green, filling pods — not a uniform canopy collapse.",
+              "image_quote": "A single tan-bleached, mycelium-coated stem with shriveled pods stands directly beside multiple healthy green soybean pods on neighboring stems."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "White fluffy mycelia covering grayish to bleached white stem lesions under high moisture, with black, hard, irregular sclerotia (with pink to white center) produced inside or outside stems and pods",
+              "image_shows": "Mycelium and sclerotium formation are concentrated at the stem nodes / pod attachment points rather than spread evenly along the internode.",
+              "image_quote": "Dense white mycelial mats and small black sclerotia are clustered at the node where pods join the stem, with the rest of the internode showing only dry bleaching."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "Diseased plants first appear wilted with grayish green leaves that turn brown to tan",
+              "image_shows": "This site is well past the wilt stage — the affected stem is fully dried and bleached and its pods are papery/desiccated, indicating late-season terminal collapse of that plant.",
+              "image_quote": "The central stem is uniformly straw-colored with no green tissue remaining and its attached pods are flattened, tan, and clearly non-filling."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Foliar tissue on the diseased plant is largely absent/abscised at this stage; visible disease is confined to stem and pods in this frame.",
+              "image_quote": "Only bleached stems, dried pods, and a few crumpled brown leaf fragments are visible on the affected plant — no green leaves remain attached."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5609856",
+            "bugwood::5609857",
+            "bugwood::5609858",
+            "bugwood::5609859",
+            "bugwood::5609860",
+            "bugwood::5609861",
+            "bugwood::5609862",
+            "bugwood::5609863",
+            "bugwood::5609864",
+            "bugwood::5609865",
+            "bugwood::5609866",
+            "bugwood::5609867",
+            "bugwood::5609868",
+            "bugwood::5609869",
+            "bugwood::5609870",
+            "bugwood::5609871",
+            "bugwood::5609872",
+            "bugwood::5609873",
+            "bugwood::5609874",
+            "bugwood::5609875",
+            "bugwood::5609876",
+            "bugwood::5609877",
+            "bugwood::5609878",
+            "bugwood::5609879",
+            "bugwood::5609880",
+            "bugwood::5609881",
+            "bugwood::5609882",
+            "bugwood::5609883",
+            "bugwood::5609884",
+            "bugwood::5609885",
+            "bugwood::5609886",
+            "bugwood::5609887",
+            "bugwood::5609888",
+            "bugwood::5609889",
+            "bugwood::5609890",
+            "bugwood::5609891",
+            "bugwood::5609892",
+            "bugwood::5609893",
+            "bugwood::5609894",
+            "bugwood::5609895"
+          ],
+          "state": "Illinois"
+        },
+        "Iowa": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "stems develop grayish to bleached white lesions covered by white fluffy mycelia under high moisture",
+              "image_shows": "On this Iowa stem the lesion is a discrete brown-to-reddish-brown necrotic patch with only a small tuft of white mycelium, rather than a long bleached-white region — suggesting drier conditions than the canonical wet-canopy presentation.",
+              "image_quote": "A reddish-brown sunken lesion on the green pubescent stem with a small white mycelial tuft and a single dark spherical body adhering to it."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "black, hard, irregular sclerotia (with pink to white center) produced inside or outside stems and pods",
+              "image_shows": "A single dark, rounded sclerotium is visible externally on the stem surface embedded in the mycelial tuft, demonstrating the early external sclerotium stage at this site.",
+              "image_quote": "A small dark, nearly spherical body sits on the lesion surface, partly enveloped by a white mycelial mat."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Only the stem shows clear infection here; the surrounding green pods and pubescent foliage in the frame appear asymptomatic at this stage.",
+              "image_quote": "Multiple green, hairy pods flank the stem lesion and show no discoloration, mycelium, or shriveling."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Infection at this site is at an early/localized stage — a single small lesion girdling only part of the stem, with pods still green and turgid above and below.",
+              "image_quote": "The lesion occupies a few centimeters of stem while pods on adjacent nodes remain bright green and fully formed."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5626314",
+            "bugwood::5626315",
+            "bugwood::5626316",
+            "bugwood::5626317",
+            "bugwood::5626318",
+            "bugwood::5626319",
+            "bugwood::5626320",
+            "bugwood::5626321",
+            "bugwood::5626322",
+            "bugwood::5630757",
+            "bugwood::5630758"
+          ],
+          "state": "Iowa"
+        },
+        "South Dakota": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "stems develop grayish to bleached white lesions",
+              "image_shows": "Stem lesions in this specimen show a sharp, well-defined transition zone where healthy green stem meets a tan/bleached upper portion, with the lower lesion margin appearing as a brown band rather than a diffuse edge.",
+              "image_quote": "Three soybean stems against a blue cloth show abrupt color change from green at the base to dry tan/bleached above, with a distinct brown demarcation line at the boundary."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Disease at this site is advanced — the upper portions of the stems are entirely dead and dry, with shriveled foliage and stems bleached along their full upper length.",
+              "image_quote": "The upper halves of all three stems are uniformly tan and desiccated, and a small attached leaf at the base is brown and shriveled."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Only stems and a single attached leaf are visible in this cut specimen; no pods or seeds are present in the frame to evaluate.",
+              "image_quote": "The image shows three excised stem sections laid on blue fabric with one withered leaf, and no pods or seed structures are visible."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "White fluffy mycelia covering grayish to bleached white stem lesions under high moisture, with black, hard, irregular sclerotia",
+              "image_quote": "The bleached stem surfaces appear dry and matte with no visible white fluff or black bodies on the exterior.",
+              "image_shows": "No white fluffy mycelium and no external black sclerotia are visible on the lesion surface in this specimen — the bleached tissue appears dry."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5473583",
+            "bugwood::5473584"
+          ],
+          "state": "South Dakota"
+        },
+        "Wisconsin": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "stems develop grayish to bleached white lesions covered by white fluffy mycelia under high moisture",
+              "image_shows": "Lesion is localized to a node/branch junction on an otherwise still-green stem, with the bleached/dead zone confined to the upper branch above the mycelial mass rather than extending down the main stem.",
+              "image_quote": "A dense white cottony patch encircles a node where a senescing tan branch meets a green hairy main stem; tissue above the patch is bleached and dry while the stem below remains green."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Early-to-mid infection at this site: active fluffy mycelium is still wet/white with no visible black sclerotia yet formed, and the host stem below the lesion is still green and turgid.",
+              "image_quote": "The mycelium appears as fresh white cotton-like growth with no dark bodies embedded in or on it, and the green stem below shows no wilting collapse."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Pod; Seed",
+              "image_shows": "Infection is centered at a branch axil/node, with adjacent young pods (lower left, still green and pubescent) not yet visibly colonized.",
+              "image_quote": "Small green hairy pods at the lower left of the frame are intact and green while the white mycelial mass is restricted to the node above them."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "At this plant the infection is a single focal node lesion rather than a diffuse canopy-wide pattern, with one branch killed above the lesion and the rest of the visible plant still green.",
+              "image_quote": "Only one branch junction shows the white growth and bleached dead tissue; the rest of the stem and lower pods in view remain green."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5505476",
+            "bugwood::5505477",
+            "bugwood::5626310",
+            "bugwood::5626311",
+            "bugwood::5626312",
+            "bugwood::5626313"
+          ],
+          "state": "Wisconsin"
+        }
+      }
     },
     {
       "disease_name": "Southern Blight",
       "pathogen_scientific_name": {
         "value": "Agroathelia rolfsii",
         "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
-        "quote": "Southern blight is caused by Agroathelia rolfsii , a soilborne fungus",
+        "quote": "Southern blight is caused by Agroathelia rolfsii , a soilborne fungus that has a wide host range of more than 200 plant species.",
         "taxonomy_validated": false
       },
       "type_of_disease": {
         "value": "Fungal",
-        "url": "https://content.ces.ncsu.edu/southern-blight-of-soybean",
-        "quote": "Southern blight of soybean is caused by the fungus Sclerotium rolfsii."
+        "url": "https://www.apsnet.org/edcenter/pdlessons/Pages/SouthernBlight.aspx",
+        "quote": "Southern blight, caused by the soilborne fungus Sclerotium rolfsii is a serious disease of a wide variety of plants"
       },
       "affected_parts": {
         "value": [
@@ -175,19 +2450,19 @@
           "Seed",
           "Whole plant"
         ],
-        "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
-        "quote": "Seedling infection results in pre- or post-emergence damping-off. Later in the season, entire plants may become yellow and wilt, with leaves turning brown and often remaining attached to the plant. A dark brown lesion that girdles the stem occurs at the soil surface."
+        "url": "https://www.apsnet.org/edcenter/pdlessons/Pages/SouthernBlight.aspx",
+        "quote": "S. rolfsii usually infects the lower stem near the soil surface. With some plants, the roots may become infected."
       },
       "visual_symptoms": {
         "summary": {
-          "value": "Yellowing and wilting appear in patches; entire plants may become yellow and wilt with brown leaves remaining attached. Light to dark brown lesions develop on stems near the soil surface and girdle the stem, accompanied by conspicuous white, fan-like mats of fungal mycelium on the lower stem and soil surface, with numerous mustard-seed-sized sclerotia.",
-          "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
-          "quote": "entire plants may become yellow and wilt, with leaves turning brown and often remaining attached to the plant. A dark brown lesion that girdles the stem occurs at the soil surface. This lesion is generally accompanied by the development of conspicuous white, fanlike mats of fungal mycelium that form on the base of the stem, on leaf residue, and on the soil surface around infected plants. Numerous, small round fungal bodies that are about the size of mustard seeds (called sclerotia) form on these fungal mats and on the lower stem."
+          "value": "Disease begins with a small, water-soaked lesion on the lower stem at or near the soil surface that spreads rapidly to girdle the stem, causing wilt; a white mat of mycelium develops at the lesion site followed by mustard-seed-sized sclerotia.",
+          "url": "https://www.apsnet.org/edcenter/pdlessons/Pages/SouthernBlight.aspx",
+          "quote": "disease begins with a small, water-soaked lesion on the lower stem at or near the soil surface ( Figure 1 ). The lesion spreads rapidly to girdle the stem ( Figure 2 ). On many herbaceous plants and seedlings, the girdling lesion will quickly cause the plant to wilt"
         },
         "diagnostic_features": {
-          "value": "Conspicuous white, fan-like mats of fungal mycelium on the base of the stem, leaf residue, and soil surface around infected plants, with numerous small round sclerotia about the size of mustard seeds that progress from yellow-tan to reddish-brown to dark brown at maturity.",
-          "url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
-          "quote": "conspicuous white, fanlike mats of fungal mycelium that form on the base of the stem, on leaf residue, and on the soil surface around infected plants. Numerous, small round fungal bodies that are about the size of mustard seeds (called sclerotia) form on these fungal mats and on the lower stem. Initially, sclerotia are yellow-tan then progress to a reddish-brown color and finally dark brown at maturity."
+          "value": "White mat of mycelium at the lesion site that spreads onto nearby soil surface, with small (0.5-1 mm), white, round, fuzzy mycelial bodies (sclerotia) that become smooth and light tan, brown or black; sclerotia are about the size of mustard seeds.",
+          "url": "https://www.apsnet.org/edcenter/pdlessons/Pages/SouthernBlight.aspx",
+          "quote": "a white mat of mycelium develops at the lesion site ( Figure 6 ). This white mat will often spread out onto the nearby soil surface. Shortly after the mycelial mat develops, small (0.5-1 mm), white, round, fuzzy mycelial bodies begin to appear ( Figure 7 ). These mustard-seed-sized structures, called sclerotia, soon become smooth and light tan, brown or black in color"
         },
         "look_alikes": {
           "value": [],
@@ -195,292 +2470,190 @@
           "quote": ""
         }
       },
+      "treatments": {
+        "value": [
+          "Only pathogen-free plants, cuttings or seeds should be purchased from a reputable dealer",
+          "Removal of infected plants is an important aspect of disease control",
+          "Some localized soil removal and replacement may help to control S. rolfsii",
+          "Treating the soil with heat (including solarization), fungicides or fumigants, cultural manipulations, organic amendments, fertilizers, or biological treatments",
+          "Treat beds or bulk soil with aerated steam. All areas must be brought to a temperature of 160-180 degrees F for 30 minutes",
+          "Solarization for southern blight control has been beneficial in select situations in the southern United States",
+          "The soil fungicide pentachloronitrobenzene (PCNB) has been used on peanuts and some other crops since the 1940s",
+          "Azoxystrobin applied as preplant and postplant furrow treatments significantly controlled southern blight",
+          "The fungicides azoxystrobin, flutolanil, flutolanil + thiophanate-methyl, and/or tebuconazole are labeled for pre- and post plant drenches",
+          "Fumigants, such as metam sodium or dazomet (granular), are toxic to sclerotia and mycelium in the soil",
+          "A soil insecticide (chlorpyrifos) is also labeled for use as a soil treatment to control S. rolfsii in certain peanut cropping situations",
+          "Cultural modifications for management of S. rolfsii in the landscape include deep plowing, lime additions, aerification, and thatch removal",
+          "Keeping the soil pH at 6.5 by the addition of lime will help to prevent rapid fungal growth",
+          "Addition of organic amendments such as compost, oat or corn straw, or cotton gin trash to soil sometimes reduces southern blight incidence and development",
+          "Treatments with ammonium, calcium nitrate or calcium sulfate may help control southern blight",
+          "Biological control of S. rolfsii has been achieved to some degree with bacteria (Bacillus subtilis), actinomycetes, a mycorrhizal fungus, or certain Trichoderma species",
+          "When infested fields are rotated to corn, inoculum levels in the soil slowly decrease",
+          "Peanut rotations with cotton, 'Pensacola' bahia grass (Paspalum notatum), or switch grass (Panicum virgatum) resulted in a decreased incidence of white mold (stem rot) in peanut fields",
+          "On peanuts, good disease control has been achieved by foliar applications of azoxystrobin products, flutolanil, or tebuconazole"
+        ],
+        "url": "https://www.apsnet.org/edcenter/pdlessons/Pages/SouthernBlight.aspx",
+        "quote": "Management of Southern Blight ... disease management involves exclusionary practices, plant removal, soil removal or treatment, plant treatment, crop rotation, use of resistant varieties, or a combination of these practices."
+      },
       "confidence": "high",
       "num_sources": 2,
       "conflicts": [
         {
           "field": "pathogen_scientific_name",
           "canonical_value": "Agroathelia rolfsii",
-          "alternative_value": "Sclerotium rolfsii",
-          "alternative_source_url": "https://content.ces.ncsu.edu/southern-blight-of-soybean",
-          "note": "Sclerotium rolfsii is the older/anamorph name reported by NC State Extension; Agroathelia rolfsii is the more recent accepted name reported by Crop Protection Network. No NCBI/MycoBank validation was supplied, so the newer CPN name is used as canonical."
+          "alternative_value": "Sclerotium rolfsii (teleomorph: Athelia rolfsii)",
+          "alternative_source_url": "https://www.apsnet.org/edcenter/pdlessons/Pages/SouthernBlight.aspx",
+          "note": "APS uses the older anamorph name Sclerotium rolfsii with teleomorph Athelia rolfsii; Crop Protection Network uses the current accepted name Agroathelia rolfsii. Taxonomy validation data was not provided."
         },
         {
           "field": "disease_name",
           "canonical_value": "Southern Blight",
           "alternative_value": "Southern Blight of Soybeans",
           "alternative_source_url": "https://cropprotectionnetwork.org/encyclopedia/southern-blight-of-soybeans",
-          "note": "Sources use 'Southern Blight of Soybean' (NC State) and 'Southern Blight of Soybeans' (CPN); both refer to the same disease."
+          "note": "Crop-specific naming variant; APS lists synonyms 'Southern stem blight' and 'White mold' as well."
+        },
+        {
+          "field": "affected_parts",
+          "canonical_value": "Foliar, Stem, Root, Seed, Whole plant",
+          "alternative_value": "Stem, Root, Whole plant",
+          "alternative_source_url": "https://www.apsnet.org/edcenter/pdlessons/Pages/SouthernBlight.aspx",
+          "note": "Crop Protection Network adds Foliar and Seed (pre/post-emergence damping-off and yellowing leaves); APS focuses on stem and roots."
         }
-      ]
-    },
-    {
-      "disease_name": "Bacterial Blight",
-      "pathogen_scientific_name": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "type_of_disease": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "affected_parts": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "visual_symptoms": {
-        "summary": {
-          "value": null,
-          "url": null,
-          "quote": null
+      ],
+      "regional_observations": {
+        "Alabama": {
+          "deltas": [
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Disease begins with a small, water-soaked lesion on the lower stem at or near the soil surface that spreads rapidly to girdle the stem",
+              "image_shows": "Lower stem lesion at this Alabama site is a dried, bleached light-tan band with a sloughing/peeling outer cortex and a single darker brown sunken spot, rather than a fresh water-soaked lesion.",
+              "image_quote": "The lower stem displays a pale, bone-colored girdling zone with shredded surface tissue and one small brown necrotic patch."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Plant is at terminal stage — entirely uprooted/pulled, stem girdled through, with no surviving green tissue attached.",
+              "image_quote": "The whole plant has been lifted from the ground, exposing a soil-caked root mass above a dead, bleached stem with no foliage."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "White mat of mycelium at the lesion site ... small (0.5-1 mm), white, round, fuzzy mycelial bodies (sclerotia)",
+              "image_shows": "Neither the white mycelial mat nor mustard-seed sclerotia are visible at this lesion — only weathered/bleached stem tissue remains, indicating signs have sloughed off post-mortem.",
+              "image_quote": "The girdled stem surface is dry and tan with no white fungal mat or pinhead sclerotia clinging to it or to adjacent soil."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Root; Seed; Whole plant",
+              "image_shows": "This image specifically documents lower stem girdling plus a heavily soil-matted root crown; foliage and pods are absent from frame.",
+              "image_quote": "The visible plant parts are an exposed root ball clogged with soil and the bleached lower stem below it."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5581651",
+            "bugwood::5581657",
+            "bugwood::5581658",
+            "bugwood::5581659",
+            "bugwood::5581651",
+            "bugwood::5581657",
+            "bugwood::5581658",
+            "bugwood::5581659"
+          ],
+          "state": "Alabama"
         },
-        "diagnostic_features": {
-          "value": null,
-          "url": null,
-          "quote": null
+        "Arkansas": {
+          "deltas": [
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Root; Seed; Whole plant",
+              "image_shows": "Multiple adjacent soybean stems in a single row are simultaneously colonized at the soil line, indicating row-scale stand loss rather than a single-plant infection.",
+              "image_quote": "A row of bare, defoliated soybean stems stands upright with white mycelium coating their lower portions; only a few yellowed/wilted leaves remain at the edges."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "spreads rapidly to girdle the stem, causing wilt",
+              "image_shows": "Disease at this Arkansas site has progressed past wilt to near-complete defoliation, leaving denuded stems still rooted in place.",
+              "image_quote": "The stems are stripped of leaves along their entire length, with only a few chlorotic, drooping leaves visible at the lower left and upper left of the frame."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "a white mat of mycelium develops at the lesion site",
+              "image_shows": "The mycelial mat in this image extends well up the stems (several centimeters above the soil line) as a continuous white sheath, not just a localized lesion patch.",
+              "image_quote": "Bright white, fibrous mycelium coats the lower 5-10 cm of multiple stems as a continuous sleeve, with thinner white strands trailing onto the soil surface between them."
+            },
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "small (0.5-1 mm), white, round, fuzzy mycelial bodies (sclerotia) that become smooth and light tan, brown or black",
+              "image_shows": "A small cluster of tan/brown mature sclerotia is visible adhering to one stem at mid-frame, confirming the sclerotial stage at this site.",
+              "image_quote": "On a central stem about 10 cm above the ground, a tight cluster of small round bodies — light tan to brown — sits against the white mycelium."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Infection here follows the planted row: every stem in the visible row segment is colonized at its base, suggesting along-row spread via contiguous soil/mycelium.",
+              "image_quote": "All stems visible in the foreground row carry white basal mycelium at roughly the same height above the soil line."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5625712",
+            "bugwood::5625713",
+            "bugwood::5625712",
+            "bugwood::5625713"
+          ],
+          "state": "Arkansas"
         },
-        "look_alikes": {
-          "value": null,
-          "url": null,
-          "quote": null
+        "North Carolina": {
+          "deltas": [
+            {
+              "field": "diagnostic_features",
+              "canonical_says": "small (0.5-1 mm), white, round, fuzzy mycelial bodies (sclerotia) that become smooth and light tan, brown or black",
+              "image_shows": "Numerous mature sclerotia at the reddish-brown to dark-brown stage are densely encrusting the stem surface, appearing as a sand-like coating rather than the early white fuzzy phase.",
+              "image_quote": "The stem and adjacent shredded plant tissue are coated in tiny rust-brown to dark-brown spherical bodies clustered like grains."
+            },
+            {
+              "field": "lesion_morphology",
+              "canonical_says": "Disease begins with a small, water-soaked lesion on the lower stem at or near the soil surface that spreads rapidly to girdle the stem, causing wilt",
+              "image_shows": "The lower stem is fully girdled and shredded into pale fibrous strands with bark sloughed off, indicating advanced post-girdling tissue disintegration rather than an early water-soaked lesion.",
+              "image_quote": "Stem tissue is split lengthwise into frayed white-tan fibers with the outer bark peeling away in tatters."
+            },
+            {
+              "field": "severity",
+              "canonical_says": "(not specified)",
+              "image_shows": "Severity at this site is terminal — the main stem is collapsed, dead, and colonized by abundant sclerotia, consistent with a fully killed plant rather than active wilt.",
+              "image_quote": "The pictured stem is desiccated, brown, and structurally destroyed with no living green tissue remaining on it."
+            },
+            {
+              "field": "affected_organs",
+              "canonical_says": "Foliar; Stem; Root; Seed; Whole plant",
+              "image_shows": "Image specifically documents lower stem and crown destruction with attached shredded petiole/leaf debris; no roots, seeds, or intact foliage on the diseased plant are visible.",
+              "image_quote": "Visible diseased material consists of a brown girdled stem with frayed papery leaf-and-petiole remnants hanging from it."
+            },
+            {
+              "field": "spread_pattern",
+              "canonical_says": "(not specified)",
+              "image_shows": "Sclerotia are concentrated along the stem and immediately adjacent residue rather than scattered broadly, showing tight colonization of the killed plant itself.",
+              "image_quote": "The brown granular bodies are packed densely on the stem surface and trailing tissue but are not visible on the green canopy in the background."
+            }
+          ],
+          "__image_ids__": [
+            "bugwood::5609911",
+            "bugwood::5609912",
+            "bugwood::5609913",
+            "bugwood::5609914",
+            "bugwood::5609915"
+          ],
+          "state": "North Carolina"
+        },
+        "Mississippi": {
+          "__image_ids__": [
+            "bugwood::5625714",
+            "bugwood::5625715"
+          ],
+          "state": "Mississippi"
         }
-      },
-      "confidence": "low",
-      "num_sources": 0,
-      "conflicts": []
-    },
-    {
-      "disease_name": "Cercospora Blight",
-      "pathogen_scientific_name": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "type_of_disease": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "affected_parts": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "visual_symptoms": {
-        "summary": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "diagnostic_features": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "look_alikes": {
-          "value": null,
-          "url": null,
-          "quote": null
-        }
-      },
-      "confidence": "low",
-      "num_sources": 0,
-      "conflicts": []
-    },
-    {
-      "disease_name": "Charcoal Rot",
-      "pathogen_scientific_name": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "type_of_disease": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "affected_parts": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "visual_symptoms": {
-        "summary": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "diagnostic_features": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "look_alikes": {
-          "value": null,
-          "url": null,
-          "quote": null
-        }
-      },
-      "confidence": "low",
-      "num_sources": 0,
-      "conflicts": []
-    },
-    {
-      "disease_name": "Downy Mildew",
-      "pathogen_scientific_name": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "type_of_disease": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "affected_parts": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "visual_symptoms": {
-        "summary": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "diagnostic_features": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "look_alikes": {
-          "value": null,
-          "url": null,
-          "quote": null
-        }
-      },
-      "confidence": "low",
-      "num_sources": 0,
-      "conflicts": []
-    },
-    {
-      "disease_name": "Frogeye Leaf Spot",
-      "pathogen_scientific_name": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "type_of_disease": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "affected_parts": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "visual_symptoms": {
-        "summary": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "diagnostic_features": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "look_alikes": {
-          "value": null,
-          "url": null,
-          "quote": null
-        }
-      },
-      "confidence": "low",
-      "num_sources": 0,
-      "conflicts": []
-    },
-    {
-      "disease_name": "Root And Stem Rot",
-      "pathogen_scientific_name": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "type_of_disease": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "affected_parts": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "visual_symptoms": {
-        "summary": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "diagnostic_features": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "look_alikes": {
-          "value": null,
-          "url": null,
-          "quote": null
-        }
-      },
-      "confidence": "low",
-      "num_sources": 0,
-      "conflicts": []
-    },
-    {
-      "disease_name": "Soybean Rust",
-      "pathogen_scientific_name": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "type_of_disease": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "affected_parts": {
-        "value": null,
-        "url": null,
-        "quote": null
-      },
-      "visual_symptoms": {
-        "summary": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "diagnostic_features": {
-          "value": null,
-          "url": null,
-          "quote": null
-        },
-        "look_alikes": {
-          "value": null,
-          "url": null,
-          "quote": null
-        }
-      },
-      "confidence": "low",
-      "num_sources": 0,
-      "conflicts": []
+      }
     }
   ],
   "crop": "Soybean",
-  "generated_date": "2026-05-08"
+  "generated_date": "2026-05-09",
+  "regional_observations_count": 54
 }

@@ -133,10 +133,11 @@ def parse_args() -> argparse.Namespace:
                    help="min_observations carried into the SymptomLibrary seed")
     p.add_argument("--regional", action="store_true",
                    help="after the cross-region run, do a per-(crop, disease, state) "
-                        "VLM observation pass: looks at cached Bugwood image, emits "
-                        "{severity, lesion_morphology, affected_organs, "
-                        "spread_pattern, variations_from_canonical} grounded in "
-                        "the image. Replaces the old regional text-duplication path.")
+                        "VLM observation pass: looks at cached Bugwood image with "
+                        "the canonical KB as context and emits ONLY structured "
+                        "deltas {field, canonical_says, image_shows, image_quote} "
+                        "for state-specific additions/contradictions. "
+                        "Embedded back into final_registry.json under each disease.")
     p.add_argument("--regional-only", action="store_true",
                    help="skip discovery + extraction + reconciliation; only run "
                         "the per-state VLM observation against cached final_registry.json "

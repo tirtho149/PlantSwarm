@@ -1,24 +1,0 @@
-Lmod Warning:
--------------------------------------------------------------------------------
-The following dependent module(s) are not currently loaded:
-libxml2/2.10.3-t6x3p3p (required by: cuda/11.8.0-zg46pdv)
--------------------------------------------------------------------------------
-
-
-
-
-The following have been reloaded with a version change:
-  1) libiconv/1.17-dba3bla => libiconv/1.18-r4tljyb
-  2) libxml2/2.10.3-t6x3p3p => libxml2/2.13.5-ojk5yl4
-  3) xz/5.4.6-ss2bz2e => xz/5.6.3-r67hqdy
-  4) zlib-ng/2.1.6-nf73pqi => zlib-ng/2.2.4-73yzez4
-
-Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Downloading 'plantwild_v2.zip' to 'PlantWild/.cache/huggingface/download/5kNG75C_N0AxBDd44pYu_DybGT0=.5c3fd0c6ecf9a346c9d2dd03ff47769c71e581eb1170a68477d718ab43cfee5b.incomplete'
-Downloading '.gitattributes' to 'PlantWild/.cache/huggingface/download/wPaCkH-WbT7GsmxMKKrNZTV4nSM=.55cab133643a2a73e083373d2106533678d0edd5.incomplete'
-Downloading 'plantwild.zip' to 'PlantWild/.cache/huggingface/download/5eOlqnEyNOLVTcmdmPha8oEPIdk=.6fe6ca45914a453e9b4907f5c2b115fc8cb8481609bd9f8f93008dabf7aca9a3.incomplete'
-Download complete. Moving file to PlantWild/.gitattributes
-Downloading 'README.md' to 'PlantWild/.cache/huggingface/download/Xn7B-BWUGOee2Y6hCZtEhtFu4BE=.08aed51978504c934798eacd80d411e91bcea9eb.incomplete'
-Fetching 4 files:  25%|██▌       | 1/4 [00:00<00:02,  1.00it/s]Download complete. Moving file to PlantWild/README.md
-Download complete. Moving file to PlantWild/plantwild_v2.zip
-Download complete. Moving file to PlantWild/plantwild.zip
-Fetching 4 files:  75%|███████▌  | 3/4 [00:13<00:04,  4.72s/it]Fetching 4 files: 100%|██████████| 4/4 [00:13<00:00,  3.26s/it]

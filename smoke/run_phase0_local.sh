@@ -42,7 +42,7 @@ fi
 
 echo "================================================================="
 echo "  Smoke Phase 0 — pathome_kb (LOCAL machine, 2 crops)"
-echo "  Stages: cross-region (SAGE) + per-state regional_visuals"
+echo "  Stages: cross-region (SAGE) + per-state image-grounded deltas"
 echo "================================================================="
 python -m pathome_kb \
   --csv     "$USABLE_CSV" \
