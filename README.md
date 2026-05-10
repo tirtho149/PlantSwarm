@@ -8,8 +8,8 @@
 
 A three-step loop that decouples *what a disease looks like* from *what a multi-agent VLM swarm sees when routed against it*:
 
-1. **Seed** the visual content of the knowledge base by running the SAGE-ported `pathome_kb` pipeline (Claude headless web discovery → URL extraction with verbatim quotes → reconciliation per-source). Provenance-tracked: every visual fact carries `{value, url, quote}`.
-2. **Trace** with PlantSwarm — 5 agents over Qwen2.5-VL-7B, 30 stochastic runs per Bugwood image — against the seeded KB. ~101k routing traces.
+1. **Seed** the visual content of the knowledge base by running the SAGE-ported `pathome_kb` pipeline (Claude headless web discovery → URL extraction with verbatim quotes → reconciliation → state-aware image cache → per-state VLM **delta** extraction). One unified `final_registry.json` per crop holds canonical text plus image-grounded per-state deltas.
+2. **Trace** with PlantSwarm — 5 agents over Qwen2.5-VL-7B, 30 stochastic runs per Bugwood image — against the seeded KB.
 3. **Enhance** the KB by mining those traces into per-class `SwarmObservations` (path length, backtrack rate, confusion targets).
 
 Then train OBSERVE twice — once on the seed-only KB, once on the enhanced KB — and report the seed→enhanced delta on the full PlantVillage and PlantWild benchmarks. **The headline result is the delta.**
@@ -17,10 +17,10 @@ Then train OBSERVE twice — once on the seed-only KB, once on the enhanced KB �
 ```
   ┌────────────────┐      ┌────────────────┐      ┌────────────────┐
   │  Phase 0 SEED  │  →   │ Phase 1 BUILD  │  →   │ Phase 2 TRACES │
-  │ Claude headless│      │ symptoms.json +│      │ Qwen2.5-VL-7B  │
-  │ writes 484     │      │ state/AEZ geo +│      │ × 5 agents     │
-  │ VisualSymptom  │      │ 1,452 refs from│      │ × 30 runs      │
-  │ blocks (LOCAL) │      │ Bugwood CSV    │      │ = 101k traces  │
+  │ pathome_kb     │      │ symptoms.json +│      │ Qwen2.5-VL-7B  │
+  │ (5 stages,     │      │ state/AEZ geo +│      │ × 5 agents     │
+  │  LOCAL only —  │      │ refs from      │      │ × 30 runs      │
+  │  Claude OAuth) │      │ Bugwood CSV    │      │ = ~100k traces │
   └────────────────┘      └────────────────┘      └────────┬───────┘
                                                             │
   ┌────────────────┐      ┌────────────────┐      ┌────────▼───────┐
@@ -31,7 +31,7 @@ Then train OBSERVE twice — once on the seed-only KB, once on the enhanced KB �
   └────────────────┘      └────────────────┘      └────────────────┘
 ```
 
-PathomeDB is two stores: `db.symptoms` (`SymptomLibrary`) and `db.refs` (`ReferenceLibrary`). The earlier 5-layer split (mechanistic pathway / cross-crop manifestation / regional epidemiology / decision graph / references) was retired in the post-CSV migration — see [`MIGRATION.md`](MIGRATION.md).
+PathomeDB is two stores: `db.symptoms` (`SymptomLibrary`) and `db.refs` (`ReferenceLibrary`). Each `SymptomProfile` splits into a `CanonicalDisease` block (text-grounded, URL+verbatim quote per field) and `regional_observations[state].deltas[]` (image-grounded `{field, canonical_says, image_shows, image_quote}` records). Canonical owns the symptom slots; regional only emits state-specific additions or contradictions — a decision-tree shape rather than parallel re-extraction.
 
 ---
 
@@ -45,19 +45,19 @@ The pipeline splits across two machines:
    │  (laptop / workstation)  │      git        │  (SLURM-scheduled GPU) │
    └──────────────────────────┘                 └────────────────────────┘
 
-   Phase 0  Claude-headless    ────push──→     git pull
-   KB build (~30 min – 20 h)                       ↓
-       ↓                                       Setup    Filter Bugwood CSV
-   symptoms_seed.json                          Phase 1  Build PathomeDB
-                                               Phase 2  PlantSwarm traces  (A100)
-                                               Phase 3  Enhance from traces
-                                               Phase 4  Train OBSERVE × 2  (A100)
-                                               Phase 5  Eval × 4 + compare
+   Phase 0  pathome_kb         ────push──→     git pull
+   KB build (~45 min for                          ↓
+   2 crops, ~24 h for 484)                    Setup    Filter Bugwood CSV
+       ↓                                      Phase 1  Build PathomeDB
+   symptoms_seed.json                         Phase 2  PlantSwarm traces  (A100)
+                                              Phase 3  Enhance from traces
+                                              Phase 4  Train OBSERVE × 2  (A100)
+                                              Phase 5  Eval × 4 + compare
 ```
 
 **Why the split.** Phase 0 needs the `claude` CLI's OAuth login flow, which Nova compute nodes don't allow. Everything else is pure compute (Python + Qwen2.5-VL-7B) and runs as ordinary SLURM jobs.
 
-**Handoff.** Phase 0 produces a single JSON file (`artifacts/pathome_seed/symptoms_seed.json`, a few MB). You `git add -f` + push it from your laptop and `git pull` it on Nova. The chain script bails out with a clear error if that file isn't present, so you can't accidentally start Phase 1 without the seed.
+**Handoff.** Phase 0 produces a single JSON file (`smoke/artifacts/pathome_seed/symptoms_seed.json` for the smoke flow, or `artifacts/pathome_seed/symptoms_seed.json` for production). You `git add -f` + push it from your laptop and `git pull` it on Nova.
 
 ---
 
@@ -77,16 +77,17 @@ PlantSwarm/
 ├── pathome_kb/                           Phase 0 — SAGE-ported KB build (LOCAL)
 │   ├── pipeline.py                       per-crop orchestrator + seed merge
 │   ├── internet_pipeline.py              discovery → extraction → reconciliation
-│   ├── shared.py                         Anthropic SDK + claude -p wrapper
-│   ├── symptoms_adapter.py               SAGE registry → SymptomProfile JSON
+│   ├── regional_observation.py           per-(crop,disease,state) image-grounded deltas
+│   ├── symptoms_adapter.py               registry → SymptomProfile JSON
 │   ├── prompts/                          discovery / extraction / reconciliation
-│   ├── utils.py, config.py
-│   └── __main__.py                       python -m pathome_kb …
+│   ├── shared.py, utils.py, config.py
+│   └── README.md                         schema diagram + worked example
 │
 ├── pathome/                              Phase 1+ — PathomeDB stores
 │   ├── database.py                       PathomeDB orchestrator
 │   ├── symptoms.py                       SymptomLibrary, SymptomProfile,
-│   │                                     VisualSymptom, Citation, SwarmObservations
+│   │                                     CanonicalDisease, RegionalObservation,
+│   │                                     RegionalDelta, Citation, SwarmObservations
 │   └── layer5_references.py              ReferenceLibrary (CLIP + FAISS)
 │
 ├── data/bugwood_loader.py                CSV → BugwoodRecord stream
@@ -98,7 +99,8 @@ PlantSwarm/
 │
 ├── scripts/
 │   ├── filter_bugwood_csv.py             setup: CSV → filtered usable CSV
-│   ├── seed_pathome_with_claude.py       legacy schema-driven seeder (optional fallback)
+│   ├── ensure_state_image_cache.py       per-(crop,disease,state) Bugwood image cache
+│   ├── registry_to_excel.py              final_registry.json → 1-sheet decision-tree xlsx
 │   ├── build_pathome.py                  Phase 1 — build PathomeDB
 │   ├── run_pathome_traces.py             Phase 2 — PlantSwarm trace generation
 │   ├── enhance_pathome_from_traces.py    Phase 3 — trace mining
@@ -106,7 +108,6 @@ PlantSwarm/
 │   ├── evaluate_pathome.py               Phase 5a — held-out eval
 │   ├── compare_pathome_versions.py       Phase 5b — comparison.{json,md,tex}
 │   ├── sync_pathome_metrics.py           LaTeX macro emitter
-│   ├── run_phase0_local.sh               LOCAL: Phase 0 wrapper
 │   ├── submit_pathome_setup_filter.sh    NOVA: filter CSV (~30 s, CPU)
 │   ├── submit_pathome_phase1_build.sh    NOVA: build DB (~30 min, CPU+net)
 │   ├── submit_pathome_phase2_traces.sh   NOVA: traces (~36–50 h, A100+vLLM)
@@ -115,13 +116,16 @@ PlantSwarm/
 │   ├── submit_pathome_phase5_eval.sh     NOVA: eval+compare (~6–8 h, A100)
 │   └── submit_pathome_all.sh             NOVA: chain Setup + Phases 1–5
 │
-├── smoke/                                end-to-end smoke (2 crops; see smoke/README.md)
+├── smoke/                                two-crop end-to-end runner (the documented happy path)
+│   ├── run_phase0_full.sh                LOCAL: full Phase 0 for 2 crops
+│   ├── submit_smoke.sh                   NOVA: Phase 1–5 in one A100 job
+│   ├── BugWood_Diseases_smoke.csv        2-crop subset of the IPMNet export
+│   └── README.md                         smoke specifics
 │
 ├── artifacts/                            pipeline outputs (gitignored; seed pushed via -f)
 ├── results/                              eval JSONs + comparison artefacts (gitignored)
 │
 ├── plantswarm/latex/acl_latex.tex        the paper
-├── MIGRATION.md                          what changed across the symptom-centric refactor
 └── README.md                             (this file)
 ```
 
@@ -143,15 +147,15 @@ pip install -r requirements.txt
 For Phase 0 you also need:
 
 ```bash
-# Claude Code CLI (used for the discovery WebSearch stage)
+# Claude Code CLI (used for the discovery WebSearch + extraction + regional VLM stages)
 curl -fsSL https://claude.ai/install.sh | bash
 claude auth login        # OAuth in browser
 
-# Anthropic SDK key (used for the extraction + reconciliation stages)
+# Anthropic SDK key (optional — slightly faster reconciliation; falls back to claude -p without it)
 echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
 ```
 
-The Bugwood IPMNet CSV (`BugWood_Diseases.csv`) is committed. If you ever pull a fresh export, replace the file at the repo root and re-run the Setup step on Nova.
+The Bugwood IPMNet CSV (`BugWood_Diseases.csv`) is committed.
 
 ### On Nova
 
@@ -169,7 +173,7 @@ pip install -r requirements.txt
 pip install -r requirements-tfds.txt        # for the held-out PV eval
 ```
 
-Optional: get the FAO GAEZ shapefile to upgrade Layer 3 from the 2-zone coarse fallback to the full ~17-zone resolution. Add to `~/.bashrc` so SLURM sees it:
+Optional: get the FAO GAEZ shapefile to upgrade the geo prior from the 2-zone coarse fallback to the full ~17-zone resolution. Add to `~/.bashrc` so SLURM sees it:
 
 ```bash
 export PATHOME_AEZ_SHAPEFILE=/path/to/FAO_AEZv4_50K.shp
@@ -177,38 +181,108 @@ export PATHOME_AEZ_SHAPEFILE=/path/to/FAO_AEZv4_50K.shp
 
 ---
 
-## Smoke test first (recommended)
+## Full run — two crops (the documented happy path)
 
-Before kicking off the multi-day full run, validate every code path on a 2-crop / ~25-class subset (~60–90 min on a single A100). Same local→Nova split as production:
+The canonical end-to-end flow is **two crops** (default Soybean + Tomato; ~25 disease classes; ~50 (disease, state) tuples). It exercises every stage of the pipeline at a fraction of the time and cost of a 484-class production run, so all plumbing issues surface before you commit to the full spend.
+
+### Phase 0 — LOCAL (~45 min, ~$5–15)
 
 ```bash
-# === LOCAL (laptop), ~5 min ===
-bash smoke/run_phase0_local.sh
-git add -f smoke/artifacts/pathome_seed/symptoms_seed.json \
-           smoke/BugWood_Diseases_smoke_usable.csv
-git commit -m "smoke phase 0 seed" && git push origin main
+# default: Soybean + Tomato
+SMOKE_CROPS="Soybean,Tomato" bash smoke/run_phase0_full.sh
+```
 
-# === NOVA, single A100 job, ~60-90 min ===
+The script runs five stages per crop and prints a summary at the end:
+
+```
+  1. Filter the smoke CSV               → BugWood_Diseases_smoke_usable.csv
+  2. State-aware image cache top-up     → smoke/.bugwood_cache/
+  3. Cross-region SAGE pipeline         → final_registry.json (canonical-only)
+       discovery (claude -p WebSearch)
+       extraction (claude -p)            → verbatim quotes + treatments
+       reconciliation (claude -p)        → canonical entries
+  4. Per-state VLM delta extraction     → embedded into final_registry.json
+       claude -p + Read tool reads each cached Bugwood image and the
+       canonical KB; emits ONLY structured deltas
+       {field, canonical_says, image_shows, image_quote}
+  5. Adapter merge                      → smoke/artifacts/pathome_seed/symptoms_seed.json
+```
+
+After the run:
+
+```
+artifacts/pathome_kb/<Crop>/
+  ├── discovery_results.json            URL cache
+  ├── raw_extractions.json              per-source quotes
+  ├── final_registry.json               UNIFIED — canonical + per-disease
+  │                                     regional_observations[state].deltas
+  ├── final_registry.xlsx               1-sheet decision-tree view
+  └── registry.md                       human-readable canonical summary
+
+smoke/artifacts/pathome_seed/symptoms_seed.json    final assembled KB
+```
+
+Convert the unified registry to Excel for inspection:
+
+```bash
+python3 scripts/registry_to_excel.py \
+    artifacts/pathome_kb/Soybean/final_registry.json \
+    --out artifacts/pathome_kb/Soybean/final_registry.xlsx
+```
+
+Knobs (env vars on `smoke/run_phase0_full.sh`):
+
+```bash
+SMOKE_CROPS="Soybean,Tomato"   # default; any 2+ crops in the smoke CSV
+FULL_QUICK=1                    # cap sources/states for fast iteration (~15-25 min, ~$1-3)
+FULL_KEEP_CACHE=1               # reuse cached final_registry.json (skip re-running canonical)
+FULL_SKIP_SETUP=1               # CSV already filtered
+FULL_SKIP_CACHE=1               # image cache already topped up
+FULL_SKIP_KB=1                  # skip pathome_kb (no-op smoke)
+```
+
+Push the seed to GitHub:
+
+```bash
+git add -f smoke/artifacts/pathome_seed/symptoms_seed.json \
+           smoke/BugWood_Diseases_smoke_usable.csv \
+           artifacts/pathome_kb/Soybean/{discovery_results,final_registry}.json \
+           artifacts/pathome_kb/Tomato/{discovery_results,final_registry}.json
+git commit -m "Phase 0: regenerate two-crop seed"
+git push origin main
+```
+
+### Phases 1–5 — NOVA (~60–90 min for two crops on a single A100)
+
+```bash
 ssh tirtho@hpc-login.iastate.edu
-cd /work/mech-ai-scratch/tirtho/PlantSwarm && git pull origin main
+cd /work/mech-ai-scratch/tirtho/PlantSwarm
+git pull origin main
 sbatch smoke/submit_smoke.sh
 tail -f logs/pathome_smoke-*.out
 ```
 
-See [`smoke/README.md`](smoke/README.md) for what's downscaled, skip/resume knobs, and the expected outputs.
+A single A100 job runs Setup → Phase 1 → 2 → 3 → 4 → 5 sequentially. Final output drops at `results/pathome_compare/comparison.md`.
+
+See [`smoke/README.md`](smoke/README.md) for what's downscaled (per_class images, agent prompts, training epochs), skip/resume knobs, and expected outputs.
 
 ---
 
-## Quick start (full pipeline)
+## Going to production (484 classes)
+
+For the full run, swap the smoke wrappers for the per-phase SLURM submitters:
 
 ```bash
-# === LOCAL ===
-bash scripts/run_phase0_local.sh
-# 12-20 h full / ~30 min --quick. See Phase 0 section for cost + flags.
+# === LOCAL (Phase 0, ~16–24 h, ~$60–180) ===
+python -m pathome_kb \
+  --csv BugWood_Diseases_usable.csv \
+  --out artifacts/pathome_seed/symptoms_seed.json \
+  --regional
 
 git add -f artifacts/pathome_seed/symptoms_seed.json
 git add -f artifacts/pathome_kb/                    # optional audit trail
-git commit -m "phase 0 seed" && git push origin main
+git commit -m "Phase 0 seed (484 classes)"
+git push origin main
 
 # === NOVA ===
 ssh tirtho@hpc-login.iastate.edu
@@ -218,12 +292,14 @@ bash scripts/submit_pathome_all.sh
 ```
 
 Skip steps that are already done:
+
 ```bash
 PATHOME_SKIP="setup"     bash scripts/submit_pathome_all.sh   # CSV already filtered
 PATHOME_FROM_PHASE=4     bash scripts/submit_pathome_all.sh   # restart at training
 ```
 
 Monitor:
+
 ```bash
 squeue -u $USER
 tail -f logs/pathome_*-*.out
@@ -237,56 +313,21 @@ Final output drops at `results/pathome_compare/comparison.md`.
 
 ### Phase 0 — Build the seed PathomeDB knowledge base (LOCAL only)
 
-`scripts/run_phase0_local.sh` → `python -m pathome_kb`
+`smoke/run_phase0_full.sh` (two crops) or `python -m pathome_kb` (any subset)
 
 > ⚠ **Runs on your local machine, not on Nova.** Nova compute nodes block the OAuth login flow that `claude` headless needs.
-
-Three stages per crop:
-
-```
-discovery       claude -p WebSearch per disease (parallel)  →  candidate URLs
-                          │
-                          ▼
-extraction      fetch each URL  →  claude -p extracts disease records with
-                VERBATIM QUOTES from the page text (never invents content)
-                          │
-                          ▼
-reconciliation  merge per-source records into a canonical entry per disease.
-                Every field stored as {value, url, quote}, so each visual
-                fact in the KB is traceable to the exact sentence on the
-                exact source page that supports it.
-```
-
-The orchestrator groups the 484 classes by crop, runs the internet track once per crop (so each discovery search focuses on one crop's disease catalogue), and merges per-crop registries into a single `symptoms_seed.json`.
 
 | | |
 |---|---|
 | **Where it runs** | LOCAL machine |
 | **Compute** | CPU; outbound HTTPS for `api.anthropic.com` + per-source page fetches |
-| **Walltime** | Quick mode (3 sources/crop): ~30 min. Full run (197 crops × ~5–15 sources each): 12–20 h |
-| **Inputs** | `BugWood_Diseases_usable.csv`, authenticated `claude` CLI, `ANTHROPIC_API_KEY` |
-| **Outputs (local disk)** | `artifacts/pathome_kb/<Crop>/{discovery_results,raw_extractions,final_registry}.json` + `registry.md` + `internet.xlsx`; merged `artifacts/pathome_seed/symptoms_seed.json` |
-| **Handoff** | `git add -f artifacts/pathome_seed/symptoms_seed.json && git commit && git push` |
-| **Knobs** | `PATHOME_SEED_QUICK=1`, `PATHOME_SEED_LIMIT=N`, `PATHOME_SEED_ONLY_CROPS="Tomato,Soybean"`, `PATHOME_SEED_RESUME=discovery\|extraction\|reconciliation`, `PATHOME_SEED_NO_CACHE=1` |
-| **Resume** | Two levels. (a) per-crop: any crop with an existing `final_registry.json` is skipped on rerun (override with `PATHOME_SEED_NO_CACHE=1`). (b) per-stage within a crop: `--resume-from extraction` reuses `discovery_results.json` already on disk. |
-| **Cost** | ~$50–150 in Anthropic API spend for a full run; ~$5 for quick. |
+| **Walltime** | Smoke (2 crops): ~45 min full / ~15-25 min `FULL_QUICK=1`. Production (197 crops × ~5–15 sources each): 16–24 h |
+| **Inputs** | `BugWood_Diseases.csv` (or smoke CSV), authenticated `claude` CLI, optional `ANTHROPIC_API_KEY` |
+| **Outputs** | `artifacts/pathome_kb/<Crop>/{discovery_results,raw_extractions,final_registry}.json` + merged `symptoms_seed.json` |
+| **Handoff** | `git add -f symptoms_seed.json && git commit && git push` |
+| **Cost** | Smoke: ~$5–15. Production: ~$60–180 in Anthropic API spend. |
 
-```bash
-# Quick smoke (~30 min, ~$5) on Tomato + Soybean + Corn
-PATHOME_SEED_QUICK=1 PATHOME_SEED_ONLY_CROPS="Tomato,Soybean,Corn" \
-  bash scripts/run_phase0_local.sh
-
-# Full run (12-20 h, ~$50-150)
-bash scripts/run_phase0_local.sh
-
-# Resume only the reconciliation stage (assumes raw_extractions.json present)
-PATHOME_SEED_RESUME=reconciliation bash scripts/run_phase0_local.sh
-
-# Force every crop to re-run from scratch
-PATHOME_SEED_NO_CACHE=1 bash scripts/run_phase0_local.sh
-```
-
-The script prints exact `git add -f` / `commit` / `push` commands when finished — copy-paste them.
+See [`pathome_kb/README.md`](pathome_kb/README.md) for the full schema diagram, the deltas-only prompt, and a worked example (`Soybean :: Charcoal Rot` with Alabama field-view vs Kentucky close-up specimens).
 
 ### Setup — Filter Bugwood CSV (Nova)
 
@@ -312,16 +353,11 @@ PATHOME_THRESHOLD=15 sbatch scripts/submit_pathome_setup_filter.sh
 
 | | |
 |---|---|
-| **Purpose** | Layer the Claude seed JSON over the filtered CSV. Produces `SymptomLibrary` (visual + per-state + per-AEZ counts + reference IDs) and `ReferenceLibrary` (1,452 held-out images, lazily CLIP-indexed on first retrieval). |
+| **Purpose** | Layer the seed JSON over the filtered CSV. Produces `SymptomLibrary` (canonical + regional deltas + per-state + per-AEZ counts + reference IDs) and `ReferenceLibrary` (1,452 held-out images, lazily CLIP-indexed on first retrieval). |
 | **Compute** | 8 CPUs, 32 GB RAM, no GPU, network for first-time Bugwood image downloads |
 | **Walltime** | 6 h budget; ~30 min on first run, instant on subsequent (cache hit) |
 | **Inputs** | `configs/bugwood_pathome.yaml`, `BugWood_Diseases_usable.csv`, `artifacts/pathome_seed/symptoms_seed.json` |
 | **Outputs** | `artifacts/pathome_v1_seed/{symptoms.json, refs/, version.txt, build_summary.json}` |
-| **Knobs** | `PATHOME_CONFIG`, `PATHOME_SEED_FILE`, `PATHOME_OUT_DIR` |
-
-```bash
-sbatch scripts/submit_pathome_phase1_build.sh
-```
 
 ### Phase 2 — Generate PlantSwarm traces (Nova)
 
@@ -329,19 +365,12 @@ sbatch scripts/submit_pathome_phase1_build.sh
 
 | | |
 |---|---|
-| **Purpose** | Run the 5-agent swarm over Qwen2.5-VL-7B against the seeded PathomeDB. 3,388 trace seeds × 30 stochastic runs at T=0.9 = **101,640 traces**. |
+| **Purpose** | Run the 5-agent swarm over Qwen2.5-VL-7B against the seeded PathomeDB. ~3,388 trace seeds × 30 stochastic runs at T=0.9. |
 | **Compute** | 1× A100-80GB, 8 CPUs, 64 GB RAM; vLLM booted in-job |
 | **Walltime** | 72 h budget; typical ~36–50 h |
 | **Inputs** | `artifacts/pathome_v1_seed/`, `BugWood_Diseases_usable.csv`, Qwen weights (HF cache) |
-| **Outputs** | `results/bugwood_seed/traces/plantswarm_traces.jsonl` (one JSON per trace, fsynced) |
-| **Knobs** | `PATHOME_DB_DIR`, `PATHOME_OUT_DIR` |
-| **Resume** | Yes — already-persisted `image_id`s are skipped on resubmit. Walltime kill is recoverable. |
-
-```bash
-sbatch scripts/submit_pathome_phase2_traces.sh
-```
-
-If vLLM fails to boot, the loader falls back to `hf_direct` mode automatically (slower but memory-safe after the recent allocator fix).
+| **Outputs** | `results/bugwood_seed/traces/plantswarm_traces.jsonl` |
+| **Resume** | Yes — already-persisted `image_id`s are skipped on resubmit. |
 
 ### Phase 3 — Enhance DB from traces (Nova)
 
@@ -349,15 +378,10 @@ If vLLM fails to boot, the loader falls back to `hf_direct` mode automatically (
 
 | | |
 |---|---|
-| **Purpose** | Mine the traces into per-class `SwarmObservations` (n_traces, avg_path_length, backtrack_rate, high_confidence_rate, confusion_targets) attached to the matching `SymptomProfile`. Visual blocks left untouched — enhancement is strictly additive. |
+| **Purpose** | Mine traces into per-class `SwarmObservations` (n_traces, avg_path_length, backtrack_rate, high_confidence_rate, confusion_targets) attached to the matching `SymptomProfile`. Canonical and regional blocks left untouched — enhancement is strictly additive. |
 | **Compute** | 4 CPUs, 16 GB RAM, no GPU |
 | **Walltime** | 1 h budget; ~5 min in practice |
-| **Inputs** | `artifacts/pathome_v1_seed/`, `results/bugwood_seed/traces/plantswarm_traces.jsonl` |
 | **Outputs** | `artifacts/pathome_v1_enhanced/{symptoms.json, refs/, enhancement_summary.json}` |
-
-```bash
-sbatch scripts/submit_pathome_phase3_enhance.sh
-```
 
 ### Phase 4 — Train OBSERVE × 2 (Nova)
 
@@ -365,15 +389,10 @@ sbatch scripts/submit_pathome_phase3_enhance.sh
 
 | | |
 |---|---|
-| **Purpose** | Train OBSERVE twice on the same trace set, differing only in which PathomeDB the agents read from at training time. Each run does Phase A (Decision Transformer) + Phase B (GRPO). |
+| **Purpose** | Train OBSERVE twice on the same trace set, differing only in which PathomeDB the agents read from at training time. Each run does Decision Transformer + GRPO. |
 | **Compute** | 1× A100-80GB, 8 CPUs, 128 GB RAM |
 | **Walltime** | 24 h budget; ~10–14 h DT + ~6–8 h GRPO per checkpoint, sequential |
-| **Inputs** | `artifacts/pathome_v1_seed/`, `artifacts/pathome_v1_enhanced/`, traces from Phase 2, `configs/bugwood_pathome.yaml` |
-| **Outputs** | `observe/checkpoints/seed/observe_grpo_epoch_*.pt`, `observe/checkpoints/enhanced/observe_grpo_epoch_*.pt` |
-
-```bash
-sbatch scripts/submit_pathome_phase4_train.sh
-```
+| **Outputs** | `observe/checkpoints/{seed,enhanced}/observe_grpo_epoch_*.pt` |
 
 ### Phase 5 — Eval + before/after compare (Nova)
 
@@ -382,16 +401,11 @@ sbatch scripts/submit_pathome_phase4_train.sh
 | | |
 |---|---|
 | **Purpose** | Evaluate both checkpoints on full PV (with seen/unseen slice) and full PW; emit the headline before/after artefact via `compare_pathome_versions.py`. |
-| **Compute** | 1× A100-80GB, 8 CPUs, 64 GB RAM; one vLLM instance reused across all four evaluations |
+| **Compute** | 1× A100-80GB, 8 CPUs, 64 GB RAM |
 | **Walltime** | 8 h budget; typical ~6 h |
-| **Inputs** | both OBSERVE checkpoints, `configs/plantvillage_full_eval.yaml`, `configs/plantwild_full_eval.yaml`, traces from Phase 2 |
 | **Outputs** | `results/pathome_compare/{seed,enhanced}/{pv,pw}/pathome_eval.json`, `results/pathome_compare/comparison.{json,md,tex}` |
 
-```bash
-sbatch scripts/submit_pathome_phase5_eval.sh
-```
-
-The `comparison.tex` file emits LaTeX macros (`\PathomeDeltaTthreeF`, `\PathomeDeltaTthreeECE`, `\PathomeDeltaPathLen`, …) which the paper picks up via `\input{auto_pathome_metrics}` near the headline before/after table.
+The `comparison.tex` file emits LaTeX macros (`\PathomeDeltaTthreeF`, `\PathomeDeltaTthreeECE`, `\PathomeDeltaPathLen`, …) which the paper picks up via `\input{auto_pathome_metrics}`.
 
 ---
 
@@ -428,7 +442,23 @@ observe:
     beta_kl: 0.04
 ```
 
-The two eval configs (`plantvillage_full_eval.yaml`, `plantwild_full_eval.yaml`) override `data.*` and `output.results_dir` only.
+---
+
+## Consuming the KB downstream
+
+```python
+from pathome import PathomeDB
+
+db = PathomeDB.load("artifacts/pathome_v1_seed/")
+
+# Canonical-only context (no state)
+prompt = db.symptom_context("Soybean", "Charcoal Rot")
+
+# Canonical + this state's image-grounded deltas, ready to drop into a prompt
+prompt = db.symptom_context("Soybean", "Charcoal Rot", state="Alabama")
+```
+
+`SymptomProfile.context_for_state()` is the supported entry point; agents/scripts should not reach into the dataclass fields directly.
 
 ---
 
@@ -439,26 +469,21 @@ The two eval configs (`plantvillage_full_eval.yaml`, `plantwild_full_eval.yaml`)
 | Symptom | Fix |
 |---|---|
 | `claude CLI not on PATH` | `curl -fsSL https://claude.ai/install.sh \| bash` then `claude auth login` |
-| `ANTHROPIC_API_KEY not set` | `echo "ANTHROPIC_API_KEY=sk-ant-..." > .env` at repo root |
 | `claude -p timed out` | A specific source page is slow. Re-run; that source is now cached. |
-| `failed.jsonl` lists profiles | Re-run with `--retry-failed` once you've fixed the underlying issue (rate limit, quota, etc.) |
-
-### Phase 1 errors
-
-| Symptom | Fix |
-|---|---|
-| Bugwood download fails for some images | Ignored — Phase 1 emits records with `image=None` and a `<imgid>.failed` sidecar in `.bugwood_cache/`. Phase 2 will skip those traces. |
+| Regional pass returns empty deltas for a state | The cached image may be a thumbnail or wrong-disease photo. Inspect `smoke/.bugwood_cache/<id>.jpg`. |
+| Want to re-run regional only without redoing discovery/extraction | `python -m pathome_kb --regional-only --only-crops "Soybean,Tomato" --csv ...` |
 
 ### Phase 2 / 4 / 5 — vLLM fails to boot
 
 `logs/vllm-<JOB>.log` has the stderr. To force the HF-direct fallback (slower but memory-safe):
+
 ```bash
 PLANTSWARM_MODE=hf_direct sbatch scripts/submit_pathome_phase2_traces.sh
 ```
 
 ### CUDA OOM mid-run (HF direct only)
 
-The HFClient is patched to release reserved-but-unallocated GPU memory after every generation. If you still see OOM:
+The HFClient releases reserved-but-unallocated GPU memory after every generation. If you still see OOM:
 
 1. Confirm the SLURM script exports `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` (already in current scripts).
 2. Drop `model.max_new_tokens` from `512` → `256` in `configs/bugwood_pathome.yaml`.
@@ -469,7 +494,7 @@ The HFClient is patched to release reserved-but-unallocated GPU memory after eve
 
 Trace JSONL is appended with fsync after each trace. Already-persisted `image_id`s are skipped on resubmit; just `sbatch` again.
 
-### Layer-3 prior is degenerate
+### Geo prior is degenerate
 
 The coarse-fallback AEZ table maps the entire US footprint into 2 zones (TMP, STM). Set `PATHOME_AEZ_SHAPEFILE` to a real FAO GAEZ shapefile to recover ~17-zone resolution. State-level priors via `state_counts` work either way.
 
@@ -477,7 +502,7 @@ The coarse-fallback AEZ table maps the entire US footprint into 2 zones (TMP, ST
 
 ## Output directory map
 
-After a complete run:
+After a complete two-crop run:
 
 ```
 PlantSwarm/
@@ -488,30 +513,24 @@ PlantSwarm/
 │   ├── pathome_kb/<Crop>/                    (LOCAL, Phase 0 — per-crop audit)
 │   │   ├── discovery_results.json
 │   │   ├── raw_extractions.json
-│   │   ├── final_registry.json
-│   │   ├── registry.md
-│   │   └── internet.xlsx
-│   ├── pathome_seed/                         (LOCAL → push via git -f)
-│   │   └── symptoms_seed.json
+│   │   ├── final_registry.json              ← UNIFIED canonical + regional deltas
+│   │   ├── final_registry.xlsx              ← decision-tree view
+│   │   └── registry.md
 │   ├── pathome_v1_seed/                      (NOVA, Phase 1)
-│   │   ├── symptoms.json
-│   │   ├── refs/
-│   │   ├── version.txt
-│   │   └── build_summary.json
-│   └── pathome_v1_enhanced/                  (NOVA, Phase 3)
-│       ├── symptoms.json
-│       ├── refs/
-│       └── enhancement_summary.json
+│   ├── pathome_v1_enhanced/                  (NOVA, Phase 3)
+│   └── pathome_seed/symptoms_seed.json       (production; smoke uses smoke/artifacts/)
+│
+├── smoke/artifacts/pathome_seed/             (smoke seed — pushed via git -f)
+│   └── symptoms_seed.json
 │
 ├── results/                                   [gitignored]
-│   ├── bugwood_seed/
-│   │   └── traces/plantswarm_traces.jsonl    (NOVA, Phase 2)
+│   ├── bugwood_seed/traces/plantswarm_traces.jsonl    (NOVA, Phase 2)
 │   └── pathome_compare/
 │       ├── seed/{pv,pw}/pathome_eval.json    (NOVA, Phase 5)
 │       ├── enhanced/{pv,pw}/pathome_eval.json (NOVA, Phase 5)
-│       ├── comparison.json                    (NOVA, Phase 5)
-│       ├── comparison.md                      ← main output
-│       └── comparison.tex                     ← paper macros
+│       ├── comparison.json
+│       ├── comparison.md                     ← main output
+│       └── comparison.tex                    ← paper macros
 │
 ├── observe/checkpoints/                       [gitignored]
 │   ├── seed/observe_grpo_epoch_*.pt          (NOVA, Phase 4)
@@ -533,21 +552,14 @@ PlantSwarm/
    └──────────┘                └────────┘             └──────┘
 ```
 
-**Phase 0 push (Local → Nova):**
-```bash
-# After bash scripts/run_phase0_local.sh finishes:
-git add -f artifacts/pathome_seed/symptoms_seed.json
-git add -f artifacts/pathome_kb/                   # optional audit trail
-git commit -m "phase 0 seed"
-git push origin main
-```
+**Phase 0 push (Local → Nova)** is what `smoke/run_phase0_full.sh` prints at the end — copy-paste those `git add -f` / `commit` / `push` lines.
 
 **Results pull (Nova → Local):**
+
 ```bash
-# results/ and artifacts/pathome_v1_*/ stay gitignored. Pull via rsync:
+# Pull large artefacts via rsync (results/ is gitignored)
 rsync -avz nova-login:/work/mech-ai-scratch/tirtho/PlantSwarm/results/ ./results/
-rsync -avz nova-login:/work/mech-ai-scratch/tirtho/PlantSwarm/artifacts/pathome_v1_enhanced/ \
-           ./artifacts/pathome_v1_enhanced/
+
 # OR commit just the comparison artefacts:
 ssh nova-login "cd /work/.../PlantSwarm && \
   git add -f results/pathome_compare/comparison.{json,md,tex} && \
@@ -562,7 +574,7 @@ cat results/pathome_compare/comparison.md
 
 ```bash
 cd plantswarm/latex
-latexmk -pdf acl_latex.tex
+tectonic acl_latex.tex     # or: latexmk -pdf acl_latex.tex
 ```
 
 If you've run Phase 5, `\input{auto_pathome_metrics}` near the headline table picks up the `\PathomeDelta*` macros emitted by `compare_pathome_versions.py` and the table fills in automatically.
@@ -573,10 +585,10 @@ If you've run Phase 5, `\input{auto_pathome_metrics}` near the headline table pi
 
 - **US-only data.** The Bugwood IPMNet CSV is US-only at state granularity. International deployment requires a different export with finer GPS or a separate regional KB.
 - **2-zone AEZ fallback.** Coarse FAO AEZ table maps the US footprint into 2 zones; full ~17-zone resolution needs `PATHOME_AEZ_SHAPEFILE` pointing at a real GAEZ shapefile.
-- **Half of classes are single-state.** ~248 of 484 admitted classes appear in only one state, contributing no spatial-variance signal; the geo prior is informative on the multi-state subset only.
-- **No monthly priors.** The IPMNet CSV has no capture date; the AEZ-month grid + EPPO Pearson-r validation are dropped from the methodology (paper §6 reflects this).
-- **Phase 0 cost variance.** `claude -p` seed quality varies with disease prevalence in Claude's training data; rare or recently-described diseases may return empty visual fields.
-- **Phase 0 isn't on Nova.** The local→GitHub→Nova handoff means a fresh full Phase 0 commits ~few-MB seed file (and optionally ~50–100 MB of per-crop registry artefacts) to git history.
+- **Half of classes are single-state.** ~248 of 484 admitted classes appear in only one state; the geo prior is informative on the multi-state subset only.
+- **No monthly priors.** The IPMNet CSV has no capture date.
+- **Phase 0 cost variance.** `claude -p` quality varies with disease prevalence in Claude's training data; rare diseases may return empty canonical fields and few/no deltas.
+- **Phase 0 isn't on Nova.** The local→GitHub→Nova handoff means a fresh full Phase 0 commits a few-MB seed file (and optionally tens of MB of per-crop registry artefacts) to git history.
 
 ---
 
@@ -591,5 +603,3 @@ If you've run Phase 5, `\input{auto_pathome_metrics}` near the headline table pi
   year      = {2026}
 }
 ```
-
-Bugwood IPMNet images are publicly available under academic and extension-service terms — see [bugwood.org](https://www.bugwood.org/) for citation expectations on individual images.
