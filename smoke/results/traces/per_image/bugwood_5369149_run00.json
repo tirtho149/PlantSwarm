@@ -1,0 +1,65 @@
+{
+  "backtrack_count": 1,
+  "bugwood_meta": {
+    "aez_climate": "temperate_humid",
+    "aez_code": "TMP",
+    "crop_species": "Tomato",
+    "disease_name": "Septoria Leaf Spot",
+    "lat": 37.66814,
+    "lon": -84.670067,
+    "month": 0,
+    "src_path": "smoke/.bugwood_cache/5369149.jpg"
+  },
+  "early_terminated": true,
+  "ensemble_probs": {
+    "T1": {
+      "Blight": 0.005592057789519832,
+      "Canker": 0.0017138291767433247,
+      "Lesion": 0.21086753744133122,
+      "Mosaic": 0.7713214029144472,
+      "Powdery mildew": 0.0002886559315799423,
+      "Rot": 0.005446537859614585,
+      "Rust": 0.0003592381110771923,
+      "Wilt": 0.004410740775686876
+    },
+    "T2": {
+      "Bacterial": 0.595395004265142,
+      "Fungal": 0.143365445456331,
+      "Nutrient deficiency": 0.051923523441814314,
+      "Pest damage": 0.14619307550018013,
+      "Viral": 0.06312295133653235
+    },
+    "T3": {},
+    "T4": {
+      "Early": 0.051906790110764066,
+      "Healthy": 0.007625370124739314,
+      "Moderate": 0.14109728433172763,
+      "Severe": 0.7993705554327689
+    },
+    "T5": {
+      "Soybean": 0.0003181293315285325,
+      "Tomato": 0.9996818706684714
+    }
+  },
+  "final_predictions": {
+    "T1": "irregular, uneven appearance and possible presence of inflammation",
+    "T2": "inflammatory",
+    "T3": "likely indication of an inflammatory condition",
+    "T4": "unspecified",
+    "T5": "not applicable"
+  },
+  "image_id": "bugwood::5369149::run00",
+  "loop_rate": 0.2857142857142857,
+  "path": [
+    "MorphologyAgent",
+    "SymptomAgent",
+    "MorphologyAgent",
+    "SymptomAgent",
+    "PathogenAgent",
+    "SeverityAgent",
+    "DiagnosisAgent"
+  ],
+  "path_length": 7,
+  "routing_signal": "hf_direct",
+  "total_tokens": 794
+}

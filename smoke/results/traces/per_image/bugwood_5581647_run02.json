@@ -1,0 +1,65 @@
+{
+  "backtrack_count": 1,
+  "bugwood_meta": {
+    "aez_climate": "subtropical_moist",
+    "aez_code": "STM",
+    "crop_species": "Soybean",
+    "disease_name": "Bean Pod Mottle Virus",
+    "lat": 32.806671,
+    "lon": -86.79113,
+    "month": 0,
+    "src_path": "smoke/.bugwood_cache/5581647.jpg"
+  },
+  "early_terminated": true,
+  "ensemble_probs": {
+    "T1": {
+      "Blight": 0.0047713771843541095,
+      "Canker": 0.0019053509762752237,
+      "Lesion": 0.3895447428035897,
+      "Mosaic": 0.5939848007802326,
+      "Powdery mildew": 0.00022579082331089084,
+      "Rot": 0.004846515441810479,
+      "Rust": 0.00030861946407019443,
+      "Wilt": 0.0044128025263567745
+    },
+    "T2": {
+      "Bacterial": 0.5858706449341572,
+      "Fungal": 0.14217851241758422,
+      "Nutrient deficiency": 0.05396487639327276,
+      "Pest damage": 0.1513482386457025,
+      "Viral": 0.06663772760928341
+    },
+    "T3": {},
+    "T4": {
+      "Early": 0.04784042969681374,
+      "Healthy": 0.006082228093287936,
+      "Moderate": 0.11123233162268223,
+      "Severe": 0.834845010587216
+    },
+    "T5": {
+      "Soybean": 0.0015608892178478949,
+      "Tomato": 0.9984391107821522
+    }
+  },
+  "final_predictions": {
+    "T1": "irregular, uneven appearance and possible presence of inflammation",
+    "T2": "inflammatory",
+    "T3": "likely indication of an inflammatory condition",
+    "T4": "unspecified",
+    "T5": "not applicable"
+  },
+  "image_id": "bugwood::5581647::run02",
+  "loop_rate": 0.2857142857142857,
+  "path": [
+    "MorphologyAgent",
+    "SymptomAgent",
+    "MorphologyAgent",
+    "SymptomAgent",
+    "PathogenAgent",
+    "SeverityAgent",
+    "DiagnosisAgent"
+  ],
+  "path_length": 7,
+  "routing_signal": "hf_direct",
+  "total_tokens": 794
+}

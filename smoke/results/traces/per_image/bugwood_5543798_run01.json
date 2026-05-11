@@ -1,0 +1,65 @@
+{
+  "backtrack_count": 1,
+  "bugwood_meta": {
+    "aez_climate": "temperate_humid",
+    "aez_code": "TMP",
+    "crop_species": "Soybean",
+    "disease_name": "Root And Stem Rot",
+    "lat": 37.66814,
+    "lon": -84.670067,
+    "month": 0,
+    "src_path": "smoke/.bugwood_cache/5543798.jpg"
+  },
+  "early_terminated": true,
+  "ensemble_probs": {
+    "T1": {
+      "Blight": 0.003604095927066377,
+      "Canker": 0.0011519382474869954,
+      "Lesion": 0.21443538471450238,
+      "Mosaic": 0.7722114845486671,
+      "Powdery mildew": 0.0001499255346563671,
+      "Rot": 0.0045382419720086525,
+      "Rust": 0.00020492390911908947,
+      "Wilt": 0.0037040051464930575
+    },
+    "T2": {
+      "Bacterial": 0.5925430639795727,
+      "Fungal": 0.1518807125962885,
+      "Nutrient deficiency": 0.05764741621229121,
+      "Pest damage": 0.1393735762882697,
+      "Viral": 0.05855523092357777
+    },
+    "T3": {},
+    "T4": {
+      "Early": 0.046391902392555466,
+      "Healthy": 0.006181122730680489,
+      "Moderate": 0.11216123413850757,
+      "Severe": 0.8352657407382565
+    },
+    "T5": {
+      "Soybean": 0.0012893282790035973,
+      "Tomato": 0.9987106717209965
+    }
+  },
+  "final_predictions": {
+    "T1": "irregular, uneven appearance and possible presence of inflammation",
+    "T2": "inflammatory",
+    "T3": "likely indication of an inflammatory condition",
+    "T4": "unspecified",
+    "T5": "not applicable"
+  },
+  "image_id": "bugwood::5543798::run01",
+  "loop_rate": 0.2857142857142857,
+  "path": [
+    "MorphologyAgent",
+    "SymptomAgent",
+    "MorphologyAgent",
+    "SymptomAgent",
+    "PathogenAgent",
+    "SeverityAgent",
+    "DiagnosisAgent"
+  ],
+  "path_length": 7,
+  "routing_signal": "hf_direct",
+  "total_tokens": 794
+}

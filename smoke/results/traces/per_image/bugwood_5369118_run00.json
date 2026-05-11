@@ -1,0 +1,65 @@
+{
+  "backtrack_count": 1,
+  "bugwood_meta": {
+    "aez_climate": "temperate_humid",
+    "aez_code": "TMP",
+    "crop_species": "Tomato",
+    "disease_name": "Rhizopus Soft Rots",
+    "lat": 37.66814,
+    "lon": -84.670067,
+    "month": 0,
+    "src_path": "smoke/.bugwood_cache/5369118.jpg"
+  },
+  "early_terminated": true,
+  "ensemble_probs": {
+    "T1": {
+      "Blight": 0.002805313444466539,
+      "Canker": 0.001180904774405381,
+      "Lesion": 0.09308084370006503,
+      "Mosaic": 0.8970336745329858,
+      "Powdery mildew": 0.00011244606468053869,
+      "Rot": 0.002917064427772726,
+      "Rust": 0.00012942462710558773,
+      "Wilt": 0.0027403284285182163
+    },
+    "T2": {
+      "Bacterial": 0.6126795989559198,
+      "Fungal": 0.14132260380707296,
+      "Nutrient deficiency": 0.05709949355726155,
+      "Pest damage": 0.12569492579786493,
+      "Viral": 0.06320337788188075
+    },
+    "T3": {},
+    "T4": {
+      "Early": 0.06195342772106299,
+      "Healthy": 0.008616911165493592,
+      "Moderate": 0.17172840480634521,
+      "Severe": 0.7577012563070983
+    },
+    "T5": {
+      "Soybean": 0.00106185053822541,
+      "Tomato": 0.9989381494617746
+    }
+  },
+  "final_predictions": {
+    "T1": "irregular, uneven appearance and possible presence of inflammation",
+    "T2": "inflammatory",
+    "T3": "likely indication of an inflammatory condition",
+    "T4": "unspecified",
+    "T5": "not applicable"
+  },
+  "image_id": "bugwood::5369118::run00",
+  "loop_rate": 0.2857142857142857,
+  "path": [
+    "MorphologyAgent",
+    "SymptomAgent",
+    "MorphologyAgent",
+    "SymptomAgent",
+    "PathogenAgent",
+    "SeverityAgent",
+    "DiagnosisAgent"
+  ],
+  "path_length": 7,
+  "routing_signal": "hf_direct",
+  "total_tokens": 794
+}

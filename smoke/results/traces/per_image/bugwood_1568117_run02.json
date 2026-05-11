@@ -1,0 +1,65 @@
+{
+  "backtrack_count": 1,
+  "bugwood_meta": {
+    "aez_climate": "subtropical_moist",
+    "aez_code": "STM",
+    "crop_species": "Tomato",
+    "disease_name": "Southern Blight",
+    "lat": 32.806671,
+    "lon": -86.79113,
+    "month": 0,
+    "src_path": "smoke/.bugwood_cache/1568117.jpg"
+  },
+  "early_terminated": true,
+  "ensemble_probs": {
+    "T1": {
+      "Blight": 0.004846841393365002,
+      "Canker": 0.002163412007928804,
+      "Lesion": 0.1307450323452733,
+      "Mosaic": 0.8525647068052371,
+      "Powdery mildew": 0.0001507133046903632,
+      "Rot": 0.005199901763051497,
+      "Rust": 0.00031906006853325,
+      "Wilt": 0.004010332311920762
+    },
+    "T2": {
+      "Bacterial": 0.6610353387408682,
+      "Fungal": 0.13721398971762658,
+      "Nutrient deficiency": 0.04524837129264895,
+      "Pest damage": 0.10276852981666118,
+      "Viral": 0.053733770432195016
+    },
+    "T3": {},
+    "T4": {
+      "Early": 0.05401003384930152,
+      "Healthy": 0.0072525805344847045,
+      "Moderate": 0.11344944751137291,
+      "Severe": 0.8252879381048409
+    },
+    "T5": {
+      "Soybean": 0.00020027376671813928,
+      "Tomato": 0.9997997262332818
+    }
+  },
+  "final_predictions": {
+    "T1": "irregular, uneven appearance and possible presence of inflammation",
+    "T2": "inflammatory",
+    "T3": "likely indication of an inflammatory condition",
+    "T4": "unspecified",
+    "T5": "not applicable"
+  },
+  "image_id": "bugwood::1568117::run02",
+  "loop_rate": 0.2857142857142857,
+  "path": [
+    "MorphologyAgent",
+    "SymptomAgent",
+    "MorphologyAgent",
+    "SymptomAgent",
+    "PathogenAgent",
+    "SeverityAgent",
+    "DiagnosisAgent"
+  ],
+  "path_length": 7,
+  "routing_signal": "hf_direct",
+  "total_tokens": 794
+}

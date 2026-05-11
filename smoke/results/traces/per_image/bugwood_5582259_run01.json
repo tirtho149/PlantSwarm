@@ -1,0 +1,65 @@
+{
+  "backtrack_count": 1,
+  "bugwood_meta": {
+    "aez_climate": "subtropical_moist",
+    "aez_code": "STM",
+    "crop_species": "Soybean",
+    "disease_name": "Frogeye Leaf Spot",
+    "lat": 32.806671,
+    "lon": -86.79113,
+    "month": 0,
+    "src_path": "smoke/.bugwood_cache/5582259.jpg"
+  },
+  "early_terminated": true,
+  "ensemble_probs": {
+    "T1": {
+      "Blight": 0.002889073334121785,
+      "Canker": 0.0012586040222097759,
+      "Lesion": 0.266526036797566,
+      "Mosaic": 0.7244928826380305,
+      "Powdery mildew": 8.269029281693023e-05,
+      "Rot": 0.0023721394047595914,
+      "Rust": 0.00012608763951433514,
+      "Wilt": 0.002252485870981463
+    },
+    "T2": {
+      "Bacterial": 0.572769071446776,
+      "Fungal": 0.15536778594751768,
+      "Nutrient deficiency": 0.06036941598350926,
+      "Pest damage": 0.1414639789298901,
+      "Viral": 0.070029747692307
+    },
+    "T3": {},
+    "T4": {
+      "Early": 0.05088733436857163,
+      "Healthy": 0.007652885826824683,
+      "Moderate": 0.1201798125269326,
+      "Severe": 0.821279967277671
+    },
+    "T5": {
+      "Soybean": 0.00131472456761498,
+      "Tomato": 0.9986852754323851
+    }
+  },
+  "final_predictions": {
+    "T1": "irregular, uneven appearance and possible presence of inflammation",
+    "T2": "inflammatory",
+    "T3": "likely indication of an inflammatory condition",
+    "T4": "unspecified",
+    "T5": "not applicable"
+  },
+  "image_id": "bugwood::5582259::run01",
+  "loop_rate": 0.2857142857142857,
+  "path": [
+    "MorphologyAgent",
+    "SymptomAgent",
+    "MorphologyAgent",
+    "SymptomAgent",
+    "PathogenAgent",
+    "SeverityAgent",
+    "DiagnosisAgent"
+  ],
+  "path_length": 7,
+  "routing_signal": "hf_direct",
+  "total_tokens": 794
+}

@@ -1,0 +1,65 @@
+{
+  "backtrack_count": 1,
+  "bugwood_meta": {
+    "aez_climate": "subtropical_moist",
+    "aez_code": "STM",
+    "crop_species": "Tomato",
+    "disease_name": "Tomato Leaf Mould",
+    "lat": 32.806671,
+    "lon": -86.79113,
+    "month": 0,
+    "src_path": "smoke/.bugwood_cache/1568017.jpg"
+  },
+  "early_terminated": true,
+  "ensemble_probs": {
+    "T1": {
+      "Blight": 0.002065443329394421,
+      "Canker": 0.0009255293042905724,
+      "Lesion": 0.3604864126520157,
+      "Mosaic": 0.632673357295832,
+      "Powdery mildew": 8.182514109292716e-05,
+      "Rot": 0.001963176138930293,
+      "Rust": 0.00014138116553705183,
+      "Wilt": 0.00166287497290695
+    },
+    "T2": {
+      "Bacterial": 0.5880807172746289,
+      "Fungal": 0.15191916767056868,
+      "Nutrient deficiency": 0.05632627304024905,
+      "Pest damage": 0.13302486794235982,
+      "Viral": 0.0706489740721935
+    },
+    "T3": {},
+    "T4": {
+      "Early": 0.06036440806030738,
+      "Healthy": 0.010489761232691448,
+      "Moderate": 0.199479636956709,
+      "Severe": 0.7296661937502923
+    },
+    "T5": {
+      "Soybean": 0.00021909604337771768,
+      "Tomato": 0.9997809039566223
+    }
+  },
+  "final_predictions": {
+    "T1": "irregular, uneven appearance and possible presence of inflammation",
+    "T2": "inflammatory",
+    "T3": "likely indication of an inflammatory condition",
+    "T4": "unspecified",
+    "T5": "not applicable"
+  },
+  "image_id": "bugwood::1568017::run02",
+  "loop_rate": 0.2857142857142857,
+  "path": [
+    "MorphologyAgent",
+    "SymptomAgent",
+    "MorphologyAgent",
+    "SymptomAgent",
+    "PathogenAgent",
+    "SeverityAgent",
+    "DiagnosisAgent"
+  ],
+  "path_length": 7,
+  "routing_signal": "hf_direct",
+  "total_tokens": 794
+}

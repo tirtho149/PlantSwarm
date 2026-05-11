@@ -1,0 +1,65 @@
+{
+  "backtrack_count": 1,
+  "bugwood_meta": {
+    "aez_climate": "temperate_humid",
+    "aez_code": "TMP",
+    "crop_species": "Soybean",
+    "disease_name": "Downy Mildew",
+    "lat": 37.66814,
+    "lon": -84.670067,
+    "month": 0,
+    "src_path": "smoke/.bugwood_cache/5368995.jpg"
+  },
+  "early_terminated": true,
+  "ensemble_probs": {
+    "T1": {
+      "Blight": 0.003200904431019802,
+      "Canker": 0.0011581591929967756,
+      "Lesion": 0.2600553107554428,
+      "Mosaic": 0.7293431554714641,
+      "Powdery mildew": 0.0001249638656919526,
+      "Rot": 0.003051343062532402,
+      "Rust": 0.00019969168878398232,
+      "Wilt": 0.002866471532068215
+    },
+    "T2": {
+      "Bacterial": 0.5930119438178121,
+      "Fungal": 0.13309643160212367,
+      "Nutrient deficiency": 0.0614139135874234,
+      "Pest damage": 0.13839839068816456,
+      "Viral": 0.0740793203044763
+    },
+    "T3": {},
+    "T4": {
+      "Early": 0.057254371709857,
+      "Healthy": 0.00884910656895361,
+      "Moderate": 0.1618332527727033,
+      "Severe": 0.7720632689484862
+    },
+    "T5": {
+      "Soybean": 0.0010162440410680167,
+      "Tomato": 0.9989837559589321
+    }
+  },
+  "final_predictions": {
+    "T1": "irregular, uneven appearance and possible presence of inflammation",
+    "T2": "inflammatory",
+    "T3": "likely indication of an inflammatory condition",
+    "T4": "unspecified",
+    "T5": "not applicable"
+  },
+  "image_id": "bugwood::5368995::run01",
+  "loop_rate": 0.2857142857142857,
+  "path": [
+    "MorphologyAgent",
+    "SymptomAgent",
+    "MorphologyAgent",
+    "SymptomAgent",
+    "PathogenAgent",
+    "SeverityAgent",
+    "DiagnosisAgent"
+  ],
+  "path_length": 7,
+  "routing_signal": "hf_direct",
+  "total_tokens": 794
+}

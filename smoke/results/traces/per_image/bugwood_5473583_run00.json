@@ -1,0 +1,65 @@
+{
+  "backtrack_count": 1,
+  "bugwood_meta": {
+    "aez_climate": "temperate_humid",
+    "aez_code": "TMP",
+    "crop_species": "Soybean",
+    "disease_name": "Sclerotinia Timber Rot",
+    "lat": 44.299782,
+    "lon": -99.438828,
+    "month": 0,
+    "src_path": "smoke/.bugwood_cache/5473583.jpg"
+  },
+  "early_terminated": true,
+  "ensemble_probs": {
+    "T1": {
+      "Blight": 0.0033713998798912165,
+      "Canker": 0.0011123126695834144,
+      "Lesion": 0.2256401184873195,
+      "Mosaic": 0.7633306816004598,
+      "Powdery mildew": 7.80966071070459e-05,
+      "Rot": 0.002300217845738344,
+      "Rust": 0.00014590367051691108,
+      "Wilt": 0.004021269239383618
+    },
+    "T2": {
+      "Bacterial": 0.6312575030227011,
+      "Fungal": 0.1414038691858045,
+      "Nutrient deficiency": 0.05161475682052296,
+      "Pest damage": 0.1163156500285987,
+      "Viral": 0.059408220942372705
+    },
+    "T3": {},
+    "T4": {
+      "Early": 0.05796996330921321,
+      "Healthy": 0.008062863387502048,
+      "Moderate": 0.17925892202234878,
+      "Severe": 0.754708251280936
+    },
+    "T5": {
+      "Soybean": 0.0012619578941097935,
+      "Tomato": 0.9987380421058902
+    }
+  },
+  "final_predictions": {
+    "T1": "irregular, uneven appearance and possible presence of inflammation",
+    "T2": "inflammatory",
+    "T3": "likely indication of an inflammatory condition",
+    "T4": "unspecified",
+    "T5": "not applicable"
+  },
+  "image_id": "bugwood::5473583::run00",
+  "loop_rate": 0.2857142857142857,
+  "path": [
+    "MorphologyAgent",
+    "SymptomAgent",
+    "MorphologyAgent",
+    "SymptomAgent",
+    "PathogenAgent",
+    "SeverityAgent",
+    "DiagnosisAgent"
+  ],
+  "path_length": 7,
+  "routing_signal": "hf_direct",
+  "total_tokens": 794
+}

@@ -1,0 +1,65 @@
+{
+  "backtrack_count": 1,
+  "bugwood_meta": {
+    "aez_climate": "temperate_humid",
+    "aez_code": "TMP",
+    "crop_species": "Tomato",
+    "disease_name": "Gray Mold",
+    "lat": 37.66814,
+    "lon": -84.670067,
+    "month": 0,
+    "src_path": "smoke/.bugwood_cache/5368610.jpg"
+  },
+  "early_terminated": true,
+  "ensemble_probs": {
+    "T1": {
+      "Blight": 0.003134024613938043,
+      "Canker": 0.0013798923622314844,
+      "Lesion": 0.06101184329737167,
+      "Mosaic": 0.9250224409865092,
+      "Powdery mildew": 0.00023423462330580722,
+      "Rot": 0.004839872174943273,
+      "Rust": 0.0002781604976360926,
+      "Wilt": 0.004099531444064511
+    },
+    "T2": {
+      "Bacterial": 0.6237312231713724,
+      "Fungal": 0.15525897722858722,
+      "Nutrient deficiency": 0.051399363724337045,
+      "Pest damage": 0.11403447255085099,
+      "Viral": 0.05557596332485238
+    },
+    "T3": {},
+    "T4": {
+      "Early": 0.05138802550520955,
+      "Healthy": 0.0076680429663169335,
+      "Moderate": 0.1402338559232265,
+      "Severe": 0.8007100756052471
+    },
+    "T5": {
+      "Soybean": 0.00043648144083274293,
+      "Tomato": 0.9995635185591673
+    }
+  },
+  "final_predictions": {
+    "T1": "irregular, uneven appearance and possible presence of inflammation",
+    "T2": "inflammatory",
+    "T3": "likely indication of an inflammatory condition",
+    "T4": "unspecified",
+    "T5": "not applicable"
+  },
+  "image_id": "bugwood::5368610::run01",
+  "loop_rate": 0.2857142857142857,
+  "path": [
+    "MorphologyAgent",
+    "SymptomAgent",
+    "MorphologyAgent",
+    "SymptomAgent",
+    "PathogenAgent",
+    "SeverityAgent",
+    "DiagnosisAgent"
+  ],
+  "path_length": 7,
+  "routing_signal": "hf_direct",
+  "total_tokens": 794
+}
