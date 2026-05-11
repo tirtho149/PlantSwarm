@@ -1520,4 +1520,110 @@ P7 & Layer~3 vs EPPO Pearson $r$ & ${\geq}0.70$ \\
 \label{tab:predictions}
 \end{table}
 
+\section{Smoke Pilot: Tomato + Soybean (2026-05-11)}
+\label{app:smoke}
+
+The numbers reported in this draft are from a
+\emph{smoke pilot} of the full pipeline rather than the
+production run. The smoke pilot is intended to validate every
+code path with minimal compute before we commit to the
+full Phase~0 budget (${\approx}\$50{-}150$ in Anthropic API
+quota) and the ${\approx}60$~h of A100 time for Phases~2 and~4.
+The configuration restricts Bugwood to two crops
+(\textit{Tomato} and \textit{Soybean}) and downscales every
+budget knob; everything else --- the canonical/regional KB
+schema (§\ref{sec:pathomedb}), the routing trace format
+(§\ref{sec:plantswarm}), the OBSERVE training objective
+(§\ref{sec:observe}), and the eval harness --- is run
+unmodified.
+
+\paragraph{Scope.} 2 crops $\times$ 25 (crop, disease) classes
+after threshold ${\geq}15$ filter: 14 Tomato, 11 Soybean.
+
+\paragraph{Image-disjoint train / val / test splits.}
+\begin{table}[H]\centering\small
+\begin{tabular}{l l r}
+\toprule
+\textbf{Split} & \textbf{Source} & \textbf{Images} \\
+\midrule
+Train (Bugwood)    & \texttt{split="trace"} & 75 \\
+Val   (Bugwood)    & \texttt{split="val"}   & 25 \\
+Test  (PlantVillage) & \texttt{split="test"} & 200 \\
+Test  (PlantWild)  & \texttt{split="test"}   & 200 \\
+\bottomrule
+\end{tabular}
+\caption{Smoke-pilot splits. Train and val are sliced
+deterministically by \texttt{Image Number} ascending after
+per-class dedup; the loader's slice ($\texttt{[:3]}$ vs
+$\texttt{[3:4]}$) yields image-disjoint sets by construction,
+audited at load via
+$\mathrm{set}(\textsc{train}) \cap \mathrm{set}(\textsc{val}) = \emptyset$.
+Test comes from separate datasets whose image-id schemes
+cannot collide with Bugwood's \texttt{bugwood::N}.}
+\label{tab:smoke-splits}
+\end{table}
+
+The previous formulation re-used the second slice as the
+PathomeDB Layer-5 CLIP exemplar pool, which leaked held-out
+images into Phase~2 trace-time retrieval. The smoke pipeline
+disables Layer-5 retrieval entirely
+(\texttt{reference\_records=[]}) so the val split never
+shows up as a retrieval hit at any stage.
+
+\paragraph{Downscaled budgets vs production.}
+\begin{table}[H]\centering\small
+\begin{tabular}{l r r}
+\toprule
+\textbf{Knob} & \textbf{Production} & \textbf{Smoke} \\
+\midrule
+Classes & 484 & 25 \\
+\texttt{per\_class} / \texttt{trace\_split} & 10 / 7 & 4 / 3 \\
+\texttt{runs\_per\_image} & 30 & 3 \\
+Total traces & 5{,}460 & 225 \\
+\texttt{Tmax} & 15 & 8 \\
+DT epochs & 50 & 3 \\
+GRPO epochs & 10 & 1 \\
+LoRA rank & 16 & 8 \\
+\pv\ / \pw\ eval & 54{,}306 / 18{,}000 & 200 / 200 \\
+\texttt{bootstrap\_n} & 1{,}000 & 100 \\
+\bottomrule
+\end{tabular}
+\caption{Smoke knobs (\texttt{smoke/bugwood\_pathome\_smoke.yaml}).}
+\label{tab:smoke-budgets}
+\end{table}
+
+\paragraph{Phase~4 split is per source-image.} The 80/10/10
+partition of trace records is grouped by source
+\texttt{image\_id} (stripping the \texttt{::run<NN>} suffix)
+before splitting, so all three runs of a single Bugwood image
+stay in the same fold. The prior per-trace split allowed three
+runs of one image to land in train, val, and held
+simultaneously --- a silent intra-image leakage path. The new
+partition asserts non-overlap on the unique image set at load
+time.
+
+\paragraph{Runtime and cost.} Phase~0 (Claude-headless,
+canonical KB + per-state visual deltas) runs locally,
+${\approx}45{-}90$~min for ${\approx}\$5{-}15$ in API quota.
+Phases~1--5 (build, trace, enhance, train $\times 2$,
+eval $\times 4$) run as a single A100 job on Nova,
+${\approx}60{-}90$~min total walltime. The seed file
+(\texttt{smoke/artifacts/pathome\_seed/symptoms\_seed.json},
+25 \texttt{SymptomProfile}s with canonical summaries,
+treatments, and per-state deltas) is the only Phase~0 output
+that has to cross the LOCAL${\to}$NOVA boundary; everything
+else is reproducible on Nova from the committed code.
+
+\paragraph{What this pilot validates.} The smoke run
+exercises every code path that the production run will hit
+--- the SAGE port to \texttt{pathome\_kb}, the
+canonical+regional schema round-trip, the trace JSONL writer
+with its per-image atomic JSON mirror, the per-image OBSERVE
+split, and the eval harness --- on $\sim 1/19$ of the
+images and $\sim 1/24$ of the trace volume. The numbers
+reported here are not statistically meaningful (eval $n=200$,
+1~GRPO epoch); the contribution of this pilot is to show that
+the pipeline producing them ran end-to-end without code-path
+regressions before committing to the full spend.
+
 \end{document}
