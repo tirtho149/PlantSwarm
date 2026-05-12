@@ -9,6 +9,11 @@
 \usepackage{courier}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
+% Auto-generated figures live in ../../results/figures/ at the repo root;
+% LaTeX is compiled from plantswarm/latex/. The \graphicspath below lets
+% the snippets emitted by scripts/viz/* reference figures/<name>.png
+% without knowing the build location.
+\graphicspath{{../../results/}{./}{figures/}}
 \usepackage{booktabs,multirow,array}
 \usepackage{xcolor}
 \usepackage[font=small,labelfont=bf,skip=4pt]{caption}
@@ -820,6 +825,53 @@ text being expert-grade on every profile; it is
 the input to the trace-driven enhancement pass
 (\S\ref{sec:swarmobs}), not the endpoint.
 
+\subsection{Phase~0R: web-grounded delta verification}
+\label{sec:phase0r-verifier}
+
+The Phase~0R Qwen swarm produces $N$ stochastic routed
+traces per (crop, disease, state, image) tuple and a
+$K$-of-$N$ Jaccard agreement filter clusters their final
+deltas into candidate observations. Multi-run agreement
+from a single base model is correlated, not orthogonal,
+evidence --- $N$ agreeing samples can still be $N$
+correlated hallucinations. We therefore treat $K$-of-$N$
+as a \emph{proposal-confidence prior}, not a truth
+criterion, and follow it with an evidence-grounded
+\textbf{verifier}.
+
+The verifier
+(\texttt{pathome\_kb/verifier.py}) takes the agreement
+survivors, the canonical KB block, and any existing
+regional deltas for the same state, and asks
+\texttt{claude\ -p} with the WebSearch tool to retrieve
+extension-service / APS / CABI / peer-reviewed sources
+for evidence and judge each candidate. Each candidate
+receives a verification status:
+\textit{verified} (high-quality citation found),
+\textit{weakly\_supported} (partial or indirect),
+\textit{provisional} (no evidence but plausible),
+\textit{novel\_plausible} (no evidence but coherent
+with canonical),
+\textit{contradictory} (external evidence contradicts),
+or \textit{duplicate\_existing} (restates already-stored
+delta). Verified and provisional candidates are
+merged into the KB with their \texttt{web\_support}
+citations attached; contradictory ones are dropped with
+audit trail; duplicates bump the existing entry's
+\texttt{swarm\_support} counter and may upgrade its
+verification status if the new evidence is stronger.
+The conservative merge is idempotent on shape:
+re-running with the same candidates against the same
+existing list adds no entries, only bumps support.
+
+This recasts the system as a small scientific-discovery
+loop: the Qwen swarm is a high-recall \textbf{hypothesis
+generator}, Claude+WebSearch is a retrieval-grounded
+\textbf{evidence reconciler}, and the regional KB
+accumulates as an evolving graph of evidence with
+per-delta provenance (citations, swarm-support count,
+verification status, reasoning).
+
 \subsection{Build: layering the CSV onto the seed}
 
 \texttt{scripts/build\_pathome.py} loads the
@@ -1010,6 +1062,17 @@ $b_t{=}1$ and injects the targeted
 re-observation instruction from $\mathcal{G}_t$.
 
 \subsection{Training}
+
+\textbf{Training data.}
+\observe trains on the routed-swarm trace JSONL written by
+Phase~0R when \texttt{PATHOME\_TRACE\_DIR} is set
+(\texttt{plantswarm.delta\_pipeline.\_TraceWriter}). One
+record is one $(\text{tuple},\,\text{run})$: the path,
+per-agent deltas, $\kappa$ sequence, decision log, backtrack
+count, and the existing-KB context the agents saw at trace
+start. The supervision is delta-mode --- the swarm's
+observed transition serves as the target action --- rather
+than the original paper's $T_1{-}T_5$ classification target.
 
 \textbf{Label generation from traces.}
 $a^\text{next*}_t$: actual next agent.
@@ -1744,5 +1807,45 @@ reported here are not statistically meaningful (eval $n=200$,
 1~GRPO epoch); the contribution of this pilot is to show that
 the pipeline producing them ran end-to-end without code-path
 regressions before committing to the full spend.
+
+
+% ============================================================
+% Auto-generated artefacts. Filled in by:
+%   scripts/viz/kb_stats.py        -> auto_kb_stats.tex
+%   scripts/viz/observe_curves.py  -> auto_observe_curves.tex
+%   scripts/viz/observe_eval.py    -> auto_observe_eval.tex
+%   scripts/viz/trace_stats.py     -> auto_trace_stats.tex
+% The viz scripts also emit PNGs under results/figures/, which the
+% LaTeX \graphicspath above resolves automatically.
+% Run `bash scripts/viz_all.sh` after the pipeline finishes to refresh.
+% ============================================================
+
+\section{Auto-generated Implementation Results}
+\label{app:auto-results}
+
+The figures and tables below are regenerated from each
+end-to-end run by \texttt{bash scripts/viz\_all.sh}; the
+LaTeX snippets land at \texttt{plantswarm/latex/auto\_*.tex}
+and the PNGs at \texttt{results/figures/}.
+
+\subsection{PathomeDB seed summary}
+\IfFileExists{auto_kb_stats.tex}{\input{auto_kb_stats}}{%
+  \emph{(KB stats not yet generated; run
+  \texttt{bash scripts/viz\_kb.sh}.)}}
+
+\subsection{Phase 0R routed-swarm trace stats}
+\IfFileExists{auto_trace_stats.tex}{\input{auto_trace_stats}}{%
+  \emph{(Trace stats not yet generated; run
+  \texttt{bash scripts/viz\_traces.sh}.)}}
+
+\subsection{\observe training curves}
+\IfFileExists{auto_observe_curves.tex}{\input{auto_observe_curves}}{%
+  \emph{(\observe training history not yet generated; run
+  \texttt{bash scripts/viz\_observe.sh}.)}}
+
+\subsection{\observe held-out evaluation}
+\IfFileExists{auto_observe_eval.tex}{\input{auto_observe_eval}}{%
+  \emph{(\observe eval not yet generated; run
+  \texttt{bash scripts/viz\_observe.sh}.)}}
 
 \end{document}
