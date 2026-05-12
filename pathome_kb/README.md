@@ -158,14 +158,18 @@ BugWood_Diseases_usable.csv
 │     Bugwood image per (crop, disease, state) tuple.      │
 │     → smoke/.bugwood_cache/<image_number>.jpg            │
 │                                                           │
-│ 4b. PER-STATE VLM OBSERVATION   claude -p + Read tool    │
+│ 4b. PER-STATE QWEN SWARM        plantswarm/delta_pipeline │
 │     For each (crop, disease, state) with a cached image: │
-│       reads the image,                                    │
-│       reads the canonical entry from step 3,              │
-│       walks canonical like a decision tree,               │
-│       emits ONLY deltas {field, canonical_says,           │
-│                          image_shows, image_quote}.       │
-│     → embeds the deltas back INTO final_registry.json    │
+│       N stochastic routed traces of 5 Qwen agents see the │
+│       image + the canonical entry + any existing regional │
+│       deltas for this state as KB context, walk canonical │
+│       like a decision tree, and emit ONLY deltas          │
+│                {field, canonical_says,                    │
+│                 image_shows, image_quote}.                │
+│       Cross-run K-of-N agreement keeps only deltas        │
+│       supported by ≥K distinct runs; the rest are dropped │
+│       as hallucinations.                                  │
+│     → embeds the deltas back INTO final_registry.json     │
 │       under each disease's `regional_observations` field. │
 │       (No separate file — one unified registry per crop.) │
 │       → ❷ regional_observations[state] of every profile  │
@@ -196,14 +200,14 @@ Stages 1–3 are the **SAGE port** (`internet_pipeline.py`). Stage 4b is the **P
 | 2 Extraction | `internet_pipeline._run_extraction` | `raw_extractions.json` | (URL page text) → `claude -p` (no tools) → fields with verbatim quotes + treatments |
 | 3 Reconciliation | `internet_pipeline._run_reconciliation` | `final_registry.json` (canonical-only at this point) | (per-source records) → `claude -p` → canonical disease entry |
 | 4a Image cache | `scripts/ensure_state_image_cache.py` | `smoke/.bugwood_cache/` | (no LLM) — pure URL fetch |
-| 4b Regional observation | `regional_observation.run_regional_observation` | embedded into `final_registry.json` (`regional_observations[state].deltas`) | (image + canonical brief) → `claude -p --allowedTools Read` → deltas-only |
+| 4b Regional observation | `regional_observation.run_regional_observation` → `plantswarm.delta_pipeline.run_batch` | embedded into `final_registry.json` (`regional_observations[state].deltas`) | (image + canonical + existing-state deltas) → Qwen2.5-VL-7B swarm via vLLM (N stochastic traces + K-of-N agreement) → deltas-only |
 | 5 Merge | `symptoms_adapter.merge_registries_to_seed` | `symptoms_seed.json` | (no LLM) — pure assembly |
 
 All per-crop artefacts land under `artifacts/pathome_kb/<Crop>/`. The merged seed lands at `smoke/artifacts/pathome_seed/symptoms_seed.json` (smoke) or `artifacts/pathome_seed/symptoms_seed.json` (production).
 
 ---
 
-## What stage 4b actually puts in the LLM (the deltas-only VLM stage)
+## What stage 4b actually puts in the LLM (the Qwen swarm)
 
 ```
    ┌──────────────────────────────────────────────────────────┐
@@ -220,9 +224,17 @@ All per-crop artefacts land under `artifacts/pathome_kb/<Crop>/`. The merged see
    │   - look_alikes: (not specified)                          │
    │   - treatments: drought-stress mitigation, reduced …     │
    │                                                           │
-   │ claude -p --allowedTools Read --max-turns 5               │
-   │   → reads image at the given path                         │
-   │   → walks canonical like a decision tree                  │
+   │ Existing regional deltas for THIS state (if any):         │
+   │   - [severity] previously observed: "whole-field collapse" │
+   │   - …                                                     │
+   │                                                           │
+   │ Qwen2.5-VL-7B swarm via vLLM                              │
+   │  (plantswarm.delta_pipeline.run_for_state)                │
+   │   → N stochastic routed traces of 5 agents per image      │
+   │   → each agent owns specific canonical fields, sees       │
+   │     prior trace context, emits {deltas, κ, handoff}       │
+   │   → DiagnosisAgent consolidates each trace                │
+   │   → cross-run K-of-N Jaccard agreement filter             │
    │   → emits JSON:                                           │
    │     { "deltas": [                                         │
    │         { field, canonical_says, image_shows, image_quote},│
@@ -230,11 +242,11 @@ All per-crop artefacts land under `artifacts/pathome_kb/<Crop>/`. The merged see
    │       ] }                                                 │
    │                                                           │
    │ If the image confirms canonical exactly → "deltas": []    │
-   │ Restating canonical text is forbidden by prompt.          │
+   │ Restating canonical or existing-KB text is forbidden.     │
    └──────────────────────────────────────────────────────────┘
 ```
 
-This is the only stage where the model is allowed to write text that isn't a verbatim quote — but every `image_shows` is anchored to a specific Bugwood `image_id` and accompanied by a one-sentence `image_quote` that points to literal visual evidence in that frame.
+Every `image_shows` is anchored to a specific Bugwood `image_id` and accompanied by a one-sentence `image_quote` that points to literal visual evidence in that frame. Hallucinations are suppressed by the cross-run agreement filter — deltas only one trace emitted get dropped.
 
 ---
 
@@ -330,23 +342,35 @@ FULL_SKIP_KB=1 bash smoke/run_phase0_full.sh                # only cache top-up 
 
 | What | Why | Failure mode |
 |---|---|---|
-| `claude` CLI on PATH | Stages 1, 2, 3, 4b all use `claude -p`; 4b uses the Read tool | `pathome_kb` exits with "claude CLI not on PATH" |
+| `claude` CLI on PATH | Stages 1, 2, 3 use `claude -p` for canonical KB build | `pathome_kb` exits with "claude CLI not on PATH" |
 | `claude auth login` once | OAuth login for the CLI; sessions reuse the token | First `claude -p` blocks for browser sign-in |
 | `ANTHROPIC_API_KEY` (optional) | Stage 3 reconciliation can use the SDK directly when present — slightly faster than subprocess. Without it, reconciliation falls back to `claude -p` automatically. | None — fallback is transparent |
+| vLLM endpoint serving Qwen2.5-VL-7B-Instruct | Stage 4b runs the Qwen swarm via this endpoint (default `http://localhost:8000/v1`; configurable via `VLLM_BASE_URL`) | Phase 0R fails with a vLLM connection error |
 
-Nova compute nodes can't run `claude auth login`, which is why Phase 0 runs locally and the seed file is shuttled through git.
+Stages 1–3 (canonical) need Claude OAuth, which Nova compute nodes can't grant — those run LOCAL. Stage 4b (regional) needs a GPU, which is the opposite split — that runs on Nova (or any host with vLLM). The seed file is shuttled through git in between.
 
 ---
 
 ## Cost & time (approximate)
 
-| Run mode | LLM calls | Walltime | Cost (claude -p over OAuth) |
+Phase 0 (canonical KB; Claude over OAuth):
+
+| Run mode | LLM calls | Walltime | Cost |
 |---|---|---|---|
 | Smoke `FULL_QUICK=1` (1 crop) | ~80 | ~15–25 min | ~$1–3 |
 | Smoke full (1 crop) | ~150 | ~35–45 min | ~$5–10 |
 | Production full (484 classes) | ~2500 | ~16–24 h | ~$60–180 |
 
-(Production estimates assume `MAX_PARALLEL_EXTRACTIONS=4` in `config.py` and Sonnet 4.6 default. Bigger parallelism reduces wall but not cost; OAuth quota is the practical ceiling.)
+(Stage 3 reconciliation defaults to Sonnet 4.6. Parallelism = `MAX_PARALLEL_EXTRACTIONS` in `config.py`. OAuth quota is the practical ceiling.)
+
+Phase 0R (regional deltas; Qwen swarm via vLLM):
+
+| Run mode | vLLM calls | Walltime |
+|---|---|---|
+| Smoke (~50 tuples × N=5 traces × ~5 agents) | ~1,250 | ~20–40 min on one A100 |
+| Production (~3,000 tuples × N=10 × ~5) | ~150,000 | ~10–20 h on one A100 |
+
+No per-call API cost — only the GPU node-hour.
 
 ---
 

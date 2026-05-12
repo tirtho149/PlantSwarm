@@ -138,40 +138,11 @@ def api_query(
 
 
 # ─── Claude CLI wrapper ─────────────────────────────────────────────────────
-
-
-def claude_query_with_image(
-    prompt: str,
-    image_path: str | Path,
-    system_prompt: str | None = None,
-    json_schema: dict | None = None,
-    max_turns: int = 5,
-    timeout_secs: int = 240,
-) -> str | None:
-    """
-    Run a vision-grounded `claude -p` query that loads a local image off
-    disk via the model's Read tool, then produces structured JSON.
-
-    The Read tool is the only tool whitelisted; the model has at most
-    `max_turns` to (a) read the image and (b) emit JSON. Used by the
-    regional image-fill stage to populate visual fields not present in
-    extension-service text.
-
-    Returns the model's text/structured response, or None on failure.
-    """
-    image_path = str(Path(image_path).resolve())
-    full_prompt = (
-        f"Read the image at {image_path} using the Read tool, then follow "
-        f"the instructions below.\n\n{prompt}"
-    )
-    return claude_query(
-        prompt=full_prompt,
-        allowed_tools=["Read"],
-        system_prompt=system_prompt,
-        json_schema=json_schema,
-        max_turns=max_turns,
-        timeout_secs=timeout_secs,
-    )
+#
+# Used for canonical KB build (Phase 0): discovery, extraction, reconciliation.
+# The previous image-aware variant (`claude_query_with_image`) backed the old
+# Claude-based regional observation pass; it has been retired in favour of the
+# Qwen swarm in ``plantswarm/delta_pipeline.py``.
 
 
 def claude_query(
