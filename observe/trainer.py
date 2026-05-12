@@ -1,60 +1,40 @@
 """
 observe/trainer.py
 ==================
-OBSERVE training pipeline — delta-mode supervision.
+Behavioral-cloning trainer for OBSERVE on Phase 0R trace JSONL.
 
-Consumes Phase 0R trace JSONL (written by ``plantswarm.delta_pipeline``
-when ``PATHOME_TRACE_DIR`` is set). Each line is one stochastic
-routed trace for one (crop, disease, state, image) tuple:
+Per trace step, supervision is derived from the swarm's actual move::
 
-    {
-      "profile_id", "crop", "disease", "state",
-      "primary_image_id", "image_path",
-      "run_idx", "path", "decisions",
-      "confidences",           ["high", "medium", ...],
-      "backtrack_count", "early_terminated",
-      "context_buffer": [                    one entry per agent step:
-        {
-          "agent_name",
-          "deltas":     [{field, canonical_says, image_shows, image_quote}],
-          "confidence": "high"|"medium"|"low",
-          "handoff_target", "reasoning", "raw_text"
-        }, ...
-      ],
-      "final_deltas":          [...],
-      "existing_kb_at_start":  [...],
-    }
+    target_routing       = path[i+1]                       (5-class)
+    target_backtrack     = path[i+1]=="MorphologyAgent" AND
+                           path[i] != "MorphologyAgent"
+    target_confidence    = kappa in {high, medium, low} → {0.9, 0.6, 0.3}
+    target_epistemic     = (n_final - n_at_step) / max(1, n_final)
+    target_aleatoric     = 1 - kappa_scalar
+    target_overconfidence= 1 iff kappa=="high" AND len(deltas)==0
 
-For each step in a trace, we derive supervision for OBSERVE's heads:
-
-    target_routing    : index of path[i+1] (next agent the swarm picked)
-    target_backtrack  : 1 if path[i+1] == "MorphologyAgent" and
-                        path[i] != "MorphologyAgent" else 0
-    target_confidence : κ → scalar (high=0.9, medium=0.6, low=0.3)
-    target_epistemic  : 1 - (current_step_deltas / final_deltas);
-                        i.e. how much more the trace added after this step
-    target_aleatoric  : 1 - kappa_scalar (low conf = high irreducible noise)
-    target_oc         : 1 if (κ=high AND |final_deltas| == 0) else 0
-                        (claimed high but produced nothing — overconfident)
-    target_belief     : the agent's reasoning string (text)
-
-The image is loaded from ``image_path`` on disk on the fly.
+Implementation notes (post-audit fixes)
+---------------------------------------
+- The previous revision wrapped the backbone in ``torch.no_grad()`` —
+  fixed in ``observe/model.py``, gradients now flow through LoRA.
+- ``ObserveLoss`` expects RAW logits, not softmaxed probabilities.
+  No more ``probs.log()`` hack.
+- A custom ``ObserveCollator`` pads token sequences and stacks pixel
+  values so ``DataLoader(batch_size>1)`` actually works.
 """
 
 from __future__ import annotations
 
 import json
 import logging
-import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence
 
-import numpy as np
 import torch
 import torch.nn.functional as F
 from torch.optim import AdamW
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
@@ -75,19 +55,17 @@ _KAPPA_TO_SCALAR = {"high": 0.9, "medium": 0.6, "low": 0.3}
 
 @dataclass
 class TraceStepAnnotation:
-    """One supervised training sample, derived from one step of a Phase 0R trace."""
-
-    image_path:        str       # absolute or repo-relative
+    image_path:        str
     crop:              str
     disease:           str
     state:             str
-    step:              int       # index within the trace
-    current_agent:    str        # which of 5
-    context_text:     str        # rendered (canonical_slice + existing + prior_context)
+    step:              int
+    current_agent:     str
+    context_text:      str
     # Targets ↓
-    next_agent:        str       # 5-class
+    next_agent:        str
     backtrack:         bool
-    confidence:        float     # κ scalar
+    confidence:        float
     epistemic:         float
     aleatoric:         float
     overconfidence:    bool
@@ -111,11 +89,6 @@ def _render_context_text(
     existing_kb: List[dict],
     context_buffer_up_to_step: List[dict],
 ) -> str:
-    """Cheap text-only render of the agent's prompt context for training.
-
-    Doesn't reproduce the full DELTA_USER_PROMPT format — just enough
-    structural signal for OBSERVE to imitate routing decisions.
-    """
     parts: List[str] = [
         f"Crop: {crop}", f"Disease: {disease}", f"State: {state}",
     ]
@@ -126,18 +99,14 @@ def _render_context_text(
     if context_buffer_up_to_step:
         parts.append("Prior trace context:")
         for step, e in enumerate(context_buffer_up_to_step, 1):
-            parts.append(f"  [{step}] {e.get('agent_name','?')} (κ={e.get('confidence','?')})")
+            parts.append(f"  [{step}] {e.get('agent_name','?')} (k={e.get('confidence','?')})")
             for d in e.get("deltas") or []:
                 parts.append(f"      delta[{d.get('field','?')}]: {d.get('image_shows','')[:120]}")
     return "\n".join(parts)
 
 
 def annotations_from_trace(record: dict) -> List[TraceStepAnnotation]:
-    """Expand one trace JSONL record into per-step annotations.
-
-    Returns one TraceStepAnnotation per (step) where step has a defined
-    next_agent (i.e. the trace didn't terminate here).
-    """
+    """Expand one trace JSONL record into per-step annotations."""
     path = record.get("path") or []
     if not path:
         return []
@@ -149,7 +118,6 @@ def annotations_from_trace(record: dict) -> List[TraceStepAnnotation]:
     out: List[TraceStepAnnotation] = []
     for i, agent_step in enumerate(buf):
         if i + 1 >= len(path):
-            # Terminal step — no routing target. Skip for routing supervision.
             continue
         next_agent = path[i + 1]
         if next_agent not in _AGENT_IDX:
@@ -158,14 +126,11 @@ def annotations_from_trace(record: dict) -> List[TraceStepAnnotation]:
         kappa_scalar = _kappa_to_scalar(kappa)
         step_deltas = agent_step.get("deltas") or []
         n_step = len(step_deltas)
-        # Epistemic: how much more the trace added after this step.
         epistemic = (
             max(0.0, (n_final - n_step) / max(1, n_final))
             if n_final > 0 else 0.0
         )
-        # Aleatoric: 1 - κ scalar (low κ = high irreducible noise).
         aleatoric = 1.0 - kappa_scalar
-        # Overconfidence: claimed high but produced nothing.
         oc = bool(kappa == "high" and n_step == 0)
         backtrack = bool(next_agent == "MorphologyAgent"
                          and agent_step.get("agent_name") != "MorphologyAgent")
@@ -177,7 +142,6 @@ def annotations_from_trace(record: dict) -> List[TraceStepAnnotation]:
             existing_kb=existing,
             context_buffer_up_to_step=buf[:i],
         )
-
         out.append(TraceStepAnnotation(
             image_path=record.get("image_path", ""),
             crop=record.get("crop", ""),
@@ -202,7 +166,6 @@ def annotations_from_trace(record: dict) -> List[TraceStepAnnotation]:
 
 
 def load_phase0r_traces(path: str | Path) -> List[TraceStepAnnotation]:
-    """Read a Phase 0R trace JSONL and expand to per-step annotations."""
     annotations: List[TraceStepAnnotation] = []
     with open(path, encoding="utf-8") as fh:
         for line in fh:
@@ -218,51 +181,71 @@ def load_phase0r_traces(path: str | Path) -> List[TraceStepAnnotation]:
 
 
 # ---------------------------------------------------------------------------
-# Image-aware dataset (lazy load from path)
+# Dataset — yields raw items; collator does processor + stacking
 # ---------------------------------------------------------------------------
 
 class RoutingTraceDataset(Dataset):
-    """PyTorch dataset over Phase 0R trace step annotations.
+    """One sample per agent step. The collator handles processor + batching."""
 
-    Lazy-loads images from ``image_path`` on every __getitem__. For
-    small caches this is fine; for production, an on-disk image cache
-    keyed by hash would be cheaper.
-    """
-
-    def __init__(self, annotations: Sequence[TraceStepAnnotation], processor):
+    def __init__(self, annotations: Sequence[TraceStepAnnotation]):
         self.annotations = list(annotations)
-        self.processor = processor
 
     def __len__(self) -> int:
         return len(self.annotations)
 
     def __getitem__(self, idx: int) -> dict:
-        from PIL import Image
         ann = self.annotations[idx]
-        image = Image.open(ann.image_path).convert("RGB")
-        inputs = self.processor(
-            images=image,
-            text=ann.context_text,
-            return_tensors="pt",
-            padding=True,
-        )
-        for k, v in list(inputs.items()):
-            if isinstance(v, torch.Tensor) and v.ndim > 1:
-                inputs[k] = v.squeeze(0)
         return {
-            "inputs":         inputs,
-            "next_agent":     torch.tensor(_AGENT_IDX[ann.next_agent], dtype=torch.long),
-            "backtrack":      torch.tensor(float(ann.backtrack), dtype=torch.float32),
-            "epistemic":      torch.tensor(ann.epistemic,        dtype=torch.float32),
-            "aleatoric":      torch.tensor(ann.aleatoric,        dtype=torch.float32),
-            "confidence":     torch.tensor(ann.confidence,       dtype=torch.float32),
-            "overconfidence": torch.tensor(float(ann.overconfidence), dtype=torch.float32),
+            "image_path":     ann.image_path,
+            "context_text":   ann.context_text,
+            "next_agent_idx": _AGENT_IDX[ann.next_agent],
+            "backtrack":      float(ann.backtrack),
+            "epistemic":      float(ann.epistemic),
+            "aleatoric":      float(ann.aleatoric),
+            "confidence":     float(ann.confidence),
+            "overconfidence": float(ann.overconfidence),
             "belief_state":   ann.belief_state,
         }
 
 
 # ---------------------------------------------------------------------------
-# Image-grouped split (no leakage across image_id)
+# Collator — turns a list of samples into a model-ready batch
+# ---------------------------------------------------------------------------
+
+class ObserveCollator:
+    """Build a batch via the processor (images + text) + stack labels.
+
+    Reads images lazily from disk per sample, runs the processor in
+    batch mode (which handles tokenizer padding + pixel stacking on
+    Qwen2.5-VL), and tacks on label tensors. Returns one big dict the
+    model + loss layer consume directly.
+    """
+
+    def __init__(self, processor):
+        self.processor = processor
+
+    def __call__(self, samples: List[dict]) -> dict:
+        from PIL import Image
+        images = [Image.open(s["image_path"]).convert("RGB") for s in samples]
+        texts  = [s["context_text"] for s in samples]
+        inputs = self.processor(
+            images=images, text=texts,
+            return_tensors="pt", padding=True, truncation=True,
+        )
+
+        labels = {
+            "next_agent":     torch.tensor([s["next_agent_idx"]    for s in samples], dtype=torch.long),
+            "backtrack":      torch.tensor([s["backtrack"]         for s in samples], dtype=torch.float32),
+            "epistemic":      torch.tensor([s["epistemic"]         for s in samples], dtype=torch.float32),
+            "aleatoric":      torch.tensor([s["aleatoric"]         for s in samples], dtype=torch.float32),
+            "confidence":     torch.tensor([s["confidence"]        for s in samples], dtype=torch.float32),
+            "overconfidence": torch.tensor([s["overconfidence"]    for s in samples], dtype=torch.float32),
+        }
+        return {"inputs": dict(inputs), "labels": labels}
+
+
+# ---------------------------------------------------------------------------
+# Image-grouped split (no leakage across image_path)
 # ---------------------------------------------------------------------------
 
 def split_annotations(
@@ -272,9 +255,6 @@ def split_annotations(
     held_frac: float = 0.1,
     seed: int = 42,
 ) -> dict:
-    """Group by source image_path so all runs / steps of one image stay
-    in the same fold. Returns {'train', 'val', 'held'} list-of-annotations.
-    """
     import random as _random
     by_image: dict[str, List[TraceStepAnnotation]] = {}
     for ann in annotations:
@@ -283,22 +263,27 @@ def split_annotations(
     rng = _random.Random(seed)
     rng.shuffle(unique)
     n = len(unique)
-    n_val = int(n * val_frac)
+    n_val  = int(n * val_frac)
     n_held = int(n * held_frac)
     n_train = n - n_val - n_held
     train_ids = set(unique[:n_train])
     val_ids   = set(unique[n_train:n_train + n_val])
     held_ids  = set(unique[n_train + n_val:])
 
-    train_anns, val_anns, held_anns = [], [], []
+    train_a: List[TraceStepAnnotation] = []
+    val_a:   List[TraceStepAnnotation] = []
+    held_a:  List[TraceStepAnnotation] = []
     for img_id, anns in by_image.items():
-        bucket = (train_anns if img_id in train_ids
-                  else val_anns if img_id in val_ids
-                  else held_anns)
+        bucket = (train_a if img_id in train_ids
+                  else val_a if img_id in val_ids
+                  else held_a)
         bucket.extend(anns)
-    return {"train": train_anns, "val": val_anns, "held": held_anns,
-            "n_images_train": len(train_ids), "n_images_val": len(val_ids),
-            "n_images_held": len(held_ids)}
+    return {
+        "train": train_a, "val": val_a, "held": held_a,
+        "n_images_train": len(train_ids),
+        "n_images_val":   len(val_ids),
+        "n_images_held":  len(held_ids),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -306,7 +291,12 @@ def split_annotations(
 # ---------------------------------------------------------------------------
 
 class OBSERVETrainer:
-    """Behavioral-cloning trainer for OBSERVE on Phase 0R traces."""
+    """Behavioral-cloning trainer for OBSERVE on Phase 0R traces.
+
+    Use ``make_loader(annotations, batch_size)`` to get a DataLoader
+    that uses the correct collator. ``train_epoch`` and ``validate``
+    expect that loader's batch shape.
+    """
 
     def __init__(self, model, lr: float = 1e-4, weight_decay: float = 0.01):
         self.model = model
@@ -315,70 +305,74 @@ class OBSERVETrainer:
             lr=lr, weight_decay=weight_decay,
         )
 
-    def train_epoch(
+    def make_loader(
         self,
-        loader: DataLoader,
-        loss_fn,
-        device: torch.device,
-    ) -> dict:
-        self.model.train()
-        sums = {"total": 0.0, "routing": 0.0, "cal": 0.0,
-                "cons": 0.0, "oc": 0.0}
-        n = 0
-        for batch in tqdm(loader, desc="train"):
+        annotations: Sequence[TraceStepAnnotation],
+        batch_size: int,
+        shuffle: bool,
+        num_workers: int = 0,
+    ) -> DataLoader:
+        ds = RoutingTraceDataset(annotations)
+        collator = ObserveCollator(self.model.processor)
+        return DataLoader(
+            ds, batch_size=batch_size, shuffle=shuffle,
+            num_workers=num_workers, collate_fn=collator,
+        )
+
+    def _step(self, batch: dict, loss_fn, device: torch.device, train: bool) -> dict:
+        if train:
+            self.model.train()
             self.optimizer.zero_grad()
-            out = self.model(
-                image=None,                  # processor inputs already in batch['inputs']
-                context_text=None,
-                return_dict=True,
-                _batched_inputs=batch["inputs"],
-            ) if hasattr(self.model, "forward") and "_batched_inputs" in \
-                self.model.forward.__code__.co_varnames else self.model(
-                image=batch["inputs"].get("pixel_values"),
-                context_text="",
-                return_dict=True,
-            )
-            losses = loss_fn(
-                routing_logits=out["routing_probs"].log() if out["routing_probs"].min() > 0 else out["routing_probs"],
-                target_class=batch["next_agent"].to(device),
-                epsilon_pred=out["epistemic"],   epsilon_target=batch["epistemic"].to(device),
-                aleatoric_pred=out["aleatoric"], aleatoric_target=batch["aleatoric"].to(device),
-                confidence_pred=out["confidence"], confidence_target=batch["confidence"].to(device),
-                oc_pred=out["oc_prob"],         oc_target=batch["overconfidence"].to(device),
-            )
+        else:
+            self.model.eval()
+
+        inputs = {k: v.to(device) if hasattr(v, "to") else v
+                  for k, v in batch["inputs"].items()}
+        labels = {k: v.to(device) for k, v in batch["labels"].items()}
+
+        out = self.model(inputs)
+        losses = loss_fn(
+            routing_logits=out["routing_logits"],
+            target_class=labels["next_agent"],
+            epsilon_logit=out["epistemic_logit"],     epsilon_target=labels["epistemic"],
+            aleatoric_logit=out["aleatoric_logit"],   aleatoric_target=labels["aleatoric"],
+            confidence_logit=out["confidence_logit"], confidence_target=labels["confidence"],
+            oc_logit=out["oc_logit"],                 oc_target=labels["overconfidence"],
+        )
+        if train:
             losses.total.backward()
             self.optimizer.step()
-            sums["total"]   += float(losses.total.item())
-            sums["routing"] += float(losses.routing.item())
-            sums["cal"]     += float(losses.calibration.item())
-            sums["cons"]    += float(losses.consistency.item())
-            sums["oc"]      += float(losses.overconfidence.item())
+
+        pred = out["routing_logits"].argmax(dim=-1)
+        acc = float((pred == labels["next_agent"]).float().mean().item())
+        return {
+            "total":   float(losses.total.item()),
+            "routing": float(losses.routing.item()),
+            "cal":     float(losses.calibration.item()),
+            "cons":    float(losses.consistency.item()),
+            "oc":      float(losses.overconfidence.item()),
+            "routing_acc": acc,
+        }
+
+    def train_epoch(self, loader: DataLoader, loss_fn, device: torch.device) -> dict:
+        sums = {"total": 0.0, "routing": 0.0, "cal": 0.0,
+                "cons": 0.0, "oc": 0.0, "routing_acc": 0.0}
+        n = 0
+        for batch in tqdm(loader, desc="train", leave=False):
+            stats = self._step(batch, loss_fn, device, train=True)
+            for k in sums:
+                sums[k] += stats[k]
             n += 1
         return {k: v / max(n, 1) for k, v in sums.items()}
 
     @torch.no_grad()
     def validate(self, loader: DataLoader, loss_fn, device: torch.device) -> dict:
-        self.model.eval()
         sums = {"total": 0.0, "routing_acc": 0.0}
         n = 0
-        for batch in loader:
-            out = self.model(
-                image=batch["inputs"].get("pixel_values"),
-                context_text="",
-                return_dict=True,
-            )
-            pred = out["routing_probs"].argmax(dim=-1).cpu()
-            target = batch["next_agent"]
-            sums["routing_acc"] += float((pred == target).float().mean().item())
-            losses = loss_fn(
-                routing_logits=out["routing_probs"].log() if out["routing_probs"].min() > 0 else out["routing_probs"],
-                target_class=batch["next_agent"].to(device),
-                epsilon_pred=out["epistemic"],   epsilon_target=batch["epistemic"].to(device),
-                aleatoric_pred=out["aleatoric"], aleatoric_target=batch["aleatoric"].to(device),
-                confidence_pred=out["confidence"], confidence_target=batch["confidence"].to(device),
-                oc_pred=out["oc_prob"],         oc_target=batch["overconfidence"].to(device),
-            )
-            sums["total"] += float(losses.total.item())
+        for batch in tqdm(loader, desc="val", leave=False):
+            stats = self._step(batch, loss_fn, device, train=False)
+            sums["total"]       += stats["total"]
+            sums["routing_acc"] += stats["routing_acc"]
             n += 1
         return {k: v / max(n, 1) for k, v in sums.items()}
 

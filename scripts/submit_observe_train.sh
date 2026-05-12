@@ -7,11 +7,14 @@
 #SBATCH --gres=gpu:a100:1
 #SBATCH --time=12:00:00
 #SBATCH --partition=nova
-#SBATCH --chdir=/work/mech-ai-scratch/tirtho/PlantSwarm
-#SBATCH --output=/work/mech-ai-scratch/tirtho/PlantSwarm/logs/observe_train-%j.out
-#SBATCH --error=/work/mech-ai-scratch/tirtho/PlantSwarm/logs/observe_train-%j.err
-#SBATCH --mail-user=tirtho@iastate.edu
+#SBATCH --output=logs/observe_train-%j.out
+#SBATCH --error=logs/observe_train-%j.err
 #SBATCH --mail-type=BEGIN,END,FAIL
+
+# Portable paths — override at submit time:
+#   PATHOME_REPO=/path/to/PlantSwarm sbatch [--mail-user=...] scripts/submit_observe_train.sh
+PATHOME_REPO="${PATHOME_REPO:-$(pwd)}"
+cd "$PATHOME_REPO"
 
 # ============================================================================
 # Train OBSERVE on Phase 0R traces — delta-mode supervision.
@@ -38,7 +41,7 @@ nvidia-smi || true
 echo "================================"
 
 module load python cuda/11.8
-source /work/mech-ai-scratch/tirtho/PlantSwarm/.venv/bin/activate
+source "$PATHOME_REPO/.venv/bin/activate"
 
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export TOKENIZERS_PARALLELISM=false

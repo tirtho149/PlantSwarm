@@ -50,13 +50,11 @@ def main() -> None:
 
     # Lazy torch imports so --help works without GPU deps installed.
     import torch
-    from torch.utils.data import DataLoader
 
     from observe.model import OBSERVE
     from observe.loss import ObserveLoss, ObserveLossWeights
     from observe.trainer import (
         OBSERVETrainer,
-        RoutingTraceDataset,
         load_phase0r_traces,
         split_annotations,
     )
@@ -98,18 +96,13 @@ def main() -> None:
         lora_r=args.lora_r,
         lora_alpha=args.lora_alpha,
     )
-    processor = model.processor
     model = model.to(device)
 
-    # ---- 3. Datasets + loaders ---------------------------------------------
-    train_ds = RoutingTraceDataset(splits["train"], processor=processor)
-    val_ds   = RoutingTraceDataset(splits["val"],   processor=processor)
-    train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True)
-    val_loader   = DataLoader(val_ds,   batch_size=args.batch_size, shuffle=False)
-
-    # ---- 4. Loss + trainer -------------------------------------------------
+    # ---- 3. Loss + trainer + loaders ---------------------------------------
     loss_fn = ObserveLoss(ObserveLossWeights()).to(device)
     trainer = OBSERVETrainer(model, lr=args.lr)
+    train_loader = trainer.make_loader(splits["train"], args.batch_size, shuffle=True)
+    val_loader   = trainer.make_loader(splits["val"],   args.batch_size, shuffle=False)
 
     save_dir = Path(args.save_dir)
     save_dir.mkdir(parents=True, exist_ok=True)

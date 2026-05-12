@@ -398,11 +398,26 @@ Per-step supervision derived from each trace:
 an `EpistemicAction` (next agent, backtrack, κ scalar, uncertainty,
 belief text) — no swarm, no vLLM HTTP loop.
 
-**Note**: the Decision Transformer (`observe/decision_transformer.py`)
-and GRPO (`observe/grpo.py`) phases from the paper are present but
-**not yet ported** to delta-mode reward (`delta_set_F1 + (1-ECE)`
-hasn't been wired). The behavioral-cloning trainer (`OBSERVETrainer`)
-is the v1 path.
+**Two-phase training** is supported:
+- **Phase A** — Decision Transformer (`observe/decision_transformer.py`)
+  with delta-mode reward `r_T = routing_acc * (1 - kappa_ece)`. Same BC
+  loss as `OBSERVETrainer` but with return-conditioned per-trace
+  weighting and early stopping on val total loss.
+- **Phase B** — GRPO (`observe/grpo.py`) with reward
+  `r = routing_acc * (1 - kappa_ece) - lambda_len * len(path) / Tmax`,
+  clipped policy ratio update against a frozen Phase-A reference
+  policy, KL-anchored.
+
+**Evaluation** — `scripts/evaluate_observe.py` (and
+`scripts/submit_evaluate_observe.sh`) loads a checkpoint and reports
+routing accuracy, backtrack F1, κ MAE/ECE, and OC accuracy on the
+held-out trace fold. The split is image-grouped, so no leakage across
+folds.
+
+**Tests** — `pytest tests/` covers the parser, Algorithm 1 routing
+grid, agreement filter, conservative merge (incl. idempotency),
+existing-deltas extraction, and the OBSERVE annotation chain. 17
+tests, no GPU required for the swarm-logic tests.
 
 ---
 

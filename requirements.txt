@@ -30,3 +30,6 @@ pyyaml>=6.0
 #   torch>=2.1.0
 #   peft>=0.4.0
 #   accelerate>=0.30.0
+
+# Tests
+pytest>=7.0.0

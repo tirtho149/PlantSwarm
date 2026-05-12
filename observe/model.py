@@ -1,22 +1,32 @@
 """
 observe/model.py
 ================
-OBSERVE Vision-Language-Action model architecture.
+OBSERVE Vision-Language-Action model — Qwen2.5-VL + LoRA + multi-task heads.
 
-Paper §7 (pathome_final). Fine-tuned from Qwen2.5-VL-7B with LoRA:
-- Per-step visual grounding (image present at every step)
-- Inputs: image X, context buffer C_t, decision-graph node G_t,
-  GPS-derived phi_geo, top-3 geo-weighted PathomeDB references Ref_{1:3}
-- Outputs: routing softmax (5 classes), backtrack b_t (binary),
-  epistemic eps_t, aleatoric alpha_t, calibrated confidence c_t,
-  overconfidence flag OC_t, autoregressive belief s_t
-- LoRA r=16, alpha=32, target {q,k,v,o}_proj, ~56M trainable on 7B frozen
+Architecture
+------------
+- Backbone: Qwen/Qwen2.5-VL-7B-Instruct (frozen base; hidden_size 3584)
+- LoRA: r=16, alpha=32 on {q,k,v,o}_proj — ~56M trainable on 7B frozen
+- Six heads on a shared 512-dim representation (last non-pad hidden):
+    * routing       (5-class softmax over agent names)
+    * backtrack     (binary)
+    * epistemic     (scalar in [0,1])
+    * aleatoric     (scalar in [0,1])
+    * confidence    (scalar in [0,1]; calibrated kappa)
+    * overconfidence(binary; OC_t)
+
+The previous revision wrapped the backbone forward in ``torch.no_grad()``
+which silently blocked LoRA gradients — fixed here.
+
+Forward returns RAW LOGITS (not softmax/sigmoid). The loss layer applies
+the right activation per head; ``get_epistemic_action`` applies them at
+inference time.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import torch
 import torch.nn as nn
@@ -24,35 +34,25 @@ from peft import LoraConfig, get_peft_model
 from transformers import AutoModelForVision2Seq, AutoProcessor
 
 
+AGENT_CLASSES_DEFAULT: List[str] = [
+    "MorphologyAgent", "SymptomAgent", "PathogenAgent",
+    "SeverityAgent", "DiagnosisAgent",
+]
+
+
 @dataclass
 class EpistemicAction:
-    """Structured action output from OBSERVE (paper Eq. action)."""
-    next_agent: str  # 5-class: MorphologyAgent, SymptomAgent, PathogenAgent, SeverityAgent, DiagnosisAgent
-    backtrack: bool  # b_t: whether to backtrack to MorphologyAgent
-    epistemic_uncertainty: float  # eps_t ∈ [0, 1]: resolvable ambiguity → more evidence helps
-    aleatoric_uncertainty: float  # alpha_t ∈ [0, 1]: irreducible difficulty → escalate to human
-    confidence: float  # c_t ∈ [0, 1]: calibrated confidence in prediction
-    overconfidence: bool  # OC_t: agent claimed kappa=H but visual evidence weak (Eq. oc)
-    belief_state: str  # s_t: natural language belief about current situation
+    """Structured action output from OBSERVE at inference."""
+    next_agent: str
+    backtrack: bool
+    epistemic_uncertainty: float
+    aleatoric_uncertainty: float
+    confidence: float
+    overconfidence: bool
 
 
 class OBSERVE(nn.Module):
-    """
-    Vision-Language-Action model for epistemic action selection (paper §7).
-
-    Architecture:
-    - Backbone: Qwen2.5-VL-7B (frozen, ~7B params)
-    - LoRA: r=16, alpha=32, applied to q/k/v/o_proj (~50M trainable)
-    - Heads (all on shared 512-dim representation):
-        * routing (5-class softmax)
-        * backtrack b_t (binary sigmoid)
-        * epistemic eps_t (scalar [0,1])
-        * aleatoric alpha_t (scalar [0,1])
-        * confidence c_t (scalar [0,1])
-        * overconfidence OC_t (binary sigmoid)        [NEW in pathome_final]
-        * belief text s_t (autoregressive via LM head)
-    - Total trainable: ~56M / 7B (~0.8%)
-    """
+    """Qwen2.5-VL + LoRA + 6 task heads, trained on Phase 0R routed traces."""
 
     def __init__(
         self,
@@ -60,30 +60,27 @@ class OBSERVE(nn.Module):
         lora_r: int = 16,
         lora_alpha: int = 32,
         lora_dropout: float = 0.05,
-        agent_classes: Optional[list] = None,
+        agent_classes: Optional[List[str]] = None,
         oc_threshold: float = 0.55,
+        load_in_8bit: bool = False,
     ):
         super().__init__()
-
         self.backbone_name = backbone
-        self.agent_classes = agent_classes or [
-            "MorphologyAgent", "SymptomAgent", "PathogenAgent",
-            "SeverityAgent", "DiagnosisAgent"
-        ]
+        self.agent_classes = agent_classes or AGENT_CLASSES_DEFAULT
+        self.oc_threshold = oc_threshold
 
-        # Load base model and processor
         self.processor = AutoProcessor.from_pretrained(backbone)
-        self.model = AutoModelForVision2Seq.from_pretrained(
-            backbone,
+        kwargs: Dict[str, Any] = dict(
             torch_dtype=torch.bfloat16,
-            device_map="auto",
             trust_remote_code=True,
         )
+        if load_in_8bit:
+            kwargs["load_in_8bit"] = True
+        self.model = AutoModelForVision2Seq.from_pretrained(backbone, **kwargs)
 
-        # Get hidden dimension from model
-        hidden_dim = self.model.config.hidden_size  # Usually 2048 for Qwen2.5-VL-3B
+        hidden_dim = int(self.model.config.hidden_size)        # 3584 for 7B
 
-        # Apply LoRA to vision encoder and language model
+        # LoRA — only these weights train; base remains frozen.
         lora_config = LoraConfig(
             r=lora_r,
             lora_alpha=lora_alpha,
@@ -93,139 +90,88 @@ class OBSERVE(nn.Module):
             task_type="CAUSAL_LM",
         )
         self.model = get_peft_model(self.model, lora_config)
-        self.model.print_trainable_parameters()
+        try:
+            self.model.print_trainable_parameters()
+        except Exception:
+            pass
 
-        # Shared representation head
+        # Shared trunk + task heads.
         self.shared_head = nn.Sequential(
             nn.Linear(hidden_dim, 512),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Dropout(0.1),
         )
+        self.routing_head    = nn.Linear(512, len(self.agent_classes))
+        self.backtrack_head  = nn.Linear(512, 1)
+        self.epistemic_head  = nn.Linear(512, 1)
+        self.aleatoric_head  = nn.Linear(512, 1)
+        self.confidence_head = nn.Linear(512, 1)
+        self.oc_head         = nn.Linear(512, 1)
 
-        # Task-specific heads
-        self.routing_head = nn.Linear(512, len(self.agent_classes))  # 5-class softmax
-        self.backtrack_head = nn.Linear(512, 1)  # b_t: binary sigmoid
-        self.epistemic_head = nn.Linear(512, 1)  # eps_t: sigmoid [0, 1]
-        self.aleatoric_head = nn.Linear(512, 1)  # alpha_t: sigmoid [0, 1]
-        self.confidence_head = nn.Linear(512, 1)  # c_t: sigmoid [0, 1]
-        self.oc_head = nn.Linear(512, 1)  # OC_t: sigmoid [0, 1]  (Eq. oc, paper §7.2)
+    # ------------------------------------------------------------------
+    # Training forward — takes pre-processed batch from the collator
+    # ------------------------------------------------------------------
 
-        # Decision threshold for overconfidence flag (paper §7.2: tau_OC = 0.55)
-        self.oc_threshold = oc_threshold
+    def forward(self, batch_inputs: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """Return RAW logits for every head.
 
-        # Belief text autoregressive head (uses model's decoder)
-        # Belief is generated via model decoder, not a separate head
-
-    def forward(
-        self,
-        image: torch.Tensor,
-        context_text: str,
-        return_dict: bool = True,
-    ) -> dict | tuple:
+        ``batch_inputs`` is the dict the OBSERVE collator emits:
+        ``pixel_values``, ``input_ids``, ``attention_mask`` (and
+        optionally ``image_grid_thw`` for Qwen2.5-VL). Gradients flow
+        through the LoRA adapters.
         """
-        Forward pass for epistemic action selection.
-
-        Args:
-            image: Input image tensor (after preprocessing)
-            context_text: Prior agent messages and context
-            return_dict: Return as dict (True) or tuple
-
-        Returns:
-            Dict with keys: next_agent, backtrack, epistemic, aleatoric, confidence, belief
-        """
-
-        # Prepare input: image + context text
-        prompt = f"Prior context:\n{context_text}\n\nBased on this image and context, what is your next action?"
-        inputs = self.processor(
-            images=image,
-            text=prompt,
-            return_tensors="pt",
-            padding=True,
+        outputs = self.model(
+            **batch_inputs,
+            output_hidden_states=True,
+            return_dict=True,
         )
-        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-
-        # Forward through model to get hidden states
-        with torch.no_grad():
-            # Get embeddings/hidden states from model
-            outputs = self.model(
-                **inputs,
-                output_hidden_states=True,
-                return_dict=True,
-            )
-
-        # Use last hidden state as representation
-        hidden_state = outputs.hidden_states[-1]  # [batch, seq_len, hidden_dim]
-        pooled = hidden_state.mean(dim=1)  # [batch, hidden_dim]
-
-        # Pass through shared head
-        shared_repr = self.shared_head(pooled)  # [batch, 512]
-
-        # Compute action outputs
-        routing_logits = self.routing_head(shared_repr)  # [batch, 5]
-        backtrack_logits = self.backtrack_head(shared_repr)  # [batch, 1]
-        epistemic_logits = self.epistemic_head(shared_repr)  # [batch, 1]
-        aleatoric_logits = self.aleatoric_head(shared_repr)  # [batch, 1]
-        confidence_logits = self.confidence_head(shared_repr)  # [batch, 1]
-        oc_logits = self.oc_head(shared_repr)  # [batch, 1]
-
-        # Apply activations
-        routing_probs = torch.softmax(routing_logits, dim=-1)  # [batch, 5]
-        backtrack_prob = torch.sigmoid(backtrack_logits).squeeze(-1)  # [batch]
-        epistemic = torch.sigmoid(epistemic_logits).squeeze(-1)  # [batch]
-        aleatoric = torch.sigmoid(aleatoric_logits).squeeze(-1)  # [batch]
-        confidence = torch.sigmoid(confidence_logits).squeeze(-1)  # [batch]
-        oc_prob = torch.sigmoid(oc_logits).squeeze(-1)  # [batch]
-
-        # Generate belief text (autoregressive from decoder)
-        belief_prompt = f"My belief state is: "
-        belief_inputs = self.processor.tokenizer(
-            belief_prompt,
-            return_tensors="pt",
-            padding=True,
-        ).to(self.model.device)
-
-        belief_outputs = self.model.generate(
-            **belief_inputs,
-            max_new_tokens=50,
-            temperature=0.7,
-        )
-        belief_text = self.processor.batch_decode(
-            belief_outputs,
-            skip_special_tokens=True,
-        )[0]
-
-        if return_dict:
-            return {
-                "routing_probs": routing_probs,
-                "routing_class": self.agent_classes[routing_probs.argmax(dim=-1).item()],
-                "backtrack_prob": backtrack_prob,
-                "epistemic": epistemic,
-                "aleatoric": aleatoric,
-                "confidence": confidence,
-                "oc_prob": oc_prob,
-                "belief_text": belief_text,
-            }
+        hidden = outputs.hidden_states[-1]                  # [B, T, H]
+        mask = batch_inputs.get("attention_mask")
+        if mask is not None:
+            last_idx = mask.sum(dim=1).clamp(min=1) - 1
+            arange = torch.arange(hidden.size(0), device=hidden.device)
+            pooled = hidden[arange, last_idx]
         else:
-            return (
-                routing_probs, backtrack_prob, epistemic, aleatoric,
-                confidence, oc_prob, belief_text,
-            )
+            pooled = hidden.mean(dim=1)
+        pooled = pooled.to(self.shared_head[0].weight.dtype)
+        shared = self.shared_head(pooled)                   # [B, 512]
 
+        return {
+            "routing_logits":   self.routing_head(shared),                  # [B, 5]
+            "backtrack_logit":  self.backtrack_head(shared).squeeze(-1),    # [B]
+            "epistemic_logit":  self.epistemic_head(shared).squeeze(-1),    # [B]
+            "aleatoric_logit":  self.aleatoric_head(shared).squeeze(-1),    # [B]
+            "confidence_logit": self.confidence_head(shared).squeeze(-1),   # [B]
+            "oc_logit":         self.oc_head(shared).squeeze(-1),           # [B]
+        }
+
+    # ------------------------------------------------------------------
+    # Inference — one (image, context_text) → one EpistemicAction
+    # ------------------------------------------------------------------
+
+    @torch.no_grad()
     def get_epistemic_action(
         self,
-        image: torch.Tensor,
+        image,
         context_text: str,
         backtrack_threshold: float = 0.5,
     ) -> EpistemicAction:
-        """Get a single EpistemicAction from image and context (paper §7.1)."""
-        outputs = self.forward(image, context_text, return_dict=True)
-
+        """Wrap one sample through the processor + forward + activations."""
+        self.eval()
+        inputs = self.processor(
+            images=image, text=context_text,
+            return_tensors="pt", padding=True,
+        )
+        device = next(self.parameters()).device
+        inputs = {k: v.to(device) if hasattr(v, "to") else v for k, v in inputs.items()}
+        out = self.forward(inputs)
+        routing_probs = torch.softmax(out["routing_logits"], dim=-1)
+        cls_idx = int(routing_probs.argmax(dim=-1).item())
         return EpistemicAction(
-            next_agent=outputs["routing_class"],
-            backtrack=outputs["backtrack_prob"].item() > backtrack_threshold,
-            epistemic_uncertainty=outputs["epistemic"].item(),
-            aleatoric_uncertainty=outputs["aleatoric"].item(),
-            confidence=outputs["confidence"].item(),
-            overconfidence=outputs["oc_prob"].item() > self.oc_threshold,
-            belief_state=outputs["belief_text"],
+            next_agent=self.agent_classes[cls_idx],
+            backtrack=torch.sigmoid(out["backtrack_logit"]).item() > backtrack_threshold,
+            epistemic_uncertainty=torch.sigmoid(out["epistemic_logit"]).item(),
+            aleatoric_uncertainty=torch.sigmoid(out["aleatoric_logit"]).item(),
+            confidence=torch.sigmoid(out["confidence_logit"]).item(),
+            overconfidence=torch.sigmoid(out["oc_logit"]).item() > self.oc_threshold,
         )

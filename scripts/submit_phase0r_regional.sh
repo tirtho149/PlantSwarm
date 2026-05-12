@@ -7,11 +7,16 @@
 #SBATCH --gres=gpu:a100:1
 #SBATCH --time=12:00:00
 #SBATCH --partition=nova
-#SBATCH --chdir=/work/mech-ai-scratch/tirtho/PlantSwarm
-#SBATCH --output=/work/mech-ai-scratch/tirtho/PlantSwarm/logs/pathome_phase0r-%j.out
-#SBATCH --error=/work/mech-ai-scratch/tirtho/PlantSwarm/logs/pathome_phase0r-%j.err
-#SBATCH --mail-user=tirtho@iastate.edu
+#SBATCH --output=logs/pathome_phase0r-%j.out
+#SBATCH --error=logs/pathome_phase0r-%j.err
 #SBATCH --mail-type=BEGIN,END,FAIL
+
+# Portable paths — override at submit time via env vars, e.g.:
+#   PATHOME_REPO=/path/to/PlantSwarm \
+#   PATHOME_SLURM_EMAIL=you@example.com \
+#     sbatch --mail-user="$PATHOME_SLURM_EMAIL" scripts/submit_phase0r_regional.sh
+PATHOME_REPO="${PATHOME_REPO:-$(pwd)}"
+cd "$PATHOME_REPO"
 
 # ============================================================================
 # Phase 0R — Qwen-swarm regional delta extraction (Nova A100 + vLLM)
@@ -50,7 +55,7 @@ echo "Job ID: $SLURM_JOB_ID  Start: $(date)"
 echo "================================"
 
 module load python cuda/11.8
-source /work/mech-ai-scratch/tirtho/PlantSwarm/.venv/bin/activate
+source "$PATHOME_REPO/.venv/bin/activate"
 mkdir -p logs
 
 CSV="${PATHOME_USABLE_CSV:-BugWood_Diseases_usable.csv}"

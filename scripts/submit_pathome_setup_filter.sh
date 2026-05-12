@@ -6,11 +6,13 @@
 #SBATCH --mem=4G
 #SBATCH --time=00:15:00
 #SBATCH --partition=nova
-#SBATCH --chdir=/work/mech-ai-scratch/tirtho/PlantSwarm
-#SBATCH --output=/work/mech-ai-scratch/tirtho/PlantSwarm/logs/pathome_setup_filter-%j.out
-#SBATCH --error=/work/mech-ai-scratch/tirtho/PlantSwarm/logs/pathome_setup_filter-%j.err
-#SBATCH --mail-user=tirtho@iastate.edu
+#SBATCH --output=logs/pathome_setup_filter-%j.out
+#SBATCH --error=logs/pathome_setup_filter-%j.err
 #SBATCH --mail-type=BEGIN,END,FAIL
+
+# Portable paths: PATHOME_REPO=/path/to/repo sbatch [--mail-user=...] this.sh
+PATHOME_REPO="${PATHOME_REPO:-$(pwd)}"
+cd "$PATHOME_REPO"
 
 # ============================================================================
 # Setup (one-time): filter the Bugwood IPMNet CSV into the usable subset
@@ -34,7 +36,7 @@ echo "Job ID: $SLURM_JOB_ID  Start: $(date)"
 echo "================================"
 
 module load python
-source /work/mech-ai-scratch/tirtho/PlantSwarm/.venv/bin/activate
+source "$PATHOME_REPO/.venv/bin/activate"
 mkdir -p logs
 
 THRESHOLD="${PATHOME_THRESHOLD:-10}"

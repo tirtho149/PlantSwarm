@@ -39,12 +39,15 @@ flowchart TD
     TRACES[(phase0r_traces.jsonl<br/>per-trace records<br/>written when PATHOME_TRACE_DIR is set)]
     TRAIN[Train OBSERVE<br/>Qwen2.5-VL-7B plus LoRA<br/>per-step behavioral cloning]
     CKPT([observe_best.pt<br/>model deliverable])
+    EVAL[Evaluate OBSERVE<br/>scripts/evaluate_observe.py<br/>held-out routing acc, kappa ECE]
+    METRICS([results/observe_eval.json<br/>metrics deliverable])
 
     SETUP --> CACHE --> P0
     P0 --> PUSH --> PULL --> P0R
     VLLM -.serves.-> P0R --> ADAPT --> SEED
     P0R -.persists.-> TRACES
     TRACES --> TRAIN --> CKPT
+    CKPT --> EVAL --> METRICS
 
     classDef local fill:#dff,stroke:#066,stroke-width:1px
     classDef gpu fill:#fde,stroke:#a06,stroke-width:1px
@@ -52,8 +55,8 @@ flowchart TD
     classDef terminal fill:#efe,stroke:#060,stroke-width:2px
     class SETUP,CACHE,P0 local
     class VLLM,P0R,ADAPT gpu
-    class TRACES,TRAIN student
-    class SEED,CKPT terminal
+    class TRACES,TRAIN,EVAL student
+    class SEED,CKPT,METRICS terminal
 ```
 
 | Stage | Host | Compute | Walltime |
@@ -373,11 +376,16 @@ Per-step supervision derived from each trace's context buffer:
 | target_overconfidence | 1 iff kappa is high AND len(deltas at step) == 0 |
 | target_belief | reasoning string the agent emitted |
 
-**NOTE.** Decision Transformer (`observe/decision_transformer.py`) and
-GRPO (`observe/grpo.py`) are restored from the paper but **not yet
-ported** to delta-mode reward — the reward signal
-`delta_set_F1 + (1 - ECE)` needs wiring. The behavioral-cloning trainer
-(`OBSERVETrainer`) is the v1 path.
+**Two-phase training paths**:
+- Phase A — `observe.decision_transformer.DecisionTransformerTrainer.fit`
+  consumes the same trace JSONL, weights each step by the trace's
+  delta-mode return `R_t = sum_{t' >= t} r_{t'}` with
+  `r_T = routing_acc * (1 - kappa_ece)`, runs BC with early stopping
+  on val total loss.
+- Phase B — `observe.grpo.GRPOTrainer.fit` samples K candidate
+  actions per prompt, computes within-group advantage
+  `A = r - mean(r)`, applies the clipped policy ratio update against
+  a frozen Phase-A reference policy, KL-anchored.
 
 ---
 
@@ -526,8 +534,8 @@ PlantSwarm/
 |   |                                       split_annotations
 |   |-- loss.py                            multi-task L_rt + L_cal + L_cons + L_OC + L_bel
 |   |-- inference.py                       OBSERVEInference single-pass
-|   |-- decision_transformer.py            Phase A (NOT yet ported)
-|   |-- grpo.py                            Phase B (NOT yet ported)
+|   |-- decision_transformer.py            Phase A: DT with delta-mode reward
+|   |-- grpo.py                            Phase B: GRPO with delta-mode reward
 |   `-- active_learning.py                 epsilon-aware sample selection
 |
 |-- agents/                                5 delta-extraction agents
