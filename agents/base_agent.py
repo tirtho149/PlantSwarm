@@ -2,7 +2,8 @@
 agents/base_agent.py
 ====================
 Base class for the Qwen delta-extraction swarm — paper-faithful routing
-edition (PlantSwarm §4 / Algorithm 1, adapted for deltas).
+edition with iterative KB context (PlantSwarm §4 / Algorithm 1, adapted
+for deltas).
 
 Each call this agent makes returns four things:
 
@@ -10,16 +11,19 @@ Each call this agent makes returns four things:
                         for the canonical fields this agent owns
     - confidence (κ)  : "high" | "medium" | "low"
     - handoff_target  : the agent that should run next, or None to terminate
-    - reasoning       : one-line free-text justification (kept in the
-                        context buffer so the next agent can see it)
+    - reasoning       : one-line free-text justification
+
+The agent is shown three context blocks:
+
+  1. CANONICAL KB (slice for this agent's owned fields)
+  2. EXISTING KB OBSERVATIONS for this state (from prior Phase 0R runs)
+  3. PRIOR TRACE CONTEXT (deltas emitted earlier in THIS trace)
+
+It is instructed to emit ONLY ADDITIONS or CONTRADICTIONS — restating
+canonical or restating already-captured KB observations is forbidden.
 
 The orchestrator (``plantswarm.delta_pipeline``) overrides the model's
-chosen handoff when paper Algorithm 1 dictates a different one:
-
-    κ=low  AND backtrack_count == 0          → MorphologyAgent (regrounding)
-    κ=low  AND backtrack_count >= 1          → default forward (loop guard)
-    κ=high AND all_specialists_contributed   → DiagnosisAgent (early terminate)
-    otherwise                                → model's chosen handoff
+chosen handoff when paper Algorithm 1 dictates a different one.
 """
 
 from __future__ import annotations
@@ -51,7 +55,6 @@ ALLOWED_DELTA_FIELDS = (
 
 CONFIDENCE_LEVELS = ("high", "medium", "low")
 
-# Map each owned delta field → canonical KB key(s) used to render the slice.
 _DELTA_FIELD_TO_CANONICAL = {
     "lesion_morphology":   ("summary",),
     "affected_organs":     ("affected_parts",),
@@ -75,7 +78,7 @@ class AgentDeltaOutput:
     confidence: str = "medium"
     handoff_target: Optional[str] = None
     reasoning: str = ""
-    raw_text: str = ""           # for debug / trace logging
+    raw_text: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -91,7 +94,6 @@ def _clean(s: Any) -> str:
 
 
 def _validate_delta(d: Any, allowed_fields: set) -> Optional[Dict[str, str]]:
-    """Normalize one model-emitted delta into the schema, or None to drop."""
     if not isinstance(d, dict):
         return None
     image_shows = _clean(d.get("image_shows"))
@@ -112,8 +114,6 @@ def _coerce_confidence(c: Any) -> str:
     s = _clean(c).lower()
     if s in CONFIDENCE_LEVELS:
         return s
-    # Word-boundary match so "highly uncertain" doesn't coerce to "high".
-    # Only match when the level appears as a whole word.
     tokens = re.findall(r"[a-z]+", s)
     for level in CONFIDENCE_LEVELS:
         if level in tokens:
@@ -128,36 +128,24 @@ def _coerce_handoff(t: Any, menu: List[str]) -> Optional[str]:
     for name in menu:
         if name.lower() == s.lower():
             return name
-    # Substring fallback ("SymptomAgent" inside "next: SymptomAgent")
     for name in menu:
         if name.lower() in s.lower():
             return name
     return None
 
 
-# ---------------------------------------------------------------------------
-# Output JSON parser
-# ---------------------------------------------------------------------------
-
 def parse_agent_output(
     text: str,
     owned_fields: List[str],
     handoff_menu: List[str],
 ) -> Tuple[List[Dict[str, str]], str, Optional[str], str]:
-    """Return (deltas, confidence, handoff_target, reasoning).
-
-    Recovers from markdown fences and from stray prose around the JSON.
-    Coerces unknown handoff strings to menu members; rejects empty
-    image_shows; coerces off-domain field names to 'other'.
-    """
+    """Return (deltas, confidence, handoff_target, reasoning)."""
     if not text:
         return [], "medium", None, ""
-
     s = text.strip()
     if s.startswith("```"):
         s = re.sub(r"^```(?:json)?\s*", "", s)
         s = re.sub(r"\s*```$", "", s)
-
     obj: Any = None
     try:
         obj = json.loads(s)
@@ -168,17 +156,14 @@ def parse_agent_output(
                 obj = json.loads(m.group())
             except json.JSONDecodeError:
                 obj = None
-
     if not isinstance(obj, dict):
         return [], "medium", None, ""
-
     allowed_fields = set(owned_fields) | {"other"}
     deltas: List[Dict[str, str]] = []
     for d in obj.get("deltas") or []:
         v = _validate_delta(d, allowed_fields)
         if v is not None:
             deltas.append(v)
-
     confidence = _coerce_confidence(obj.get("confidence"))
     handoff    = _coerce_handoff(obj.get("handoff_target"), handoff_menu)
     reasoning  = _clean(obj.get("reasoning"))
@@ -191,7 +176,9 @@ def parse_agent_output(
 
 DELTA_USER_PROMPT = """\
 You are looking at one Bugwood Network field photograph of a plant
-disease. The canonical knowledge base for this disease is given below.
+disease. The canonical knowledge base for this disease is given below,
+along with any observations already captured for THIS state in prior
+runs.
 
 Crop:    {crop}
 Disease: {disease}
@@ -199,30 +186,26 @@ State:   {state}
 
 CANONICAL KB (slice for {agent_name} — do NOT re-describe these contents):
 {canonical_slice}
-
-You own these delta fields: {owned_fields}
-
-{prior_context}\
+{existing_kb_block}{prior_context}\
 Your job has two parts:
 
-(1) DELTAS — Look at the IMAGE and compare it to the canonical KB for
-    YOUR owned fields. For each owned field, decide:
-      · Does the image show something canonical does NOT capture?
-      · Does the image CONTRADICT canonical?
-    If yes, emit a delta. If the image confirms canonical exactly for
-    that field, do not emit a delta for it. Each delta MUST be supported
-    by something visible in this photo. Restating canonical text is
-    forbidden.
+(1) DELTAS — Look at the IMAGE and compare it to BOTH the canonical KB
+    above AND the existing KB observations. For each of YOUR owned
+    fields, decide:
+      · Does the image show something canonical AND existing KB do NOT
+        capture?                                                  → emit a delta
+      · Does the image CONTRADICT canonical or existing KB?
+                                                                  → emit a delta
+      · Does the image CONFIRM what's already captured?            → do NOT emit
+    Each delta MUST be supported by something visible in this photo.
+    Restating canonical or already-captured KB text is forbidden.
 
 (2) ROUTING — Report your confidence and pick the next agent:
-      · confidence: "high" if your deltas are well-grounded in clear
-        visual evidence; "medium" if some are uncertain; "low" if the
-        image is ambiguous or you couldn't ground anything.
-      · handoff_target: pick ONE of {handoff_menu_str}. Pick
-        MorphologyAgent if you want regrounding on low confidence.
-        Pick DiagnosisAgent if all specialists have contributed and
-        you're confident the picture is complete. Otherwise pick the
-        specialist that would add the most.
+      · confidence: "high" if your deltas are well-grounded; "medium"
+        if some are uncertain; "low" if the image is ambiguous.
+      · handoff_target: pick ONE of {handoff_menu_str}.
+
+You own these delta fields: {owned_fields}
 
 Output STRICT JSON, no markdown fences, no preamble:
 {{
@@ -239,7 +222,7 @@ Output STRICT JSON, no markdown fences, no preamble:
   "reasoning":      "<one-line justification for confidence + handoff>"
 }}
 
-If the image confirms canonical exactly for every owned field, return
+If the image confirms canonical AND existing KB exactly, return
 {{"deltas": [], "confidence": "high", "handoff_target": "DiagnosisAgent", "reasoning": "..."}}.
 """
 
@@ -249,13 +232,8 @@ If the image confirms canonical exactly for every owned field, return
 # ---------------------------------------------------------------------------
 
 class BaseAgent(abc.ABC):
-    """Subclasses must set:
-        - AGENT_NAME       str
-        - OWNED_FIELDS     List[str], subset of ALLOWED_DELTA_FIELDS
-        - HANDOFF_MENU     List[str], valid next-agent names
-        - DEFAULT_FORWARD  str, the natural next agent (used when routing
-                           logic doesn't pick something else)
-        - SYSTEM_PROMPT    str
+    """Subclasses must set AGENT_NAME, OWNED_FIELDS, HANDOFF_MENU,
+    DEFAULT_FORWARD, SYSTEM_PROMPT.
     """
 
     AGENT_NAME: str = "BaseAgent"
@@ -270,10 +248,6 @@ class BaseAgent(abc.ABC):
     def __init__(self, client: VLLMClient):
         self.client = client
 
-    # ------------------------------------------------------------------
-    # Public call (one routed step)
-    # ------------------------------------------------------------------
-
     def extract_with_routing(
         self,
         *,
@@ -281,19 +255,21 @@ class BaseAgent(abc.ABC):
         disease: str,
         state: str,
         canonical: Dict[str, Any],
-        image_b64: str,
+        image_data_url: str,
         prior_context: List["AgentDeltaOutput"],
+        existing_kb_deltas: Optional[List[Dict[str, Any]]] = None,
         seed: Optional[int] = None,
         temperature: Optional[float] = None,
     ) -> AgentDeltaOutput:
         """One stochastic step of the routed swarm.
 
-        ``prior_context`` is the run's context buffer — the deltas /
-        confidence / reasoning from every agent that has already run in
-        this trace. We render it inline so the model can refine or
-        contradict earlier agents' findings.
+        ``existing_kb_deltas`` is the persisted regional KB for THIS
+        state from prior Phase 0R runs (empty on cold start). The agent
+        is told to NOT restate them — only to add new observations or
+        flag contradictions.
         """
         canonical_slice = self._format_canonical_slice(canonical)
+        existing_block = self._format_existing_kb(existing_kb_deltas or [], state)
         prior_block = self._format_prior_context(prior_context)
         owned_list = ", ".join(self.OWNED_FIELDS) or "other"
         menu_str = ", ".join(self.HANDOFF_MENU) or "DiagnosisAgent"
@@ -304,19 +280,17 @@ class BaseAgent(abc.ABC):
             state=state,
             agent_name=self.AGENT_NAME,
             canonical_slice=canonical_slice,
+            existing_kb_block=existing_block,
+            prior_context=prior_block,
             owned_fields=owned_list,
             handoff_menu_str=menu_str,
-            prior_context=prior_block,
         )
 
         messages = [{
             "role": "user",
             "content": [
-                {
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"},
-                },
-                {"type": "text", "text": user_prompt},
+                {"type": "image_url", "image_url": {"url": image_data_url}},
+                {"type": "text",      "text":      user_prompt},
             ],
         }]
 
@@ -343,7 +317,7 @@ class BaseAgent(abc.ABC):
         )
 
     # ------------------------------------------------------------------
-    # Canonical slice (owned-field view)
+    # Context rendering
     # ------------------------------------------------------------------
 
     def _format_canonical_slice(self, canonical: Dict[str, Any]) -> str:
@@ -367,20 +341,40 @@ class BaseAgent(abc.ABC):
             lines.append(f"  {owned}: {value or '(not specified)'}")
         return "\n".join(lines) if lines else "  (canonical not available)"
 
-    # ------------------------------------------------------------------
-    # Prior-agent context (in-trace memory)
-    # ------------------------------------------------------------------
+    @staticmethod
+    def _format_existing_kb(
+        existing: List[Dict[str, Any]],
+        state: str,
+    ) -> str:
+        """Render existing regional KB deltas for THIS state.
+
+        Returns a block with a leading blank line and a trailing newline so
+        prompt concatenation stays readable. Empty when there are no prior
+        observations (cold start).
+        """
+        if not existing:
+            return ""
+        lines = ["", f"EXISTING KB OBSERVATIONS for {state} "
+                     f"(from prior runs — preserve, do NOT restate):"]
+        for d in existing:
+            fld = d.get("field", "other")
+            support = d.get("__support__") or d.get("support") or 0
+            tag = f" (support={support})" if support else ""
+            shows = d.get("image_shows", "")
+            if len(shows) > 220:
+                shows = shows[:220].rstrip() + "…"
+            lines.append(f"  • [{fld}]{tag}")
+            if d.get("canonical_says") and d["canonical_says"] != "(not specified)":
+                lines.append(f"      canonical: {d['canonical_says']}")
+            lines.append(f"      previously observed: {shows}")
+        lines.append("")
+        return "\n".join(lines) + "\n"
 
     @staticmethod
     def _format_prior_context(prior: List["AgentDeltaOutput"]) -> str:
-        """Render prior agents' output so this agent can refine/contradict.
-
-        Empty string when no prior agents have run yet — keeps the prompt
-        clean for the entry agent.
-        """
         if not prior:
             return ""
-        lines: List[str] = ["", "PRIOR AGENT CONTEXT (most recent last):"]
+        lines: List[str] = ["", "PRIOR TRACE CONTEXT (this run, most recent last):"]
         for step, out in enumerate(prior, 1):
             lines.append(f"  [{step}] {out.agent_name} (confidence={out.confidence})")
             if out.reasoning:

@@ -249,14 +249,28 @@ class VLLMClient:
         return {lbl: ev / total for lbl, ev in zip(label_list, exp_vals)}
 
     def _append_guided_params(
-        self, payload: Dict[str, Any], label_list: List[str], *, chat: bool
+        self,
+        payload: Dict[str, Any],
+        label_list: List[str],
+        *,
+        chat: bool,
+        prefer_structured_outputs: Optional[bool] = None,
     ) -> None:
-        """Mutate payload with vLLM guided decoding (new structured_outputs or legacy guided_choice)."""
+        """Mutate payload with vLLM guided decoding.
+
+        ``prefer_structured_outputs`` defaults to ``self.prefer_structured_outputs``.
+        Passing it explicitly is the thread-safe way for the retry path to
+        flip the flag without mutating shared state.
+        """
         if not self.guided_scoring_enabled:
             return
-        if self.prefer_structured_outputs:
+        prefer = (
+            self.prefer_structured_outputs
+            if prefer_structured_outputs is None
+            else bool(prefer_structured_outputs)
+        )
+        if prefer:
             payload["structured_outputs"] = {"choice": label_list}
-            # /completions needs logprob depth to recover label logits (chat uses logprobs: True).
             if not chat:
                 payload["logprobs"] = min(20, max(len(label_list), 5))
         else:
@@ -265,7 +279,11 @@ class VLLMClient:
                 payload["logprobs"] = len(label_list)
 
     def _score_labels_vision_chat(
-        self, prompt_prefix: str, label_list: List[str], image_b64: str
+        self,
+        prompt_prefix: str,
+        label_list: List[str],
+        image_b64: str,
+        prefer_structured_outputs: Optional[bool] = None,
     ) -> Optional[Dict[str, float]]:
         """Vision-conditioned scoring via /chat/completions + structured_outputs (or legacy guided_choice)."""
         messages = [
@@ -291,7 +309,10 @@ class VLLMClient:
             "logprobs": True,
             "top_logprobs": min(max(len(label_list), 5), 20),
         }
-        self._append_guided_params(payload, label_list, chat=True)
+        self._append_guided_params(
+            payload, label_list, chat=True,
+            prefer_structured_outputs=prefer_structured_outputs,
+        )
 
         url = f"{self.base_url}/chat/completions"
         try:
@@ -309,7 +330,10 @@ class VLLMClient:
         return None
 
     def _score_labels_completions_text(
-        self, prompt_prefix: str, label_list: List[str]
+        self,
+        prompt_prefix: str,
+        label_list: List[str],
+        prefer_structured_outputs: Optional[bool] = None,
     ) -> Optional[Dict[str, float]]:
         """Text-only /completions scoring (no image)."""
         payload: Dict[str, Any] = {
@@ -319,7 +343,10 @@ class VLLMClient:
             "seed": self.seed,
             "max_tokens": self._max_tokens_for_labels(label_list),
         }
-        self._append_guided_params(payload, label_list, chat=False)
+        self._append_guided_params(
+            payload, label_list, chat=False,
+            prefer_structured_outputs=prefer_structured_outputs,
+        )
 
         url = f"{self.base_url}/completions"
         try:
@@ -342,15 +369,21 @@ class VLLMClient:
         label_list: List[str],
         image_b64: Optional[str],
     ) -> Optional[Dict[str, float]]:
-        """Flip structured_outputs <-> guided_choice and retry once."""
-        prev = self.prefer_structured_outputs
-        try:
-            self.prefer_structured_outputs = not prev
-            if image_b64:
-                return self._score_labels_vision_chat(prompt_prefix, label_list, image_b64)
-            return self._score_labels_completions_text(prompt_prefix, label_list)
-        finally:
-            self.prefer_structured_outputs = prev
+        """Flip structured_outputs <-> guided_choice and retry once.
+
+        Thread-safe: the flipped preference is passed as a parameter,
+        ``self.prefer_structured_outputs`` is never mutated.
+        """
+        flipped = not self.prefer_structured_outputs
+        if image_b64:
+            return self._score_labels_vision_chat(
+                prompt_prefix, label_list, image_b64,
+                prefer_structured_outputs=flipped,
+            )
+        return self._score_labels_completions_text(
+            prompt_prefix, label_list,
+            prefer_structured_outputs=flipped,
+        )
 
     def score_labels(
         self,

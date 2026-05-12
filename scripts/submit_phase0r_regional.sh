@@ -75,7 +75,7 @@ echo "[vllm] booting $MODEL on :$PORT ..."
 python -m vllm.entrypoints.openai.api_server \
   --model "$MODEL" \
   --port  "$PORT" \
-  --max-model-len 4096 \
+  --max-model-len 8192 \
   --trust-remote-code \
   > "$VLLM_LOG" 2>&1 &
 VLLM_PID=$!

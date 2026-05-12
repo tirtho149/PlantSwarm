@@ -128,15 +128,22 @@ def disease_to_canonical_dict(record: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 def observation_to_regional_dict(state: str, record: dict) -> dict:
-    """Map a per-state VLM observation into the dict shape consumed by
+    """Map a per-state observation into the dict shape consumed by
     SymptomProfile.from_dict.
 
-    The record is the JSON the VLM stage emits per (profile, state).
-    The new schema is a deltas-only list:
-        deltas: [{field, canonical_says, image_shows, image_quote}]
-    Plus ``__image_ids__`` for image grounding. Older records with
-    parallel fields (severity / lesion_morphology / ...) are folded into
-    deltas via ``_legacy_record_to_deltas`` so existing JSON still loads.
+    The Qwen swarm emits per (profile, state):
+        deltas:        [{field, canonical_says, image_shows, image_quote,
+                         image_id, __support__, __cluster_size__}, ...]
+        __image_ids__: list of bugwood::N witnesses
+        __swarm_meta__: per-state telemetry (trace paths, κ, merge stats)
+
+    ``__support__`` / ``__cluster_size__`` are renamed to ``support`` /
+    ``cluster_size`` on the way out (the underscore prefix was a
+    pipeline-internal annotation; on disk we prefer clean keys).
+    ``__swarm_meta__`` is preserved verbatim under ``swarm_meta``.
+
+    Older records with parallel fields (severity / lesion_morphology /
+    ...) are folded into deltas via ``_legacy_record_to_deltas``.
     """
     image_ids = list(record.get("__image_ids__") or record.get("image_ids") or [])
     primary = image_ids[0] if image_ids else ""
@@ -151,19 +158,37 @@ def observation_to_regional_dict(state: str, record: dict) -> dict:
             continue
         if not d.get("image_shows"):
             continue
-        deltas.append({
+        out: Dict[str, Any] = {
             "field":          _str(d.get("field")) or "other",
             "canonical_says": _str(d.get("canonical_says")) or "(not specified)",
             "image_shows":    _str(d.get("image_shows")),
             "image_quote":    _str(d.get("image_quote")),
             "image_id":       _str(d.get("image_id")) or primary,
-        })
+        }
+        # Telemetry: agreement count + cluster size from the swarm filter.
+        support = d.get("__support__", d.get("support"))
+        if support is not None:
+            try:
+                out["support"] = int(support)
+            except (TypeError, ValueError):
+                pass
+        cluster = d.get("__cluster_size__", d.get("cluster_size"))
+        if cluster is not None:
+            try:
+                out["cluster_size"] = int(cluster)
+            except (TypeError, ValueError):
+                pass
+        deltas.append(out)
 
-    return {
+    result: Dict[str, Any] = {
         "state": state,
         "image_ids": image_ids,
         "deltas": deltas,
     }
+    swarm_meta = record.get("__swarm_meta__") or record.get("swarm_meta")
+    if isinstance(swarm_meta, dict):
+        result["swarm_meta"] = swarm_meta
+    return result
 
 
 def _legacy_record_to_deltas(record: dict) -> List[dict]:

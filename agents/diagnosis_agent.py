@@ -5,16 +5,18 @@ DiagnosisAgent — terminal aggregator for one routed trace.
 
 Runs once at the end of every trace. Reads the full context buffer
 (every specialist's deltas + confidence + reasoning), the full canonical
-KB, and the image. Returns the trace's final delta list — deduped, with
-restatements of canonical dropped.
+KB, the image, AND the existing regional KB observations for this
+state. Returns the trace's final delta list — deduped, with restatements
+of canonical or existing KB dropped.
 
-Cross-run aggregation (N stochastic traces → final delta set) is handled
-by ``plantswarm.delta_pipeline._agreement_filter``, not by this agent.
+Cross-run aggregation (N stochastic traces → final delta set) and
+conservative merge with the existing KB are handled by
+``plantswarm.delta_pipeline``, not by this agent.
 """
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from agents.base_agent import (
     ALLOWED_DELTA_FIELDS,
@@ -27,17 +29,18 @@ from agents.base_agent import (
 
 CONSOLIDATOR_PROMPT = """\
 You are the consolidator for one routed swarm trace. Below is the
-context buffer for this trace — every specialist that ran, in order,
-with the deltas it emitted and its confidence. Your job is to produce
-the FINAL delta list for THIS trace by:
+context buffer for this trace — every specialist that ran, with the
+deltas it emitted and its confidence. Your job is to produce the FINAL
+delta list for THIS trace by:
 
   (1) Deduping overlapping fields — when two specialists target the
       same field with overlapping content, keep the more specific /
       better-grounded one.
-  (2) Dropping any candidate that just restates canonical text.
-      Restating canonical is forbidden.
-  (3) Keeping candidates that add or contradict canonical with image
-      evidence.
+  (2) Dropping any candidate that just restates canonical text OR
+      restates an existing KB observation. Both kinds of restatement
+      are forbidden.
+  (3) Keeping candidates that add or contradict canonical / existing KB
+      with image evidence.
 
 Crop:    {crop}
 Disease: {disease}
@@ -45,7 +48,7 @@ State:   {state}
 
 FULL CANONICAL KB:
 {canonical_full}
-
+{existing_kb_block}
 TRACE CONTEXT BUFFER:
 {context_buffer}
 
@@ -71,8 +74,6 @@ If every candidate is a redundant restatement, return
 
 class DiagnosisAgent(BaseAgent):
     AGENT_NAME = "DiagnosisAgent"
-    # Consolidator can emit any allowed field; HANDOFF_MENU is empty since it
-    # always terminates the trace.
     OWNED_FIELDS = [f for f in ALLOWED_DELTA_FIELDS if f != "other"] + ["other"]
     HANDOFF_MENU: List[str] = []
     DEFAULT_FORWARD = ""
@@ -80,8 +81,8 @@ class DiagnosisAgent(BaseAgent):
     SYSTEM_PROMPT = (
         "You are DiagnosisAgent, the terminal consolidator for one trace. "
         "Read the context buffer, dedupe overlapping fields, drop "
-        "restatements of canonical, and return the final trace delta "
-        "list. Output strict JSON only — no prose, no markdown."
+        "restatements of canonical AND existing KB, and return the final "
+        "trace delta list. Output strict JSON only — no prose, no markdown."
     )
 
     def extract_with_routing(self, **_kwargs):  # noqa: D401
@@ -96,28 +97,27 @@ class DiagnosisAgent(BaseAgent):
         disease: str,
         state: str,
         canonical: Dict[str, Any],
-        image_b64: str,
+        image_data_url: str,
         context_buffer: List[AgentDeltaOutput],
+        existing_kb_deltas: Optional[List[Dict[str, Any]]] = None,
         seed: int = 0,
         temperature: float = 0.2,
     ) -> AgentDeltaOutput:
-        """Run once at the end of a trace; return the trace's final deltas."""
+        existing_block = self._format_existing_kb(existing_kb_deltas or [], state)
         user_prompt = CONSOLIDATOR_PROMPT.format(
             crop=crop,
             disease=disease,
             state=state,
             canonical_full=self._format_canonical_full(canonical),
+            existing_kb_block=existing_block,
             context_buffer=self._format_context_buffer(context_buffer),
             allowed_fields=", ".join(ALLOWED_DELTA_FIELDS),
         )
         messages = [{
             "role": "user",
             "content": [
-                {
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"},
-                },
-                {"type": "text", "text": user_prompt},
+                {"type": "image_url", "image_url": {"url": image_data_url}},
+                {"type": "text",      "text":      user_prompt},
             ],
         }]
         text, _tokens = self.client.chat(
@@ -135,14 +135,10 @@ class DiagnosisAgent(BaseAgent):
             agent_name=self.AGENT_NAME,
             deltas=deltas,
             confidence=confidence,
-            handoff_target=None,    # always terminates
+            handoff_target=None,
             reasoning=reasoning,
             raw_text=text,
         )
-
-    # ------------------------------------------------------------------
-    # Rendering helpers
-    # ------------------------------------------------------------------
 
     @staticmethod
     def _format_canonical_full(canonical: Dict[str, Any]) -> str:

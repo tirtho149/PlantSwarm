@@ -284,25 +284,46 @@ schema, the SAGE prompts, and a worked example.
 | Inputs           | `artifacts/pathome_kb/<Crop>/final_registry.json` (canonical, from Phase 0), `BugWood_..._usable.csv`, `.bugwood_cache/` |
 | Outputs          | regional deltas embedded into `final_registry.json[*].regional_observations[state]`; merged `symptoms_seed.json`  |
 
-Inside one (crop, disease, state) call (paper §4 / Algorithm 1, adapted):
+Inside one (crop, disease, state) call (paper §4 / Algorithm 1, adapted,
+with iterative KB evolution):
 
-1. `flatten_canonical()` reduces the SAGE-shaped record to plain values.
-2. **N stochastic routed traces** run independently (default N=10, T=0.8;
+1. **Load existing regional deltas** for THIS state from
+   `final_registry.json` (`existing_deltas_for_state()`). On cold start
+   this is empty; on re-runs it's whatever the previous Phase 0R
+   committed. The agents see these in their context.
+2. `flatten_canonical()` reduces the SAGE-shaped record to plain values.
+3. **N stochastic routed traces** run independently (default N=10, T=0.8;
    smoke uses N=5). Each trace is a sequential traversal:
    - Entry: `MorphologyAgent` (visual grounding).
    - Each agent emits `{deltas, confidence (κ), handoff_target, reasoning}`
-     and sees prior agents' output in its context buffer.
+     and sees three context blocks: the **canonical KB slice** for its
+     owned fields, the **existing KB observations** for this state, and
+     the **prior trace context** (deltas emitted earlier in this trace).
+     Agents are instructed to NOT restate canonical or existing KB.
    - **Algorithm 1 routing** overrides the model's choice when:
-     - κ=low + no prior backtrack → `MorphologyAgent` (regrounding)
-     - κ=low + already backtracked → default forward (loop guard)
+     - κ=low + backtrack budget remaining → `MorphologyAgent` (regrounding)
+     - κ=low + budget exhausted → default forward (loop guard)
      - κ=high + all 4 specialists ran → `DiagnosisAgent` (early terminate)
-   - `Tmax=15` caps the path; if reached, force a terminal `DiagnosisAgent` call.
+   - `Tmax=15` caps the path; if reached, force a terminal `DiagnosisAgent`
+     call. `max_backtracks` (default 1) is honored as the actual cap.
    - Each trace ends with `DiagnosisAgent` consolidating its own context
-     buffer into that trace's final delta list.
-3. **Cross-run agreement filter**: deltas from the N traces are clustered
+     buffer (specialists' deltas) plus the canonical + existing-KB blocks
+     into that trace's final delta list.
+4. **Cross-run agreement filter**: deltas from the N traces are clustered
    by (`field`, Jaccard similarity over `image_shows` tokens). Clusters
    whose support covers ≥ K distinct runs (default K=3; smoke K=2) are
    kept; everything else is dropped as likely hallucination.
+5. **Conservative merge with existing KB**:
+   - Every existing delta is preserved (idempotent re-runs).
+   - A new delta is added iff no existing same-field delta has Jaccard
+     ≥ τ on `image_shows`.
+   - When a new delta overlaps with an existing one, the existing's
+     `__support__` counter is bumped (not duplicated).
+   - Contradictions (same field, low-Jaccard `image_shows`) are kept as
+     additional entries — downstream consumers see both and can weigh them.
+
+The merged result is what lands in `regional_observations[state]`.
+States not processed this run are preserved verbatim.
 
 Agent ownership (each agent's `OWNED_FIELDS`):
 - **MorphologyAgent** — `lesion_morphology, affected_organs, diagnostic_features`
@@ -321,7 +342,8 @@ VLLM_N_RUNS         stochastic traces per tuple (default 10; smoke 5)
 VLLM_AGREEMENT_MIN  K-of-N agreement to keep a delta (default 3; smoke 2)
 VLLM_TMAX           max path length per trace (default 15; smoke 8)
 VLLM_MAX_BACKTRACKS paper §5.3 (default 1)
-VLLM_SIM_THRESHOLD  Jaccard threshold for delta clustering (default 0.4)
+VLLM_SIM_THRESHOLD  Jaccard threshold for delta clustering AND merge dedup (default 0.4)
+PATHOME_IMAGE_CACHE_DIR  optional override prepended to the cache search path
 ```
 
 ---
