@@ -53,10 +53,14 @@ Configuration via env vars (read at client-build time):
 from __future__ import annotations
 
 import base64
+import json
 import mimetypes
 import os
+import threading
+import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Tuple
 
@@ -503,6 +507,70 @@ def _merge_with_existing(
 
 
 # ---------------------------------------------------------------------------
+# Trace persistence (training data for OBSERVE)
+# ---------------------------------------------------------------------------
+
+class _TraceWriter:
+    """Append-mode JSONL writer with an fsync after every record.
+
+    Thread-safe — used by ``run_for_state``'s parallel inner pool.
+    When ``PATHOME_TRACE_DIR`` is set, per-trace records are persisted
+    one line per (tuple, run) for downstream OBSERVE training.
+    """
+
+    def __init__(self, path: Path):
+        self.path = Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.Lock()
+
+    def write(self, record: Dict[str, Any]) -> None:
+        line = json.dumps(record, ensure_ascii=False, default=str)
+        with self._lock:
+            with open(self.path, "a", encoding="utf-8") as fh:
+                fh.write(line + "\n")
+                fh.flush()
+                try:
+                    os.fsync(fh.fileno())
+                except OSError:
+                    pass
+
+
+def _trace_writer_from_env() -> Optional[_TraceWriter]:
+    trace_dir = os.environ.get("PATHOME_TRACE_DIR")
+    if not trace_dir:
+        return None
+    fname = os.environ.get("PATHOME_TRACE_FILE", "phase0r_traces.jsonl")
+    return _TraceWriter(Path(trace_dir) / fname)
+
+
+def _serialize_trace(
+    *,
+    tuple_meta: Dict[str, Any],
+    trace: Dict[str, Any],
+    existing_deltas: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Flatten one trace dict into a JSONL-serializable record for OBSERVE."""
+    return {
+        "ts":               time.time(),
+        "profile_id":       tuple_meta["profile_id"],
+        "crop":             tuple_meta["crop"],
+        "disease":          tuple_meta["disease"],
+        "state":            tuple_meta["state"],
+        "primary_image_id": tuple_meta["primary_image_id"],
+        "image_path":       tuple_meta["image_path"],
+        "run_idx":          trace["run_idx"],
+        "path":             trace["path"],
+        "decisions":        trace["decisions"],
+        "confidences":      trace["confidences"],
+        "backtrack_count":  trace["backtrack_count"],
+        "early_terminated": trace["early_terminated"],
+        "context_buffer":   [asdict(c) for c in trace["context_buffer"]],
+        "final_deltas":     trace["final_deltas"],
+        "existing_kb_at_start": list(existing_deltas),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Top-level: one (crop, disease, state) tuple → final deltas
 # ---------------------------------------------------------------------------
 
@@ -515,6 +583,7 @@ def run_for_state(
     image_path: Path,
     primary_image_id: str,
     existing_deltas: Optional[List[Dict[str, Any]]] = None,
+    profile_id: Optional[str] = None,
     client: Optional[VLLMClient] = None,
     n_runs: Optional[int] = None,
     agreement_min: Optional[int] = None,
@@ -524,6 +593,7 @@ def run_for_state(
     similarity_threshold: Optional[float] = None,
     parallel_runs: bool = True,
     seed_base: int = 42,
+    trace_writer: Optional[_TraceWriter] = None,
 ) -> Dict[str, Any]:
     """N stochastic routed traces → cross-run agreement → conservative
     merge with existing → final deltas for this (crop, disease, state).
@@ -578,6 +648,24 @@ def run_for_state(
     else:
         for i in range(n_runs):
             traces.append(_one(i))
+
+    # Persist per-trace records (OBSERVE training data) if a writer is wired.
+    if trace_writer is not None:
+        tuple_meta = {
+            "profile_id":       profile_id or f"{crop}::{disease}",
+            "crop":             crop,
+            "disease":          disease,
+            "state":            state,
+            "primary_image_id": primary_image_id,
+            "image_path":       str(image_path),
+        }
+        for t in traces:
+            try:
+                trace_writer.write(_serialize_trace(
+                    tuple_meta=tuple_meta, trace=t, existing_deltas=existing,
+                ))
+            except Exception as e:
+                print(f"    [trace_writer] error: {type(e).__name__}: {e}")
 
     # Cross-run agreement → candidates.
     per_run_final = [t["final_deltas"] for t in traces]
@@ -642,14 +730,23 @@ def run_batch(
     *,
     client: Optional[VLLMClient] = None,
     max_parallel: int = 4,
+    trace_writer: Optional[_TraceWriter] = None,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
     """Run the swarm across many (profile, state) tuples.
 
     Returns ``{profile_id: {state: record}}`` where ``record`` already
     contains the merged-with-existing delta list for that state.
+
+    When ``PATHOME_TRACE_DIR`` is set in the environment (or
+    ``trace_writer`` is passed), per-trace records are appended to
+    ``<dir>/phase0r_traces.jsonl`` for downstream OBSERVE training.
     """
     if client is None:
         client = build_client_from_env()
+    if trace_writer is None:
+        trace_writer = _trace_writer_from_env()
+        if trace_writer is not None:
+            print(f"    [trace_writer] writing to {trace_writer.path}")
 
     items = list(work_items)
     results: Dict[str, Dict[str, Dict[str, Any]]] = {}
@@ -663,7 +760,9 @@ def run_batch(
             image_path=it.image_path,
             primary_image_id=it.primary_image_id,
             existing_deltas=it.existing_deltas,
+            profile_id=it.profile_id,
             client=client,
+            trace_writer=trace_writer,
         )
         record["__image_ids__"] = list(it.image_ids) or [it.primary_image_id]
         return it.profile_id, it.state, record

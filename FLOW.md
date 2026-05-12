@@ -28,17 +28,27 @@ flowchart TD
         VLLM -.serves.-> P0R --> ADAPT
     end
 
-    SEED(["<b>symptoms_seed.json</b><br/>(terminal deliverable)"])
+    SEED(["<b>symptoms_seed.json</b><br/>(KB deliverable)"])
+
+    subgraph OBS["Phase OBSERVE — distilled student"]
+        TRACES["<b>Phase 0R traces JSONL</b><br/>artifacts/observe_traces/phase0r_traces.jsonl<br/>(written when PATHOME_TRACE_DIR is set)"]
+        TRAIN["<b>Train OBSERVE</b><br/>scripts/train_observe.py<br/>Qwen2.5-VL-7B + LoRA<br/>per-step BC on (state, action) pairs"]
+        CKPT(["<b>observe/checkpoints/observe_best.pt</b><br/>(model deliverable)"])
+        TRACES --> TRAIN --> CKPT
+    end
 
     P0 --> PUSH --> PULL --> P0R
     ADAPT --> SEED
+    P0R -.persists.-> TRACES
 
     classDef local fill:#dff,stroke:#066,stroke-width:1px
     classDef gpu fill:#fde,stroke:#a06,stroke-width:1px
+    classDef observe fill:#eef,stroke:#33a,stroke-width:1px
     classDef terminal fill:#efe,stroke:#060,stroke-width:2px
     class SETUP,CACHE,P0 local
     class VLLM,P0R,ADAPT gpu
-    class SEED terminal
+    class TRACES,TRAIN observe
+    class SEED,CKPT terminal
 ```
 
 | Stage | Host | Compute | Walltime |
@@ -48,6 +58,7 @@ flowchart TD
 | Phase 0 (Claude) | LOCAL only (OAuth) | CPU + Anthropic API | smoke ~30 min / prod 16–24 h |
 | Phase 0R (Qwen) | GPU host with vLLM | 1× A100-80GB | smoke ~20–40 min / prod 10–20 h |
 | Adapter merge | Same as Phase 0R | CPU, seconds | trivial |
+| Phase OBSERVE (train) | GPU host with CUDA | 1× A100 | ~4–8 h on Phase 0R traces |
 
 ---
 
@@ -289,6 +300,46 @@ Properties:
 
 ---
 
+## 3f. Phase OBSERVE — distilled student (LoRA fine-tune)
+
+Trained on Phase 0R trace JSONL. At inference, replaces the
+N-stochastic-traces swarm with a single forward pass.
+
+```mermaid
+flowchart TD
+    P0R["Phase 0R run with PATHOME_TRACE_DIR=...<br/>(writes per-trace records to JSONL)"]
+    JSONL[(<b>phase0r_traces.jsonl</b><br/>one line per (tuple, run):<br/>profile_id, path, decisions,<br/>context_buffer, final_deltas,<br/>existing_kb_at_start)]
+    EXPAND["observe.trainer.load_phase0r_traces()<br/>expand to per-step TraceStepAnnotation"]
+    SPLIT["split_annotations()<br/>group by image_path → train / val / held"]
+    MODEL["OBSERVE = Qwen2.5-VL-7B + LoRA<br/>heads: routing(5), backtrack(1),<br/>ε(1), α(1), confidence(1), OC(1)"]
+    TRAIN["OBSERVETrainer.train_epoch()<br/>multi-task loss: L_rt + 0.4·L_cal +<br/>0.2·L_cons + 0.3·L_OC"]
+    CKPT[(<b>observe/checkpoints/observe_best.pt</b>)]
+    INFER["observe.OBSERVEInference.predict(image, ctx)<br/>→ EpistemicAction(next_agent, backtrack,<br/>   κ, uncertainty, belief)"]
+
+    P0R --> JSONL --> EXPAND --> SPLIT --> TRAIN
+    MODEL --> TRAIN --> CKPT
+    CKPT --> INFER
+```
+
+Per-step supervision derived from each trace's context_buffer:
+
+| Target | Source |
+|---|---|
+| `target_routing` | `path[i+1]` — which agent the swarm called next |
+| `target_backtrack` | 1 iff `path[i+1] == "MorphologyAgent" AND path[i] != "MorphologyAgent"` |
+| `target_confidence` | κ ∈ {high, medium, low} → {0.9, 0.6, 0.3} |
+| `target_epistemic` | `(n_final - n_at_step) / max(1, n_final)` — how much more came later |
+| `target_aleatoric` | `1 - kappa_scalar` |
+| `target_overconfidence` | 1 iff κ=high AND `len(deltas at step) == 0` |
+| `target_belief` | `reasoning` string the agent emitted |
+
+NOTE — Decision Transformer (`observe/decision_transformer.py`) and
+GRPO (`observe/grpo.py`) are restored from the paper but **not yet
+ported to delta-mode reward** (`delta_set_F1 + (1-ECE)` needs wiring).
+The behavioral-cloning trainer is the v1 path.
+
+---
+
 ## 4. Data shape evolution
 
 What lives where, and what gets stripped vs preserved between layers.
@@ -364,6 +415,43 @@ The adapter strips the `__` prefix from telemetry keys but preserves all
 the content — the seed JSON consumer sees `support`, `cluster_size`,
 `swarm_meta` as clean keys.
 
+When `PATHOME_TRACE_DIR` is set, Phase 0R also writes per-trace records
+for OBSERVE training:
+
+```
+                $PATHOME_TRACE_DIR/phase0r_traces.jsonl     (append-mode)
+                ┌──────────────────────────────────────────┐
+                │ {                                        │   ← one line
+                │   "ts": 1715520000.123,                  │     per (tuple, run)
+                │   "profile_id": "Soybean::Charcoal Rot", │
+                │   "crop": "...", "disease": "...",       │
+                │   "state": "Alabama",                    │
+                │   "primary_image_id": "bugwood::1568038",│
+                │   "image_path": "...bugwood_cache/...",  │
+                │   "run_idx": 0,                          │
+                │   "path": ["MorphologyAgent",            │
+                │            "SymptomAgent", ...,          │
+                │            "DiagnosisAgent"],            │
+                │   "decisions": ["model_choice", ...],    │
+                │   "confidences": ["medium","high",...],  │
+                │   "backtrack_count": 1,                  │
+                │   "early_terminated": true,              │
+                │   "context_buffer": [                    │
+                │     { "agent_name": "MorphologyAgent",   │
+                │       "deltas": [...],                   │
+                │       "confidence": "medium",            │
+                │       "handoff_target": "SymptomAgent",  │
+                │       "reasoning": "...", "raw_text":"..."},│
+                │     ... per agent step ...               │
+                │   ],                                     │
+                │   "final_deltas": [...],                 │
+                │   "existing_kb_at_start": [...]          │
+                │ }                                        │
+                └──────────────────────────────────────────┘
+```
+
+This is the source the OBSERVE trainer reads.
+
 ---
 
 ## 5. File map
@@ -391,6 +479,17 @@ PlantSwarm/
 │   │                                        algorithm1_handoff, _merge_with_existing,
 │   │                                        _agreement_filter, existing_deltas_for_state
 │   └── latex/                             EMNLP 2026 paper sources
+│
+├── observe/                               Phase OBSERVE — distilled student
+│   ├── model.py                           Qwen2.5-VL-7B + LoRA + 6 heads
+│   ├── trainer.py                         RoutingTraceDataset (loads Phase 0R JSONL),
+│   │                                        TraceStepAnnotation, OBSERVETrainer,
+│   │                                        split_annotations (image-grouped)
+│   ├── loss.py                            multi-task L = routing + cal + cons + OC + belief
+│   ├── inference.py                       OBSERVEInference (single-pass replacement)
+│   ├── decision_transformer.py            Phase A (not yet ported to delta-mode reward)
+│   ├── grpo.py                            Phase B (not yet ported to delta-mode reward)
+│   └── active_learning.py                 epsilon-aware sample selection
 │
 ├── agents/                                5 delta-extraction agents
 │   ├── base_agent.py                      DELTA_USER_PROMPT, parse_agent_output,
@@ -421,7 +520,9 @@ PlantSwarm/
 │   ├── registry_to_excel.py               final_registry.json → 1-sheet xlsx
 │   ├── run_phase0_local.sh                LOCAL: canonical-only Phase 0
 │   ├── submit_pathome_setup_filter.sh     Nova: filter CSV
-│   └── submit_phase0r_regional.sh         Nova: boot vLLM + run Phase 0R
+│   ├── submit_phase0r_regional.sh         Nova: boot vLLM + run Phase 0R
+│   ├── train_observe.py                   train OBSERVE on Phase 0R traces (CLI)
+│   └── submit_observe_train.sh            Nova: train OBSERVE
 │
 └── smoke/                                 2-crop happy path (Soybean + Tomato)
     ├── run_phase0_full.sh                 LOCAL Phase 0 + (LOCAL-or-tunneled) Phase 0R
@@ -446,6 +547,13 @@ PlantSwarm/
 | `VLLM_MAX_BACKTRACKS` | `1` | Max times a trace can route back to MorphologyAgent |
 | `VLLM_SIM_THRESHOLD` | `0.4` | Jaccard threshold for clustering AND merge dedup |
 | `PATHOME_IMAGE_CACHE_DIR` | — (prepended to default search path) | Override cache directory |
+| `PATHOME_TRACE_DIR` | — | When set, Phase 0R appends per-trace records to `<dir>/phase0r_traces.jsonl` for OBSERVE training |
+| `PATHOME_TRACE_FILE` | `phase0r_traces.jsonl` | Trace JSONL filename within `PATHOME_TRACE_DIR` |
+| `OBSERVE_EPOCHS` | `5` | Training epochs for `submit_observe_train.sh` |
+| `OBSERVE_BATCH` | `4` | Training batch size |
+| `OBSERVE_LR` | `1e-4` | AdamW learning rate |
+| `OBSERVE_LORA_R` / `OBSERVE_LORA_ALPHA` | `16` / `32` | LoRA config |
+| `OBSERVE_SAVE_DIR` | `observe/checkpoints/` | Checkpoint output |
 | `ANTHROPIC_API_KEY` | — (optional) | Speeds up Phase 0 reconciliation; falls back to `claude -p` |
 | `PATHOME_ONLY_CROPS` | — | Comma-separated crop allowlist |
 | `PATHOME_USABLE_CSV` | `BugWood_Diseases_usable.csv` | Filtered CSV path |

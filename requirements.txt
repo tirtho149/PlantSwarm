@@ -1,9 +1,12 @@
 # PlantSwarm runtime dependencies.
-# After the Phase 2-5 retirement, the pipeline is:
-#   Phase 0   pathome_kb     — Claude-driven canonical KB build (LOCAL)
-#   Phase 0R  plantswarm     — Qwen-swarm regional delta extraction
-#                              (needs an OpenAI-compatible vLLM endpoint
-#                               serving Qwen2.5-VL-7B-Instruct)
+# Pipeline:
+#   Phase 0       pathome_kb     — Claude-driven canonical KB build (LOCAL)
+#   Phase 0R      plantswarm     — Qwen-swarm regional delta extraction
+#                                  (needs an OpenAI-compatible vLLM endpoint
+#                                   serving Qwen2.5-VL-7B-Instruct)
+#   Phase OBSERVE observe        — Qwen2.5-VL-7B + LoRA student trained on
+#                                  Phase 0R traces (skip the N-trace swarm
+#                                  at inference; A100-class GPU host)
 
 # Setup + image cache
 numpy>=1.24.0
@@ -20,8 +23,10 @@ tqdm>=4.66.0
 # Config loading
 pyyaml>=6.0
 
-# Phase 0R — vLLM server (CUDA-only; install on the GPU host, not the client).
-# Uncomment to install where vLLM will serve Qwen:
+# Phase 0R server + Phase OBSERVE training (CUDA-only; install on the GPU
+# host, not the client). Uncomment to install:
 #   vllm>=0.4.0
 #   transformers>=4.40.0
 #   torch>=2.1.0
+#   peft>=0.4.0
+#   accelerate>=0.30.0

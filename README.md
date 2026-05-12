@@ -1,7 +1,8 @@
-# PlantSwarm + PathomeDB — Canonical KB + Qwen-Swarm Regional Deltas
+# PlantSwarm + PathomeDB — Canonical KB + Qwen-Swarm Regional Deltas + OBSERVE student
 
-A two-stage pipeline that produces an image-grounded plant disease
-knowledge base for the 484 Bugwood IPMNet classes:
+A three-stage pipeline that produces an image-grounded plant disease
+knowledge base for the 484 Bugwood IPMNet classes, plus a student model
+that learns to imitate the swarm at inference:
 
 1. **Phase 0  — canonical KB** (LOCAL, Claude). Discovery →
    extraction → reconciliation produces a text-grounded
@@ -13,10 +14,16 @@ knowledge base for the 484 Bugwood IPMNet classes:
    photograph, and emits state-specific deltas — additions or
    contradictions backed by image evidence. Deltas never restate
    canonical.
+3. **Phase OBSERVE — distilled student** (LoRA fine-tune of
+   Qwen2.5-VL-7B). Trained on Phase 0R trace JSONL (per-step
+   {state, action} pairs from the swarm). At inference, replaces the
+   N-stochastic-traces swarm with a single forward pass — ~6× faster.
 
-The terminal deliverable is **`symptoms_seed.json`** — canonical text
-plus image-grounded deltas per state — produced by
-`pathome_kb/symptoms_adapter.py`.
+The terminal deliverable from the KB side is **`symptoms_seed.json`**
+(canonical text + image-grounded deltas per state). The OBSERVE
+checkpoint at **`observe/checkpoints/observe_best.pt`** is the
+secondary deliverable — it can act as a single-pass swarm replacement
+for new images.
 
 ```
   ┌─────────────────────┐       ┌─────────────────────┐       ┌─────────────────────┐
@@ -345,6 +352,57 @@ VLLM_MAX_BACKTRACKS paper §5.3 (default 1)
 VLLM_SIM_THRESHOLD  Jaccard threshold for delta clustering AND merge dedup (default 0.4)
 PATHOME_IMAGE_CACHE_DIR  optional override prepended to the cache search path
 ```
+
+### Phase OBSERVE — distilled student (LoRA fine-tune)
+
+OBSERVE is a Qwen2.5-VL-7B + LoRA student that learns to imitate the
+swarm. At inference, it replaces N stochastic traces with a single
+forward pass.
+
+|                  |                                                                                                |
+|------------------|------------------------------------------------------------------------------------------------|
+| Where it runs    | GPU host with CUDA (A100-class)                                                                |
+| Compute          | 1× A100, 8 CPUs, 64 GB RAM                                                                     |
+| Walltime         | ~4–8 h on Phase 0R trace JSONL (depends on N traces × tuples)                                  |
+| Inputs           | `$PATHOME_TRACE_FILE` (default: `artifacts/observe_traces/phase0r_traces.jsonl`)               |
+| Outputs          | `observe/checkpoints/{observe_best, observe_last}.pt`, `history.json`                          |
+
+**Generate training data**: re-run Phase 0R with the trace writer enabled:
+```bash
+PATHOME_TRACE_DIR=artifacts/observe_traces \
+  sbatch scripts/submit_phase0r_regional.sh
+```
+This appends one JSONL record per (tuple, run) to
+`artifacts/observe_traces/phase0r_traces.jsonl` — every per-step
+context, agent action, κ confidence, and final delta set is captured.
+
+**Train**:
+```bash
+sbatch scripts/submit_observe_train.sh
+# or directly:
+python scripts/train_observe.py \
+    --traces artifacts/observe_traces/phase0r_traces.jsonl \
+    --save-dir observe/checkpoints/ \
+    --epochs 5 --batch-size 4
+```
+
+Per-step supervision derived from each trace:
+- `target_routing`     = next agent in `path`
+- `target_backtrack`   = 1 iff the next step is `MorphologyAgent` after non-Morphology
+- `target_confidence`  = κ ∈ {high, medium, low} → scalar {0.9, 0.6, 0.3}
+- `target_epistemic`   = how many deltas appeared after this step vs final
+- `target_aleatoric`   = 1 − κ scalar (low κ ↔ high irreducible noise)
+- `target_overconfidence` = κ=high but the agent emitted 0 deltas
+
+**Inference**: `observe.OBSERVEInference.predict(image, context)` returns
+an `EpistemicAction` (next agent, backtrack, κ scalar, uncertainty,
+belief text) — no swarm, no vLLM HTTP loop.
+
+**Note**: the Decision Transformer (`observe/decision_transformer.py`)
+and GRPO (`observe/grpo.py`) phases from the paper are present but
+**not yet ported** to delta-mode reward (`delta_set_F1 + (1-ECE)`
+hasn't been wired). The behavioral-cloning trainer (`OBSERVETrainer`)
+is the v1 path.
 
 ---
 
