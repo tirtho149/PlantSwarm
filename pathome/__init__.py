@@ -1,24 +1,21 @@
 """
 pathome/
 ========
-PathomeDB: a visual-symptom-centric, geo-aware knowledge base.
+Schema definitions for the PathomeDB seed JSON.
 
-Two stores:
+After the Phase 2-5 retirement, ``pathome`` is the **schema documentation
+layer** for the seed JSON produced by Phase 0 (canonical KB via Claude)
+and Phase 0R (regional deltas via the Qwen swarm). Downstream consumers
+import the dataclasses to load and inspect ``symptoms_seed.json``.
 
-  symptoms (SymptomLibrary)   what each (crop, disease) looks like, plus
-                              per-state and per-AEZ observation counts
-                              (geo prior comes from these counts directly).
-  refs (ReferenceLibrary)     held-out reference images for visual retrieval
-                              (CLIP + FAISS, climate-weighted).
+The full pipeline is now:
 
-Predecessor 5-layer modules (layer1_pathway, layer2_manifestation,
-layer3_geo, layer4_decision_graph) were retired in favour of the
-SymptomProfile aggregation. Only ``layer5_references`` survives — its
-ReferenceLibrary continues to back ``db.refs``.
+  Phase 0   pathome_kb (claude)         canonical KB
+  Phase 0R  plantswarm/delta_pipeline   regional deltas (qwen swarm)
+            ↓
+            symptoms_seed.json   ← terminal deliverable
 """
 
-from .database import GeoPriorResult, PathomeDB
-from .layer5_references import ReferenceLibrary
 from .symptoms import (
     CanonicalDisease,
     Citation,
@@ -30,8 +27,6 @@ from .symptoms import (
 )
 
 __all__ = [
-    "PathomeDB",
-    "GeoPriorResult",
     "SymptomLibrary",
     "SymptomProfile",
     "CanonicalDisease",
@@ -39,5 +34,4 @@ __all__ = [
     "RegionalDelta",
     "Citation",
     "SwarmObservations",
-    "ReferenceLibrary",
 ]

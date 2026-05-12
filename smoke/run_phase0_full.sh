@@ -2,51 +2,41 @@
 # ============================================================================
 # smoke/run_phase0_full.sh
 # ============================================================================
-# Single-command, perfect-KB regenerate for any 2 crops in the smoke CSV.
-# Default crops: Soybean + Corn. Override with SMOKE_CROPS="Crop1,Crop2".
+# Two-crop end-to-end runner. Build the canonical KB (Claude) and the
+# regional deltas (Qwen swarm) for the smoke CSV, then merge into
+# smoke/artifacts/pathome_seed/symptoms_seed.json.
 #
-# What runs (every stage end-to-end, default = MAXIMUM COVERAGE):
+# Default crops: Soybean + Tomato. Override with SMOKE_CROPS="Crop1,Crop2".
 #
-#   1. Filter the smoke CSV               → BugWood_Diseases_smoke_usable.csv
-#   2. State-aware image cache top-up     → one image per (crop, disease, state)
-#   3. Cross-region SAGE pipeline:
-#        discovery (claude -p WebSearch)  → all candidate URLs per disease
-#        extraction (claude -p)           → verbatim quotes + treatments
-#        reconciliation (claude -p)       → canonical entries with treatments
-#        → final_registry.json per crop
-#   4. Per-state VLM observation (deltas-only, decision-tree style):
-#        claude -p + Read tool looks at each cached Bugwood image
-#        + canonical KB from step 3 as context
-#        → list of deltas {field, canonical_says, image_shows, image_quote}
-#          — only state-specific additions/contradictions, never a
-#          parallel re-extraction of canonical fields
-#        → embedded into final_registry.json (single source of truth)
-#   5. Adapter merge → smoke/artifacts/pathome_seed/symptoms_seed.json
-#
-# Output schema:
-#   SymptomProfile {
-#     canonical: CanonicalDisease           # one block per disease (text)
-#     regional_observations: {                # per-state image-grounded deltas
-#       state: { image_ids, deltas:[{field, canonical_says,
-#                                    image_shows, image_quote}] }
-#     }
-#   }
-#
-# Walltime / cost (full coverage):
-#   ~45–90 min wall, ~$5–15 in claude -p OAuth quota
-#
-# Knobs:
-#   FULL_QUICK=1         caps sources/states for fast iteration (~15-25 min, ~$1-3)
-#   FULL_KEEP_CACHE=1    skip clearing the cached final_registry.json — reuse
-#                        existing cross-region run (treatments may be missing
-#                        if the cache predates the prompt update)
-#   FULL_SKIP_SETUP=1    CSV already filtered
-#   FULL_SKIP_CACHE=1    image cache already topped up
-#   FULL_SKIP_KB=1       skip the python -m pathome_kb call (no-op smoke)
+# Stages:
+#   1. Filter the smoke CSV         → BugWood_Diseases_smoke_usable.csv
+#   2. State-aware image cache      → one Bugwood photo per (crop, disease, state)
+#   3. Phase 0  canonical KB        → discovery + extraction + reconciliation
+#                                     via `claude -p` → final_registry.json
+#   4. Phase 0R regional deltas     → Qwen swarm reads canonical + cached
+#                                     image and emits state-specific deltas
+#                                     {field, canonical_says, image_shows,
+#                                      image_quote}; embedded back into
+#                                     final_registry.json
+#   5. Adapter merge                → symptoms_seed.json
 #
 # Auth requirements:
-#   - claude CLI on PATH and authenticated (`claude auth login`)
-#   - ANTHROPIC_API_KEY optional (auto-falls-back to claude -p)
+#   Phase 0    `claude` CLI on PATH, `claude auth login` (or ANTHROPIC_API_KEY)
+#   Phase 0R   OpenAI-compatible vLLM endpoint serving Qwen2.5-VL-7B-Instruct
+#              Reachable at $VLLM_BASE_URL (default http://localhost:8000/v1).
+#              On a Mac, point this at a remote vLLM via SSH tunnel:
+#                  ssh -L 8000:localhost:8000 nova-login
+#              Or run on Nova directly where vLLM works natively.
+#
+# Knobs (env vars):
+#   FULL_QUICK=1            cap sources / states for fast iteration
+#   FULL_KEEP_CACHE=1       reuse cached final_registry.json (skip canonical re-run)
+#   FULL_SKIP_SETUP=1       CSV already filtered
+#   FULL_SKIP_CACHE=1       image cache already topped up
+#   FULL_SKIP_KB=1          skip the python -m pathome_kb call entirely
+#   FULL_SKIP_REGIONAL=1    skip Phase 0R (canonical-only; no Qwen needed)
+#   VLLM_BASE_URL           vLLM endpoint for Phase 0R
+#   VLLM_MODEL              served model id (default Qwen/Qwen2.5-VL-7B-Instruct)
 # ============================================================================
 
 set -e
@@ -58,13 +48,7 @@ RAW_CSV="smoke/BugWood_Diseases_smoke.csv"
 USABLE_CSV="smoke/BugWood_Diseases_smoke_usable.csv"
 OUT="smoke/artifacts/pathome_seed/symptoms_seed.json"
 CACHE_DIR="smoke/.bugwood_cache"
-
-if ! command -v claude >/dev/null 2>&1; then
-  echo "ERROR: 'claude' CLI not on PATH"
-  echo "Install: curl -fsSL https://claude.ai/install.sh | bash"
-  echo "Auth:    claude auth login"
-  exit 1
-fi
+CROPS="${SMOKE_CROPS:-Soybean,Tomato}"
 
 step() {
   echo
@@ -73,12 +57,40 @@ step() {
   echo "================================================================="
 }
 
+# ----------------------------------------------------------------------------
+# Preflight
+# ----------------------------------------------------------------------------
+if ! command -v claude >/dev/null 2>&1; then
+  echo "ERROR: 'claude' CLI not on PATH"
+  echo "  install: curl -fsSL https://claude.ai/install.sh | bash"
+  echo "  auth:    claude auth login"
+  exit 1
+fi
+
+if [ "${FULL_SKIP_REGIONAL:-0}" != "1" ]; then
+  VLLM_URL="${VLLM_BASE_URL:-http://localhost:8000/v1}"
+  echo "[preflight] checking vLLM at $VLLM_URL ..."
+  if ! curl -sf --max-time 5 "$VLLM_URL/models" >/dev/null 2>&1; then
+    echo "  WARNING: vLLM endpoint not reachable at $VLLM_URL."
+    echo "  Phase 0R (regional deltas via Qwen swarm) will fail."
+    echo "  Set VLLM_BASE_URL or run with FULL_SKIP_REGIONAL=1."
+    echo ""
+    read -r -p "  Continue anyway? [y/N] " ans
+    case "$ans" in
+      [yY]*) ;;
+      *) exit 1 ;;
+    esac
+  else
+    echo "  ok."
+  fi
+fi
+
 QUICK_ARG=()
 if [ "${FULL_QUICK:-0}" = "1" ]; then
   QUICK_ARG=(--quick)
-  echo "[mode] FULL_QUICK=1 — capping sources/states for fast iteration"
+  echo "[mode] FULL_QUICK=1 — capping sources / states for fast iteration"
 else
-  echo "[mode] FULL coverage — every source URL, every state, every visual field"
+  echo "[mode] FULL coverage — every source URL, every state"
 fi
 
 # ----------------------------------------------------------------------------
@@ -104,13 +116,11 @@ if [ "${FULL_SKIP_CACHE:-0}" != "1" ]; then
 fi
 
 # ----------------------------------------------------------------------------
-# 3. Optionally drop stale per-crop registries so the new prompts run
-#    (treatments was added to the extraction/reconciliation prompts; cached
-#    registries from before that change won't have treatments populated).
+# 3. Optionally drop stale per-crop registries so the canonical pass re-runs
 # ----------------------------------------------------------------------------
 if [ "${FULL_KEEP_CACHE:-0}" != "1" ]; then
-  step "3a. Clearing stale registries to re-run with treatments prompt"
-  for crop in $(echo "${SMOKE_CROPS:-Soybean,Corn}" | tr ',' ' '); do
+  step "3a. Clearing stale registries"
+  for crop in $(echo "$CROPS" | tr ',' ' '); do
     rm -f "artifacts/pathome_kb/$crop/raw_extractions.json" \
           "artifacts/pathome_kb/$crop/final_registry.json" \
           "artifacts/pathome_kb/$crop/registry.md" \
@@ -120,17 +130,14 @@ if [ "${FULL_KEEP_CACHE:-0}" != "1" ]; then
 fi
 
 # ----------------------------------------------------------------------------
-# 4 + 5. Cross-region SAGE + per-state VLM observation + merge
+# 4 + 5. Phase 0 canonical (claude) + Phase 0R regional (qwen swarm) + merge
 # ----------------------------------------------------------------------------
 if [ "${FULL_SKIP_KB:-0}" != "1" ]; then
-  step "3b. Cross-region SAGE pipeline + per-state VLM observation"
+  step "3b. Phase 0 (canonical, claude) + Phase 0R (regional, qwen swarm)"
 
-  # Auto-detect: if every target crop already has discovery_results.json on
-  # disk, we can resume from the extraction stage and skip the (slow + costly)
-  # WebSearch pass. Otherwise run discovery fresh.
   RESUME_ARG=()
   ALL_HAVE_DISCOVERY=1
-  for crop in $(echo "${SMOKE_CROPS:-Soybean,Corn}" | tr ',' ' '); do
+  for crop in $(echo "$CROPS" | tr ',' ' '); do
     if [ ! -f "artifacts/pathome_kb/$crop/discovery_results.json" ]; then
       ALL_HAVE_DISCOVERY=0
       break
@@ -143,17 +150,23 @@ if [ "${FULL_SKIP_KB:-0}" != "1" ]; then
     echo "  [fresh]  no cached discovery for at least one crop — running full discovery"
   fi
 
+  REGIONAL_ARG=(--regional)
+  if [ "${FULL_SKIP_REGIONAL:-0}" = "1" ]; then
+    echo "  [skip] FULL_SKIP_REGIONAL=1 — Phase 0R will not run"
+    REGIONAL_ARG=()
+  fi
+
   python3 -m pathome_kb \
     --csv "$USABLE_CSV" \
     --out "$OUT" \
-    --regional \
-    --only-crops "${SMOKE_CROPS:-Soybean,Corn}" \
+    "${REGIONAL_ARG[@]}" \
+    --only-crops "$CROPS" \
     "${RESUME_ARG[@]}" \
     "${QUICK_ARG[@]}"
 fi
 
 # ----------------------------------------------------------------------------
-# Summary + push instructions
+# Summary
 # ----------------------------------------------------------------------------
 step "Done"
 python3 -c "
@@ -163,42 +176,24 @@ profiles = s['profiles']
 n_canon = sum(1 for p in profiles if (p.get('canonical') or {}).get('summary'))
 n_reg   = sum(1 for p in profiles if p.get('regional_observations'))
 n_blocks = sum(len(p.get('regional_observations') or {}) for p in profiles)
-n_with_treat = sum(1 for p in profiles if (p.get('canonical') or {}).get('treatments'))
-n_text = 0
+n_treat = sum(1 for p in profiles if (p.get('canonical') or {}).get('treatments'))
 n_deltas = 0
 fields_hit = {}
 for p in profiles:
-    for f, cits in ((p.get('canonical') or {}).get('sources') or {}).items():
-        for c in cits:
-            n_text += 1 if c.get('grounding','text') == 'text' else 0
     for state, obs in (p.get('regional_observations') or {}).items():
         for d in (obs.get('deltas') or []):
             n_deltas += 1
             fields_hit[d.get('field','other')] = fields_hit.get(d.get('field','other'), 0) + 1
 print(f'profiles total                   : {len(profiles)}')
 print(f'profiles w/ canonical summary    : {n_canon}')
-print(f'profiles w/ canonical treatments : {n_with_treat}')
+print(f'profiles w/ canonical treatments : {n_treat}')
 print(f'profiles w/ regional observations: {n_reg}')
 print(f'total per-state blocks           : {n_blocks}')
 print(f'total state-specific deltas      : {n_deltas}')
-print(f'text-grounded citations (canonical): {n_text}')
 if fields_hit:
     print('deltas by canonical field:')
     for k, v in sorted(fields_hit.items(), key=lambda x: -x[1]):
         print(f'  {k:24s} {v}')
 "
-
 echo
-echo "Push the seed to GitHub:"
-echo "  git add -f $OUT \\"
-echo "             $USABLE_CSV \\"
-for crop in $(echo "${SMOKE_CROPS:-Soybean,Corn}" | tr ',' ' '); do
-  echo "             artifacts/pathome_kb/$crop/{discovery_results,final_registry}.json \\"
-done
-echo "  git commit -m 'smoke: regenerate state-aware KB'"
-echo "  git push origin main"
-echo
-echo "Then on Nova:"
-echo "  ssh tirtho@hpc-login.iastate.edu"
-echo "  cd /work/mech-ai-scratch/tirtho/PlantSwarm && git pull origin main"
-echo "  sbatch smoke/submit_smoke.sh"
+echo "Seed JSON written: $OUT"

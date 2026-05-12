@@ -1,169 +1,35 @@
 # bugwood_pathome.yaml
 # ====================
-# Train-on-the-Wild config (paper §5, pathome_final).
-#
-# Source of truth is BugWood_Diseases.csv (Bugwood IPMNet export). For each
-# (crop, disease) class with >=min_per_class candidate rows, the loader keeps
-# the first per_class images (sorted by Image Number) and splits trace_split
-# -> trace generation, the remainder -> PathomeDB Layer-5 references. The
-# paper's 26-class subset is no longer enforced; the full Bugwood class
-# distribution is admitted.
+# Knobs for the (Phase 0 canonical KB) + (Phase 0R regional deltas) pipeline.
 
 data:
-  csv_path: "BugWood_Diseases_usable.csv"  # 484 classes, threshold>=10; regen via scripts/filter_bugwood_csv.py
+  csv_path: "BugWood_Diseases_usable.csv"   # filtered via scripts/filter_bugwood_csv.py
   image_cache_dir: ".bugwood_cache"
-  per_class: 10
-  trace_split: 7              # first 7 -> traces; remaining 3 -> Layer 5
-  min_per_class: 10           # filtered CSV already enforces this; kept as a guard
+  min_per_class: 10                          # threshold for the filtered CSV
+
   download:
     enabled: true
     timeout: 20
     retries: 2
+
   quality_filters:
-    min_side: 256             # Bugwood thumbnails go down to 768x512
-    require_state: true       # state -> centroid -> AEZ for Layer 3
+    min_side: 256
+    require_state: true
     require_disease_label: true
 
-  label_cols:
-    T1: "symptom_type"
-    T2: "pathogen_class"
-    T3: "disease_name"
-    T4: "severity_class"
-    T5: "crop_species"
-  calibration_split_size: 200
-
-# 26-class subset of T3 disease names (paper §5.4: T3 long-tail challenge).
-# Fill in once your Bugwood folder structure is finalized.
-labels:
-  T1:
-    - "Lesion"
-    - "Blight"
-    - "Mosaic"
-    - "Wilt"
-    - "Rot"
-    - "Canker"
-    - "Rust"
-    - "Powdery mildew"
-  T2:
-    - "Fungal"
-    - "Bacterial"
-    - "Viral"
-    - "Nutrient deficiency"
-    - "Pest damage"
-  T3: null            # 26+ disease names — auto-derived from folder tree
-  T4:
-    - "Healthy"
-    - "Early"
-    - "Moderate"
-    - "Severe"
-  T5:
-    - "Mango"
-    - "Soybean"
-    - "Strawberry"
-    - "Tomato"
-    - "Potato"
-    - "Corn"
-    - "Wheat"
-    - "Rice"
-    - "Apple"
-    - "Grape"
-    - "Cassava"
-    - "Banana"
-    - "Cucumber"
-    - "Pepper"
-
+# ------------------------------------------------------------------
+# Phase 0R — Qwen swarm
+# ------------------------------------------------------------------
+# The vLLM client picks up these defaults; they are overridable via the
+# VLLM_BASE_URL / VLLM_MODEL / VLLM_TIMEOUT / VLLM_TEMPERATURE env vars
+# (see plantswarm.delta_pipeline.build_client_from_env).
 model:
-  # Paper §7: Qwen2.5-VL-7B for both PlantSwarm trace generation AND OBSERVE.
   backbone: "Qwen/Qwen2.5-VL-7B-Instruct"
-  replica_backbones:
-    - "Qwen/Qwen2.5-VL-7B-Instruct"
-  temperature: 0.9            # paper §5.3: T=0.9 for routing diversity
-  seed: 42
+  temperature: 0.2                           # JSON-faithful, low variance
   max_new_tokens: 512
-  image_size: 448
   vllm_base_url: "http://localhost:8000/v1"
-  logprobs: true
-  guided_choice: true
-  prefer_structured_outputs: true
-  strict_server_model: false
-  top_logprobs: 20
+  vllm_timeout: 180                          # seconds per HTTP call
 
-routing:
-  orchestrator: "autogen_swarm"
-  Tmax: 15                    # paper Appendix A: max path length 15
-  confidence_levels: ["high", "medium", "low"]
-  confidence_weights:
-    high: 3
-    medium: 2
-    low: 1
-  allow_backtrack: true
-  max_backtracks: 1           # paper Appendix A
-  runs_per_image: 30          # paper §5.3: 30 stochastic runs per image
-
-pathome:
-  layer1_path: null           # null -> use built-in worked examples
-  layer2_path: null
-  out_dir: "artifacts/pathome_v1/"
-  layer3:
-    min_observations: 3       # AEZ-month cells with <3 obs -> sparse
-  layer5:
-    top_k: 3                  # paper §6.5: top-3 references at retrieval
-
-observe:
-  backbone: "Qwen/Qwen2.5-VL-7B-Instruct"
-  lora:
-    r: 16
-    alpha: 32
-    dropout: 0.05
-    target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"]
-  oc_threshold: 0.55          # paper §7.2
-
-  loss_weights:
-    routing: 1.0
-    calibration: 0.4
-    consistency: 0.2
-    belief: 0.2
-    overconfidence: 0.3
-
-  decision_transformer:
-    lr: 1.0e-4
-    warmup_steps: 500
-    epochs: 50
-    patience: 5
-    batch_size: 8
-    grad_accum_steps: 4
-    target_return_mean: 0.85
-
-  grpo:
-    lr: 5.0e-5
-    epochs: 10
-    rollouts_per_instance: 8
-    clip_eps: 0.2
-    beta_kl: 0.04
-    f1_weight: 1.0
-    ece_weight: 0.4
-    bt_delta_weight: 0.3
-    length_penalty_weight: 0.05
-    epsilon_match_weight: 0.2
-
-  active_learning:
-    iterations: 3
-    label_budget_per_iter: 350
-    epsilon_min: 0.4
-    aleatoric_max: 0.7
-
-calibration:
-  ece_bins: 15
-  conformal_alpha: 0.1
-  temperature_scaling: true
-
-eval:
-  bootstrap_n: 1000
-  mcnemar_alpha: 0.05
-  bonferroni_correct: true
-
-output:
-  results_dir: "results/bugwood/"
-  traces_dir: "results/bugwood/traces/"
-  save_traces: true
-  save_probs: true
+swarm:
+  max_parallel: 4                            # outer parallelism: (crop,disease,state) tuples
+  parallel_specialists: true                 # inner: 4 specialists per tuple in parallel

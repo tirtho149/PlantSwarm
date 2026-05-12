@@ -1,6 +1,6 @@
 # `pathome_kb/` — How the KB looks and how it's built
 
-This module produces the **PathomeDB seed** that Phase 1 (`scripts/build_pathome.py`) consumes. The seed is a single JSON document with one `SymptomProfile` per `(crop, disease)` class in your filtered Bugwood CSV.
+This module produces the **PathomeDB seed** — a single JSON document with one `SymptomProfile` per `(crop, disease)` class in your filtered Bugwood CSV. The seed is the terminal deliverable of the pipeline (Phase 1+ retired). It is built in two stages: a canonical KB pass (`claude -p` discovery → extraction → reconciliation) and a regional delta pass (`plantswarm/delta_pipeline.py` — the Qwen swarm reading canonical KB as context and emitting deltas).
 
 The schema is a **decision tree**: canonical KB is the trunk, per-state regional observations are branches that *only* emit additions or contradictions vs the canonical text. The regional pass never re-extracts what canonical already owns.
 
@@ -180,8 +180,8 @@ BugWood_Diseases_usable.csv
  │
  ▼ git push
                                                           ┌─────────┐    git pull
-                                                          │  GitHub │ ─────────────►  PathomeDB Phase 1
-                                                          └─────────┘                 (Nova A100)
+                                                          │  GitHub │ ─────────────►  Phase 0R: Qwen swarm
+                                                          └─────────┘                 (vLLM on Nova A100)
 ```
 
 Stages 1–3 are the **SAGE port** (`internet_pipeline.py`). Stage 4b is the **Pathome image-grounded delta extraction** (`regional_observation.py`). Stage 5 is the adapter (`symptoms_adapter.py`).
@@ -276,7 +276,7 @@ artifacts/pathome_kb/Soybean/
   └── registry.md                   human-readable canonical summary
 
 smoke/.bugwood_cache/               JPEGs (one per (crop, disease, state) tuple)
-smoke/artifacts/pathome_seed/symptoms_seed.json    final assembled KB → Phase 1 input
+smoke/artifacts/pathome_seed/symptoms_seed.json    final assembled KB (terminal deliverable)
 ```
 
 There is exactly **one JSON file per crop** holding both canonical and regional. The previous `regional_observations.json` standalone file has been retired.

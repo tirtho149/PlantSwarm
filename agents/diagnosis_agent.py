@@ -1,75 +1,147 @@
 """
 agents/diagnosis_agent.py
 =========================
-DiagnosisAgent — final JSON synthesis + TERMINATE (PlantSwarm §4).
-Excluded from calibration ensemble (not an independent observer).
+DiagnosisAgent — the delta consolidator.
+
+Takes the union of the four specialists' candidate deltas plus the FULL
+canonical KB and the image, then:
+
+  1. DEDUPES overlapping fields (e.g. diagnostic_features is claimed by
+     both MorphologyAgent and SymptomAgent).
+  2. DROPS deltas that restate canonical text — restating is forbidden.
+  3. KEEPS deltas that add or contradict canonical with image evidence.
+
+Returns the final consolidated list in the same delta schema the
+specialists emit.
 """
 
 from __future__ import annotations
 
-import json
-import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
-from agents.base_agent import BaseAgent, ContextEntry
-from utils.vllm_client import VLLMClient
+from agents.base_agent import (
+    ALLOWED_DELTA_FIELDS,
+    BaseAgent,
+    _clean,
+    _parse_delta_json,
+)
+
+
+CONSOLIDATOR_PROMPT = """\
+You are the consolidator. Four specialist agents have looked at the
+photograph and emitted candidate deltas. Produce the FINAL delta list by:
+
+  1. Deduping overlapping fields — when two candidates target the same
+     field with overlapping content, keep the more specific / better-
+     grounded one.
+  2. Dropping any candidate that just restates canonical text. Restating
+     is forbidden.
+  3. Keeping candidates that add or contradict canonical with image
+     evidence.
+
+Crop:    {crop}
+Disease: {disease}
+State:   {state}
+
+FULL CANONICAL KB:
+{canonical_full}
+
+CANDIDATE DELTAS (from specialists):
+{candidates}
+
+Output STRICT JSON, no markdown fences, no preamble:
+{{
+  "deltas": [
+    {{
+      "field":          "<one of: {allowed_fields}>",
+      "canonical_says": "<short quote from canonical above on this field, or '(not specified)'>",
+      "image_shows":    "<state-specific addition or contradiction — one sentence>",
+      "image_quote":    "<one-sentence visual evidence — what you see>"
+    }}
+  ]
+}}
+
+If every candidate is a redundant restatement, return {{"deltas": []}}.
+"""
 
 
 class DiagnosisAgent(BaseAgent):
-    """Agent 5 of 5 — terminal aggregation."""
-
     AGENT_NAME = "DiagnosisAgent"
-    TASK_IDS = ["T1", "T2", "T3", "T4", "T5"]
-    HANDOFF_MENU: List[str] = []
+    # The consolidator can emit deltas for any field — it just dedupes the
+    # union of the specialists.
+    OWNED_FIELDS = [f for f in ALLOWED_DELTA_FIELDS if f != "other"] + ["other"]
 
     SYSTEM_PROMPT = (
-        "You are DiagnosisAgent. Read all prior messages. Resolve contradictions by preferring "
-        "later, more-informed predictions. Output valid JSON with keys: "
-        "symptom_type (T1), pathogen_class (T2), disease_name (T3), severity_class (T4), "
-        "crop_species (T5), confidence_t1 through confidence_t5 (high/medium/low), "
-        "contradiction_resolved (bool), path_summary (one sentence). "
-        "Then output TERMINATE on a new line. Do not output anything after TERMINATE."
+        "You are DiagnosisAgent, a plant pathology delta consolidator. "
+        "Read the candidate deltas, dedupe overlapping fields, drop "
+        "restatements of canonical, and return only deltas that add or "
+        "contradict canonical with image evidence. Output strict JSON "
+        "only — no prose, no markdown."
     )
 
-    def __init__(self, client: VLLMClient, label_space: Dict[str, List[str]], **kwargs: Any):
-        super().__init__(client, label_space, **kwargs)
+    def extract_deltas(self, **_kwargs):  # noqa: D401
+        raise NotImplementedError(
+            "DiagnosisAgent uses consolidate(), not extract_deltas()."
+        )
 
-    def _parse_response(
+    def consolidate(
         self,
-        text: str,
-        context: List[ContextEntry],
-        backtrack_count: int,
-    ) -> Tuple[Dict[str, str], str, Optional[str]]:
-        predictions = self._extract_json_predictions(text)
-        confidence = predictions.get("confidence_t1", "medium")
-        return predictions, confidence, None
+        *,
+        crop: str,
+        disease: str,
+        state: str,
+        canonical: Dict[str, Any],
+        image_b64: str,
+        candidates: List[Dict[str, str]],
+    ) -> List[Dict[str, str]]:
+        user_prompt = CONSOLIDATOR_PROMPT.format(
+            crop=crop,
+            disease=disease,
+            state=state,
+            canonical_full=self._format_canonical_full(canonical),
+            candidates=self._format_candidates(candidates),
+            allowed_fields=", ".join(ALLOWED_DELTA_FIELDS),
+        )
+        messages = [{
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"},
+                },
+                {"type": "text", "text": user_prompt},
+            ],
+        }]
+        text, _tokens = self.client.chat(
+            messages=messages, system_prompt=self.SYSTEM_PROMPT
+        )
+        return _parse_delta_json(text, set(ALLOWED_DELTA_FIELDS))
 
-    def _extract_json_predictions(self, text: str) -> Dict[str, Any]:
-        text = text.split("TERMINATE")[0].strip()
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError:
-            pass
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group())
-            except json.JSONDecodeError:
-                pass
-        return {
-            "symptom_type": "Other",
-            "pathogen_class": "Other",
-            "disease_name": "Other",
-            "severity_class": "Early",
-            "crop_species": "Other",
-            "confidence_t1": "low",
-            "confidence_t2": "low",
-            "confidence_t3": "low",
-            "confidence_t4": "low",
-            "confidence_t5": "low",
-            "contradiction_resolved": False,
-            "path_summary": "Synthesis failed; fallback to defaults.",
-        }
+    @staticmethod
+    def _format_canonical_full(canonical: Dict[str, Any]) -> str:
+        def _v(raw: Any) -> str:
+            v = _clean(raw)
+            return v or "(not specified)"
+        return "\n".join([
+            f"  pathogen:            {_v(canonical.get('pathogen_scientific_name'))}",
+            f"  type_of_disease:     {_v(canonical.get('type_of_disease'))}",
+            f"  affected_parts:      {_v(canonical.get('affected_parts'))}",
+            f"  summary:             {_v(canonical.get('summary'))}",
+            f"  diagnostic_features: {_v(canonical.get('diagnostic_features'))}",
+            f"  look_alikes:         {_v(canonical.get('look_alikes'))}",
+            f"  treatments:          {_v(canonical.get('treatments'))}",
+        ])
 
-    def _score_all_tasks(self, context_text: str, image_b64: str) -> Dict[str, Dict[str, float]]:
-        return {}
+    @staticmethod
+    def _format_candidates(candidates: List[Dict[str, str]]) -> str:
+        if not candidates:
+            return "  (none)"
+        lines: List[str] = []
+        for i, d in enumerate(candidates, 1):
+            lines.append(
+                f"  [{i}] field={d.get('field', '')} | "
+                f"canonical_says={d.get('canonical_says', '')!s} | "
+                f"image_shows={d.get('image_shows', '')!s} | "
+                f"image_quote={d.get('image_quote', '')!s}"
+            )
+        return "\n".join(lines)

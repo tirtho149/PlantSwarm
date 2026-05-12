@@ -1,7 +1,0 @@
-# Plant Village loader (configs/cyag_directory.yaml, plant_village_tfds.yaml)
-# Install: pip install -r requirements-tfds.txt
-# Do not append shell comments on the same line as pip arguments.
-
-tensorflow>=2.15
-tensorflow-datasets>=4.9
-importlib_resources>=6.0

@@ -1,40 +1,27 @@
-# PlantSwarm dependencies (plant disease diagnosis / multi-agent VLM)
+# PlantSwarm runtime dependencies.
+# After the Phase 2-5 retirement, the pipeline is:
+#   Phase 0   pathome_kb     — Claude-driven canonical KB build (LOCAL)
+#   Phase 0R  plantswarm     — Qwen-swarm regional delta extraction
+#                              (needs an OpenAI-compatible vLLM endpoint
+#                               serving Qwen2.5-VL-7B-Instruct)
 
-# Core ML / VLM serving
-vllm>=0.4.0                   # §4: "served by vLLM (≥0.4.0)"
-transformers>=4.40.0
-torch>=2.1.0
-
-# Data / parquet
-pyarrow>=14.0.0               # parquet I/O (PlantDiagBench-style tables)
-pandas>=2.0.0
+# Setup + image cache
 numpy>=1.24.0
-datasets>=2.16.0             # Hugging Face datasets (e.g. LeafBench)
-python-dotenv>=1.0.0         # load HF_TOKEN from .env
+Pillow>=10.0.0
 
-# Image processing
-Pillow>=10.0.0                # PIL Image loading + resizing
-
-# ML / statistics
-scikit-learn>=1.3.0           # F1, train_test_split
-scipy>=1.11.0                 # Spearman ρ, McNemar, chi2, minimize_scalar
-statsmodels>=0.14.0           # MixedLM REML (Appendix D)
-peft>=0.4.0                   # LoRA and parameter-efficient fine-tuning
-
-# Calibration / conformal
-# (implemented in-house: calibration/ece.py, conformal.py, temperature_scaling.py)
-
-# Utilities
-tqdm>=4.66.0
-pyyaml>=6.0
+# Phase 0 — canonical KB (claude -p + Anthropic SDK)
+anthropic>=0.40.0
+httpx>=0.27.0
+openpyxl>=3.1.0
+python-dotenv>=1.0.0
 requests>=2.31.0
+tqdm>=4.66.0
 
-# Phase 0 KB build (pathome_kb/) — provenance-tracked SAGE-style pipeline
-anthropic>=0.40.0             # direct API for extraction + reconciliation (claude-sonnet-4-6)
-httpx>=0.27.0                 # fetch source URLs in the extraction stage
-openpyxl>=3.1.0               # xlsx output of the per-crop registry
+# Config loading
+pyyaml>=6.0
 
-# Optional: for hedge lexicon PMI (Appendix E)
-# nltk>=3.8.1
-
-# Optional: TensorFlow Datasets — Plant Village (see requirements-tfds.txt)
+# Phase 0R — vLLM server (CUDA-only; install on the GPU host, not the client).
+# Uncomment to install where vLLM will serve Qwen:
+#   vllm>=0.4.0
+#   transformers>=4.40.0
+#   torch>=2.1.0

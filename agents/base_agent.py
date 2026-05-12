@@ -1,372 +1,262 @@
 """
 agents/base_agent.py
 ====================
-Abstract base class for all PlantSwarm agents.
+Base class for the Qwen delta-extraction swarm.
 
-Each agent:
-  1. Reads the full shared context buffer C_t (§4)
-  2. Generates a message m_t with prediction + confidence κ_t ∈ {H,M,L}
-  3. Returns (m_t, κ_t, log-probs ℓ_t) for the ensemble (Eq. 3)
-  4. Declares a handoff target based on routing logic (Algorithm 1)
+Each specialist agent owns a slice of canonical KB fields. Given a
+canonical KB block for a (crop, disease) and a single Bugwood field
+photograph, the agent looks at the image, compares against the canonical
+text for the fields it owns, and emits structured deltas — additions or
+contradictions backed by the photo. It never restates canonical text.
 
-Constrained-decoding calibration (Appendix B / Eq. 2) is implemented
-via VLLMClient.score_labels().
+The consolidator (DiagnosisAgent) takes the union of specialist deltas,
+the full canonical block, and the image, then dedupes and drops
+restatements to produce the final delta list.
+
+Output delta schema (matches pathome.RegionalDelta):
+    {
+      "field":          str,   # one of ALLOWED_DELTA_FIELDS
+      "canonical_says": str,   # short quote, or "(not specified)"
+      "image_shows":    str,   # state-specific addition or contradiction
+      "image_quote":    str,   # one-sentence visual evidence
+    }
 """
 
 from __future__ import annotations
 
 import abc
+import json
 import re
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-from utils.sequence_entropy import (
-    entropy_dispersion,
-    sequence_mean_entropy,
-    targeted_disease_entropy,
-    token_entropy_from_openai_token_item,
-)
 from utils.vllm_client import VLLMClient
 
 
 # ---------------------------------------------------------------------------
-# Context buffer entry (§4)
+# Delta field vocabulary (mirrors pathome_kb regional schema)
 # ---------------------------------------------------------------------------
 
-@dataclass
-class ContextEntry:
-    agent_name: str
-    message: str
-    confidence: str          # 'high' | 'medium' | 'low'
-    log_probs: Dict[str, Dict[str, float]] = field(default_factory=dict)
-    # log_probs[task_id][label] = probability
-    mean_entropy_H: Optional[float] = None
-    entropy_dispersion_D: Optional[float] = None
-    token_entropies: Optional[List[float]] = None
+ALLOWED_DELTA_FIELDS = (
+    "lesion_morphology",
+    "severity",
+    "affected_organs",
+    "spread_pattern",
+    "diagnostic_features",
+    "look_alikes",
+    "treatments",
+    "type_of_disease",
+    "other",
+)
 
 
-# ---------------------------------------------------------------------------
-# Agent output
-# ---------------------------------------------------------------------------
-
-@dataclass
-class AgentOutput:
-    agent_name: str
-    message: str             # full text output
-    confidence: str          # 'high' | 'medium' | 'low'
-    predictions: Dict[str, str]          # {task_id: predicted_label}
-    log_probs: Dict[str, Dict[str, float]]   # {task_id: {label: prob}}
-    handoff_target: Optional[str]        # next agent name or None (TERMINATE)
-    tokens_used: int
-    token_entropies: Optional[List[float]] = None
-    mean_entropy_H: Optional[float] = None
-    entropy_dispersion_D: Optional[float] = None
-    targeted_disease_entropy: Optional[float] = None
+# Map each owned delta field → the canonical KB key(s) that describe it.
+# Used by specialists to show their slice of canonical to the model.
+_DELTA_FIELD_TO_CANONICAL = {
+    "lesion_morphology":   ("summary",),
+    "affected_organs":     ("affected_parts",),
+    "diagnostic_features": ("diagnostic_features",),
+    "spread_pattern":      ("notes",),
+    "look_alikes":         ("look_alikes",),
+    "type_of_disease":     ("type_of_disease",),
+    "severity":            (),
+    "treatments":          ("treatments",),
+}
 
 
 # ---------------------------------------------------------------------------
-# Abstract base
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _clean(s: Any) -> str:
+    if s is None:
+        return ""
+    if isinstance(s, list):
+        return "; ".join(str(x) for x in s if x is not None and str(x).strip())
+    return str(s).strip()
+
+
+def _validate_delta(d: Any, allowed_fields: set) -> Optional[Dict[str, str]]:
+    """Normalize one model-emitted delta into the schema, or None to drop it."""
+    if not isinstance(d, dict):
+        return None
+    image_shows = _clean(d.get("image_shows"))
+    if not image_shows:
+        return None
+    field = _clean(d.get("field")).lower() or "other"
+    if field not in allowed_fields:
+        field = "other"
+    return {
+        "field":          field,
+        "canonical_says": _clean(d.get("canonical_says")) or "(not specified)",
+        "image_shows":    image_shows,
+        "image_quote":    _clean(d.get("image_quote")),
+    }
+
+
+def _parse_delta_json(text: str, allowed_fields: set) -> List[Dict[str, str]]:
+    """Strict-ish JSON parse → list of validated deltas. Returns []."""
+    if not text:
+        return []
+    # Drop ``` fences
+    s = text.strip()
+    if s.startswith("```"):
+        s = re.sub(r"^```(?:json)?\s*", "", s)
+        s = re.sub(r"\s*```$", "", s)
+    obj: Any
+    try:
+        obj = json.loads(s)
+    except json.JSONDecodeError:
+        m = re.search(r"\{.*\}", s, re.DOTALL)
+        if not m:
+            return []
+        try:
+            obj = json.loads(m.group())
+        except json.JSONDecodeError:
+            return []
+    raw = obj.get("deltas") if isinstance(obj, dict) else None
+    if not isinstance(raw, list):
+        return []
+    out: List[Dict[str, str]] = []
+    for d in raw:
+        v = _validate_delta(d, allowed_fields)
+        if v is not None:
+            out.append(v)
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Prompt template (shared by all specialists)
+# ---------------------------------------------------------------------------
+
+DELTA_USER_PROMPT = """\
+You are looking at one Bugwood Network field photograph of a plant
+disease. The canonical knowledge base for this disease is given below.
+Your job is to look at the IMAGE and compare it to the canonical KB for
+the FIELDS YOU OWN — then emit ONLY structured deltas that ADD to or
+CONTRADICT canonical with visual evidence from this specific photograph.
+
+Crop:    {crop}
+Disease: {disease}
+State:   {state}
+
+CANONICAL KB (slice for {agent_name}; DO NOT re-describe these contents):
+{canonical_slice}
+
+You own these delta fields: {owned_fields}
+
+For each owned field, decide:
+- Does the image show something the canonical text for that field does
+  NOT capture?
+- Does the image CONTRADICT the canonical text for that field?
+If yes, emit a delta. If the image confirms canonical exactly for that
+field, do not emit a delta for it.
+
+Output STRICT JSON, no markdown fences, no preamble:
+{{
+  "deltas": [
+    {{
+      "field":          "<one of: {owned_fields}>",
+      "canonical_says": "<short quote from canonical above on this field, or '(not specified)'>",
+      "image_shows":    "<what THIS image adds or contradicts — one sentence, state-specific>",
+      "image_quote":    "<one-sentence visual evidence — what you literally see in the photo>"
+    }}
+  ]
+}}
+
+Hard rules:
+- Each delta MUST be supported by something visible in this photo.
+- Do NOT restate canonical text. Restating is forbidden.
+- "(not specified)" is the correct canonical_says when canonical is silent.
+- If the image confirms canonical exactly, return {{"deltas": []}}.
+- Stay strictly within your owned fields. Do not emit deltas for fields
+  you do not own.
+"""
+
+
+# ---------------------------------------------------------------------------
+# Base agent
 # ---------------------------------------------------------------------------
 
 class BaseAgent(abc.ABC):
-    """
-    Abstract PlantSwarm agent.
-
-    Subclasses must define:
-        - AGENT_NAME      : str
-        - TASK_IDS        : List[str]   e.g. ['T1']
-        - HANDOFF_MENU    : List[str]   valid handoff targets (Table 1)
-        - SYSTEM_PROMPT   : str         (Appendix A)
-
-    and implement:
-        - _build_user_message(context, image_b64) → str
-        - _parse_response(text) → (predictions, confidence, handoff)
+    """Subclasses must set:
+        - AGENT_NAME    str
+        - OWNED_FIELDS  List[str], subset of ALLOWED_DELTA_FIELDS
+        - SYSTEM_PROMPT str
     """
 
     AGENT_NAME: str = "BaseAgent"
-    TASK_IDS: List[str] = []
-    HANDOFF_MENU: List[str] = []
-    SYSTEM_PROMPT: str = ""
+    OWNED_FIELDS: List[str] = []
+    SYSTEM_PROMPT: str = (
+        "You are a plant pathology vision agent. Output strict JSON only — "
+        "no prose, no markdown, no preamble."
+    )
 
-    def __init__(
-        self,
-        client: VLLMClient,
-        label_space: Dict[str, List[str]],
-        *,
-        sequence_entropy: bool = False,
-        pathome_db: Optional[object] = None,
-    ):
+    def __init__(self, client: VLLMClient):
         self.client = client
-        self.label_space = label_space
-        self.sequence_entropy = sequence_entropy
-        # Optional PathomeDB hook (paper §6). Agents that opt in consult Layer 4
-        # for targeted re-observation prompts and Layer 1/2 for mechanism cues.
-        self.pathome_db = pathome_db
 
     # ------------------------------------------------------------------
-    # Public call interface
+    # Public call
     # ------------------------------------------------------------------
 
-    def __call__(
+    def extract_deltas(
         self,
+        *,
+        crop: str,
+        disease: str,
+        state: str,
+        canonical: Dict[str, Any],
         image_b64: str,
-        context: List[ContextEntry],
-        backtrack_count: int = 0,
-    ) -> AgentOutput:
-        """
-        Execute this agent given the current context buffer.
-        Returns an AgentOutput with predictions, confidence, log-probs,
-        handoff target, and token count.
-        """
-        messages = self._build_messages(context, image_b64)
-        token_hs: Optional[List[float]] = None
-        mean_h: Optional[float] = None
-        disp_d: Optional[float] = None
-        h_dis: Optional[float] = None
-        tok_str: Optional[List[str]] = None
-
-        if self.sequence_entropy:
-            chat_res = self.client.chat_with_logprobs(
-                messages=messages,
-                system_prompt=self.SYSTEM_PROMPT,
-            )
-            response_text = chat_res.text
-            tokens = chat_res.completion_tokens
-            if chat_res.content_logprobs:
-                token_hs = []
-                for item in chat_res.content_logprobs:
-                    if isinstance(item, dict):
-                        token_hs.append(token_entropy_from_openai_token_item(item))
-                tok_str = chat_res.token_strings or []
-                mean_h = sequence_mean_entropy(token_hs)
-                disp_d = entropy_dispersion(token_hs) if token_hs else None
-            else:
-                token_hs = []
-                mean_h = 0.0
-                disp_d = 0.0
-        else:
-            response_text, tokens = self.client.chat(
-                messages=messages,
-                system_prompt=self.SYSTEM_PROMPT,
-            )
-
-        predictions, confidence, handoff = self._parse_response(
-            response_text, context, backtrack_count
-        )
-
-        # Constrained-decoding scoring pass for calibration (Appendix B)
-        log_probs = self._score_all_tasks(
-            context_text=self._context_to_text(context),
-            image_b64=image_b64,
-        )
-
-        if self.sequence_entropy and token_hs is not None:
-            dis_lab = predictions.get("T3") or predictions.get("disease_name") or ""
-            h_dis = targeted_disease_entropy(
-                token_hs,
-                response_text,
-                str(dis_lab),
-                tok_str if tok_str and len(tok_str) == len(token_hs) else None,
-            )
-
-        return AgentOutput(
+    ) -> List[Dict[str, str]]:
+        """Return the validated deltas this agent emits for the given image."""
+        canonical_slice = self._format_canonical_slice(canonical)
+        owned_list = ", ".join(self.OWNED_FIELDS) or "other"
+        user_prompt = DELTA_USER_PROMPT.format(
+            crop=crop,
+            disease=disease,
+            state=state,
             agent_name=self.AGENT_NAME,
-            message=response_text,
-            confidence=confidence,
-            predictions=predictions,
-            log_probs=log_probs,
-            handoff_target=handoff,
-            tokens_used=tokens,
-            token_entropies=token_hs,
-            mean_entropy_H=mean_h,
-            entropy_dispersion_D=disp_d,
-            targeted_disease_entropy=h_dis,
+            canonical_slice=canonical_slice,
+            owned_fields=owned_list,
         )
-
-    # ------------------------------------------------------------------
-    # Context serialisation
-    # ------------------------------------------------------------------
-
-    def _context_to_text(self, context: List[ContextEntry]) -> str:
-        lines = []
-        for entry in context:
-            lines.append(
-                f"[{entry.agent_name}] (confidence={entry.confidence})\n{entry.message}"
-            )
-        return "\n\n".join(lines)
-
-    def _build_messages(
-        self, context: List[ContextEntry], image_b64: str
-    ) -> List[Dict]:
-        """
-        Build OpenAI-format message list.
-        First user turn carries the image (§4).
-        """
-        ctx_text = self._context_to_text(context) if context else ""
-
-        user_content: List[Dict] = []
-
-        # Image is always in the first user message position
-        user_content.append(
-            {
-                "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"},
-            }
+        messages = [{
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"},
+                },
+                {"type": "text", "text": user_prompt},
+            ],
+        }]
+        text, _tokens = self.client.chat(
+            messages=messages, system_prompt=self.SYSTEM_PROMPT
         )
-
-        if ctx_text:
-            user_content.append(
-                {"type": "text", "text": f"Prior agent context:\n{ctx_text}\n\nNow perform your task."}
-            )
-        else:
-            user_content.append(
-                {"type": "text", "text": "Analyze the image and perform your task."}
-            )
-
-        return [{"role": "user", "content": user_content}]
+        allowed = set(self.OWNED_FIELDS) | {"other"}
+        return _parse_delta_json(text, allowed)
 
     # ------------------------------------------------------------------
-    # Constrained-decoding scoring (Appendix B / Eq. 2)
+    # Canonical-slice rendering (owned-field view)
     # ------------------------------------------------------------------
 
-    def _score_all_tasks(
-        self, context_text: str, image_b64: str
-    ) -> Dict[str, Dict[str, float]]:
-        """
-        Run a constrained-decoding scoring pass for each task in TASK_IDS.
-        Returns {task_id: {label: probability}}.
-
-        Excludes DiagnosisAgent (§3: excluded from calibration ensemble
-        as it is not an independent observer).
-        """
-        if self.AGENT_NAME == "DiagnosisAgent":
-            return {}
-
-        result: Dict[str, Dict[str, float]] = {}
-        for task_id in self.TASK_IDS:
-            labels = self.label_space.get(task_id, [])
-            if not labels:
-                continue
-            prefix = (
-                f"{self.SYSTEM_PROMPT}\n\n"
-                f"Context:\n{context_text}\n\n"
-                f"Predict {task_id}: "
-            )
-            try:
-                probs = self.client.score_labels(
-                    prompt_prefix=prefix,
-                    label_list=labels,
-                    image_b64=image_b64,
-                )
-            except Exception:
-                uniform = 1.0 / len(labels)
-                probs = {lbl: uniform for lbl in labels}
-            result[task_id] = probs
-        return result
-
-    # ------------------------------------------------------------------
-    # Abstract methods
-    # ------------------------------------------------------------------
-
-    @abc.abstractmethod
-    def _parse_response(
-        self,
-        text: str,
-        context: List[ContextEntry],
-        backtrack_count: int,
-    ) -> Tuple[Dict[str, str], str, Optional[str]]:
-        """
-        Parse model text output.
-        Returns (predictions_dict, confidence_str, handoff_target_or_None).
-        """
-        ...
-
-    # ------------------------------------------------------------------
-    # Shared parsing utilities
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    def _extract_confidence(text: str) -> str:
-        """Extract confidence level from agent text output."""
-        text_lower = text.lower()
-        for kw in ["high", "medium", "low"]:
-            if kw in text_lower:
-                return kw
-        return "medium"  # safe default
-
-    @staticmethod
-    def _extract_label(text: str, label_list: List[str]) -> Optional[str]:
-        """Return the first matching label found in text (case-insensitive)."""
-        text_lower = text.lower()
-        for lbl in label_list:
-            if lbl.lower() in text_lower:
-                return lbl
-        return None
-
-    # ------------------------------------------------------------------
-    # PathomeDB hooks (paper §6, opt-in)
-    # ------------------------------------------------------------------
-
-    def _pathome_reobservation_prompt(
-        self,
-        crop: Optional[str] = None,
-        disease: Optional[str] = None,
-        default: str = "",
-    ) -> str:
-        """Targeted re-examination prompt from the symptom profile.
-
-        Agents prepend this to their context on a low-confidence step instead
-        of a generic "look again" retry. When ``crop``/``disease`` are
-        provided, the prompt is drawn from that specific profile's visual
-        block; otherwise we fall back to ``default``.
-        """
-        db = getattr(self, "pathome_db", None)
-        if db is None:
-            return default
-        # Symptom-centric API (current PathomeDB).
-        get_prompt = getattr(db, "reobservation_prompt", None)
-        if callable(get_prompt) and crop and disease:
-            try:
-                return get_prompt(crop, disease, default)
-            except Exception:
-                return default
-        # Backward-compat: old layered DBs that still expose layer4.
-        layer4 = getattr(db, "layer4", None)
-        root = layer4.root() if layer4 is not None else None
-        if root is None:
-            return default
-        return getattr(root, "reobservation_prompt", "") or default
-
-    def _pathome_geo_prior(self, disease: str, lat: Optional[float],
-                           lon: Optional[float], month: Optional[int]) -> Optional[float]:
-        """P̂(d|r,σ) shorthand. Returns None when DB or cell is unavailable."""
-        db = getattr(self, "pathome_db", None)
-        if db is None:
-            return None
-        try:
-            res = db.geo_prior(disease, lat, lon, month)
-        except Exception:
-            return None
-        return res.prior
-
-    @staticmethod
-    def _routing_decision(
-        confidence: str,
-        backtrack_count: int,
-        all_tasks_covered: bool,
-        handoff_menu: List[str],
-        default_forward: Optional[str],
-    ) -> Optional[str]:
-        """
-        Implement routing logic §4 / Algorithm 1:
-
-        1. If κ=L and no prior backtrack → MorphologyAgent (regrounding)
-        2. If κ=L and already backtracked → proceed forward (prevent loops)
-        3. If κ=H and all tasks resolved → DiagnosisAgent (early termination)
-        4. Otherwise → default forward target
-        """
-        if confidence == "low" and backtrack_count == 0:
-            return "MorphologyAgent"
-        if confidence == "high" and all_tasks_covered:
-            return "DiagnosisAgent"
-        return default_forward
+    def _format_canonical_slice(self, canonical: Dict[str, Any]) -> str:
+        """Render only the canonical fields this agent owns, plus pathogen
+        identity for grounding."""
+        lines: List[str] = []
+        if canonical.get("pathogen_scientific_name"):
+            lines.append(f"  pathogen: {_clean(canonical['pathogen_scientific_name'])}")
+        if (
+            canonical.get("type_of_disease")
+            and "type_of_disease" not in self.OWNED_FIELDS
+        ):
+            lines.append(f"  type: {_clean(canonical['type_of_disease'])}")
+        for owned in self.OWNED_FIELDS:
+            canon_keys = _DELTA_FIELD_TO_CANONICAL.get(owned, ())
+            value = ""
+            for key in canon_keys:
+                raw = canonical.get(key)
+                if raw:
+                    value = _clean(raw)
+                    if value:
+                        break
+            lines.append(f"  {owned}: {value or '(not specified)'}")
+        return "\n".join(lines) if lines else "  (canonical not available)"
