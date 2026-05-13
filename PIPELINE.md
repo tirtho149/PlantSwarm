@@ -219,32 +219,52 @@ descriptions come from PathomeDB.
 ### Architecture
 
 ```mermaid
-flowchart LR
-    IMG[Input image]
-    VIS[SigLIP-2 vision tower<br/>frozen backbone<br/>+ small LoRA adapters<br/>on attention projections]
-    EMB[Image embedding<br/>L2-normalized]
-    KB[(PathomeDB block<br/>for one class)]
-    PROMPT[Class description prompt<br/>summary + diagnostic features<br/>+ look-alikes + affected parts<br/>+ top-K verified regional observations]
-    TXT[SigLIP-2 text tower<br/>fully frozen]
-    PROTO[Class prototype<br/>L2-normalized<br/>computed once, cached]
-    SCORE[Cosine similarity<br/>x learnable temperature]
-    PRED[Predicted class<br/>= argmax over classes]
+flowchart TB
+    LOSS["Cross-entropy loss (100%):<br/>• softmax over<br/>  cosine × temperature<br/>• trains LoRA adapters<br/>  + temperature only"]
+    HEAD["Cosine-similarity head<br/>× learnable temperature<br/>argmax over classes<br/>→ predicted class"]
+    NOTE["Open vocabulary:<br/>• any class with a KB<br/>  description can be scored<br/>• zero-shot prototypes are<br/>  added at test time only"]
 
-    IMG --> VIS --> EMB
-    KB --> PROMPT --> TXT --> PROTO
-    EMB --> SCORE
-    PROTO --> SCORE
-    SCORE --> PRED
+    VIS["Image Encoder<br/>SigLIP-2 vision tower<br/>(frozen backbone<br/>+ LoRA on q, k, v)"]
+    TXT["Text Encoder<br/>SigLIP-2 text tower<br/>(fully frozen)"]
 
-    classDef img fill:#dff,stroke:#066
-    classDef text fill:#ffe,stroke:#660
-    classDef model fill:#efd,stroke:#060
-    classDef out fill:#efe,stroke:#060,stroke-width:2px
-    class IMG,EMB img
-    class KB,PROMPT,PROTO text
-    class VIS,TXT,SCORE model
-    class PRED out
+    IMG([image])
+    PROMPT([KB-derived class<br/>description prompt])
+
+    IMG --> VIS
+    PROMPT --> TXT
+    VIS  -- "image embedding"                         --> HEAD
+    TXT  -- "class prototype<br/>(encoded once, cached)" --> HEAD
+
+    LOSS -.- HEAD
+    NOTE -.- HEAD
+
+    classDef loss fill:#fde2c8,stroke:#c63,stroke-width:1px
+    classDef note fill:#cfead0,stroke:#063,stroke-width:1px
+    classDef enc  fill:#c5dcec,stroke:#266,stroke-width:2px
+    classDef head fill:#dddddd,stroke:#333,stroke-width:2px
+    classDef io   fill:#ffffff,stroke:#666
+
+    class LOSS loss
+    class NOTE note
+    class VIS,TXT enc
+    class HEAD head
+    class IMG,PROMPT io
 ```
+
+**Figure.** OBSERVE keeps both SigLIP-2 encoders frozen and adds
+small LoRA adapters on the query / key / value projections of the
+vision tower's attention layers. The text tower is never touched.
+Class prototypes — one rich text passage per disease, drawn from
+PathomeDB — are encoded by the frozen text tower once and cached.
+Each minibatch only runs the adapted vision tower; the prediction is
+the argmax cosine similarity (scaled by a learnable temperature)
+between the image embedding and the cached prototypes. Cross-entropy
+on the cosine logits is the sole training objective; only the LoRA
+adapters and the temperature receive gradients. Because the
+classifier has no fixed-size class head, new classes can be added
+at evaluation time simply by encoding their description prompt — this
+is what enables open-vocabulary OOD evaluation on diseases the model
+never saw images of during training.
 
 The backbone is **SigLIP-2**, a vision-language model that was
 pretrained on a very large corpus of image-caption pairs with a
