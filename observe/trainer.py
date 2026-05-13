@@ -1,26 +1,22 @@
 """
 observe/trainer.py
 ==================
-Behavioral-cloning trainer for OBSERVE on Phase 0R trace JSONL.
+OBSERVE trainer on Phase 0R per-pass trace JSONL.
 
-Per trace step, supervision is derived from the swarm's actual move::
+Schema after the Algorithm-1 removal: one line per (tuple, pass) with
+the four specialist outputs (parallel), the consolidator output, the
+final delta list, and the existing-KB context the agents saw. There is
+no routing path, no backtrack count.
 
-    target_routing       = path[i+1]                       (5-class)
-    target_backtrack     = path[i+1]=="MorphologyAgent" AND
-                           path[i] != "MorphologyAgent"
-    target_confidence    = kappa in {high, medium, low} → {0.9, 0.6, 0.3}
-    target_epistemic     = (n_final - n_at_step) / max(1, n_final)
-    target_aleatoric     = 1 - kappa_scalar
-    target_overconfidence= 1 iff kappa=="high" AND len(deltas)==0
+Per-pass supervision targets are derived from the consolidator output::
 
-Implementation notes (post-audit fixes)
----------------------------------------
-- The previous revision wrapped the backbone in ``torch.no_grad()`` —
-  fixed in ``observe/model.py``, gradients now flow through LoRA.
-- ``ObserveLoss`` expects RAW logits, not softmaxed probabilities.
-  No more ``probs.log()`` hack.
-- A custom ``ObserveCollator`` pads token sequences and stacks pixel
-  values so ``DataLoader(batch_size>1)`` actually works.
+    target_confidence    kappa in {high, medium, low} -> {0.9, 0.6, 0.3}
+    target_epistemic     hard-coded heuristic from final-deltas count
+                         vs. specialist union size — proxy for "was this
+                         pass already complete after the specialists, or
+                         did the consolidator need to add structure?"
+    target_aleatoric     1 - kappa_scalar  (low kappa = high noise)
+    target_overconfidence 1 iff kappa == "high" AND len(final_deltas) == 0
 """
 
 from __future__ import annotations
@@ -29,10 +25,9 @@ import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence
+from typing import List, Optional, Sequence
 
 import torch
-import torch.nn.functional as F
 from torch.optim import AdamW
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
@@ -40,41 +35,30 @@ from tqdm import tqdm
 logger = logging.getLogger(__name__)
 
 
-AGENT_CLASSES: Sequence[str] = (
-    "MorphologyAgent", "SymptomAgent", "PathogenAgent",
-    "SeverityAgent", "DiagnosisAgent",
-)
-_AGENT_IDX = {a: i for i, a in enumerate(AGENT_CLASSES)}
-
 _KAPPA_TO_SCALAR = {"high": 0.9, "medium": 0.6, "low": 0.3}
 
 
 # ---------------------------------------------------------------------------
-# Per-step training annotation
+# Per-pass annotation
 # ---------------------------------------------------------------------------
 
 @dataclass
-class TraceStepAnnotation:
+class PassAnnotation:
     image_path:        str
     crop:              str
     disease:           str
     state:             str
-    step:              int
-    current_agent:     str
     context_text:      str
     # Targets ↓
-    next_agent:        str
-    backtrack:         bool
     confidence:        float
     epistemic:         float
     aleatoric:         float
     overconfidence:    bool
-    belief_state:      str
     # Diagnostic ↓
     profile_id:        str
-    run_idx:           int
-    n_deltas_at_step:  int
-    n_deltas_final:    int
+    pass_idx:          int
+    n_final_deltas:    int
+    n_specialist_union: int
 
 
 def _kappa_to_scalar(k: str) -> float:
@@ -83,11 +67,8 @@ def _kappa_to_scalar(k: str) -> float:
 
 def _render_context_text(
     *,
-    crop: str,
-    disease: str,
-    state: str,
-    existing_kb: List[dict],
-    context_buffer_up_to_step: List[dict],
+    crop: str, disease: str, state: str,
+    existing_kb: List[dict], specialist_outputs: List[dict],
 ) -> str:
     parts: List[str] = [
         f"Crop: {crop}", f"Disease: {disease}", f"State: {state}",
@@ -96,77 +77,63 @@ def _render_context_text(
         parts.append(f"Existing KB observations ({len(existing_kb)}):")
         for d in existing_kb:
             parts.append(f"  [{d.get('field','other')}] {d.get('image_shows','')[:140]}")
-    if context_buffer_up_to_step:
-        parts.append("Prior trace context:")
-        for step, e in enumerate(context_buffer_up_to_step, 1):
-            parts.append(f"  [{step}] {e.get('agent_name','?')} (k={e.get('confidence','?')})")
-            for d in e.get("deltas") or []:
-                parts.append(f"      delta[{d.get('field','?')}]: {d.get('image_shows','')[:120]}")
+    if specialist_outputs:
+        parts.append("Specialist outputs (parallel):")
+        for s in specialist_outputs:
+            parts.append(f"  [{s.get('agent_name', '?')}] "
+                         f"(k={s.get('confidence','?')})")
+            for d in s.get("deltas") or []:
+                parts.append(f"      delta[{d.get('field','?')}]: "
+                             f"{d.get('image_shows','')[:120]}")
     return "\n".join(parts)
 
 
-def annotations_from_trace(record: dict) -> List[TraceStepAnnotation]:
-    """Expand one trace JSONL record into per-step annotations."""
-    path = record.get("path") or []
-    if not path:
-        return []
-    buf = record.get("context_buffer") or []
-    existing = record.get("existing_kb_at_start") or []
-    final_deltas = record.get("final_deltas") or []
+def annotation_from_pass(record: dict) -> Optional[PassAnnotation]:
+    """Build one supervision sample from a single per-pass trace record."""
+    consolidator = record.get("consolidator_output") or {}
+    specialists  = record.get("specialist_outputs") or []
+    final_deltas = record.get("final_deltas") or consolidator.get("deltas") or []
+
+    kappa = (consolidator.get("confidence") or "medium").lower()
+    kappa_scalar = _kappa_to_scalar(kappa)
     n_final = len(final_deltas)
+    n_union = sum(len(s.get("deltas") or []) for s in specialists)
 
-    out: List[TraceStepAnnotation] = []
-    for i, agent_step in enumerate(buf):
-        if i + 1 >= len(path):
-            continue
-        next_agent = path[i + 1]
-        if next_agent not in _AGENT_IDX:
-            continue
-        kappa = (agent_step.get("confidence") or "medium").lower()
-        kappa_scalar = _kappa_to_scalar(kappa)
-        step_deltas = agent_step.get("deltas") or []
-        n_step = len(step_deltas)
-        epistemic = (
-            max(0.0, (n_final - n_step) / max(1, n_final))
-            if n_final > 0 else 0.0
-        )
-        aleatoric = 1.0 - kappa_scalar
-        oc = bool(kappa == "high" and n_step == 0)
-        backtrack = bool(next_agent == "MorphologyAgent"
-                         and agent_step.get("agent_name") != "MorphologyAgent")
+    # Epistemic proxy: how much "structure" the consolidator added (or
+    # removed) relative to the specialist union — bounded to [0, 1].
+    if n_union == 0:
+        epistemic = 0.0
+    else:
+        epistemic = max(0.0, min(1.0, abs(n_union - n_final) / max(1, n_union)))
+    aleatoric = 1.0 - kappa_scalar
+    overconfidence = bool(kappa == "high" and n_final == 0)
 
-        ctx_text = _render_context_text(
-            crop=record.get("crop", ""),
-            disease=record.get("disease", ""),
-            state=record.get("state", ""),
-            existing_kb=existing,
-            context_buffer_up_to_step=buf[:i],
-        )
-        out.append(TraceStepAnnotation(
-            image_path=record.get("image_path", ""),
-            crop=record.get("crop", ""),
-            disease=record.get("disease", ""),
-            state=record.get("state", ""),
-            step=i,
-            current_agent=agent_step.get("agent_name", "MorphologyAgent"),
-            context_text=ctx_text,
-            next_agent=next_agent,
-            backtrack=backtrack,
-            confidence=kappa_scalar,
-            epistemic=epistemic,
-            aleatoric=aleatoric,
-            overconfidence=oc,
-            belief_state=agent_step.get("reasoning", "") or "",
-            profile_id=record.get("profile_id", ""),
-            run_idx=int(record.get("run_idx", 0)),
-            n_deltas_at_step=n_step,
-            n_deltas_final=n_final,
-        ))
-    return out
+    ctx_text = _render_context_text(
+        crop=record.get("crop", ""),
+        disease=record.get("disease", ""),
+        state=record.get("state", ""),
+        existing_kb=record.get("existing_kb_at_start") or [],
+        specialist_outputs=specialists,
+    )
+    return PassAnnotation(
+        image_path=record.get("image_path", ""),
+        crop=record.get("crop", ""),
+        disease=record.get("disease", ""),
+        state=record.get("state", ""),
+        context_text=ctx_text,
+        confidence=kappa_scalar,
+        epistemic=epistemic,
+        aleatoric=aleatoric,
+        overconfidence=overconfidence,
+        profile_id=record.get("profile_id", ""),
+        pass_idx=int(record.get("pass_idx", 0)),
+        n_final_deltas=n_final,
+        n_specialist_union=n_union,
+    )
 
 
-def load_phase0r_traces(path: str | Path) -> List[TraceStepAnnotation]:
-    annotations: List[TraceStepAnnotation] = []
+def load_phase0r_traces(path: str | Path) -> List[PassAnnotation]:
+    annotations: List[PassAnnotation] = []
     with open(path, encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
@@ -176,18 +143,18 @@ def load_phase0r_traces(path: str | Path) -> List[TraceStepAnnotation]:
                 rec = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            annotations.extend(annotations_from_trace(rec))
+            ann = annotation_from_pass(rec)
+            if ann is not None:
+                annotations.append(ann)
     return annotations
 
 
 # ---------------------------------------------------------------------------
-# Dataset — yields raw items; collator does processor + stacking
+# Dataset + collator
 # ---------------------------------------------------------------------------
 
-class RoutingTraceDataset(Dataset):
-    """One sample per agent step. The collator handles processor + batching."""
-
-    def __init__(self, annotations: Sequence[TraceStepAnnotation]):
+class PassDataset(Dataset):
+    def __init__(self, annotations: Sequence[PassAnnotation]):
         self.annotations = list(annotations)
 
     def __len__(self) -> int:
@@ -198,29 +165,14 @@ class RoutingTraceDataset(Dataset):
         return {
             "image_path":     ann.image_path,
             "context_text":   ann.context_text,
-            "next_agent_idx": _AGENT_IDX[ann.next_agent],
-            "backtrack":      float(ann.backtrack),
             "epistemic":      float(ann.epistemic),
             "aleatoric":      float(ann.aleatoric),
             "confidence":     float(ann.confidence),
             "overconfidence": float(ann.overconfidence),
-            "belief_state":   ann.belief_state,
         }
 
 
-# ---------------------------------------------------------------------------
-# Collator — turns a list of samples into a model-ready batch
-# ---------------------------------------------------------------------------
-
 class ObserveCollator:
-    """Build a batch via the processor (images + text) + stack labels.
-
-    Reads images lazily from disk per sample, runs the processor in
-    batch mode (which handles tokenizer padding + pixel stacking on
-    Qwen2.5-VL), and tacks on label tensors. Returns one big dict the
-    model + loss layer consume directly.
-    """
-
     def __init__(self, processor):
         self.processor = processor
 
@@ -232,14 +184,11 @@ class ObserveCollator:
             images=images, text=texts,
             return_tensors="pt", padding=True, truncation=True,
         )
-
         labels = {
-            "next_agent":     torch.tensor([s["next_agent_idx"]    for s in samples], dtype=torch.long),
-            "backtrack":      torch.tensor([s["backtrack"]         for s in samples], dtype=torch.float32),
-            "epistemic":      torch.tensor([s["epistemic"]         for s in samples], dtype=torch.float32),
-            "aleatoric":      torch.tensor([s["aleatoric"]         for s in samples], dtype=torch.float32),
-            "confidence":     torch.tensor([s["confidence"]        for s in samples], dtype=torch.float32),
-            "overconfidence": torch.tensor([s["overconfidence"]    for s in samples], dtype=torch.float32),
+            "epistemic":      torch.tensor([s["epistemic"]      for s in samples], dtype=torch.float32),
+            "aleatoric":      torch.tensor([s["aleatoric"]      for s in samples], dtype=torch.float32),
+            "confidence":     torch.tensor([s["confidence"]     for s in samples], dtype=torch.float32),
+            "overconfidence": torch.tensor([s["overconfidence"] for s in samples], dtype=torch.float32),
         }
         return {"inputs": dict(inputs), "labels": labels}
 
@@ -249,14 +198,14 @@ class ObserveCollator:
 # ---------------------------------------------------------------------------
 
 def split_annotations(
-    annotations: Sequence[TraceStepAnnotation],
+    annotations: Sequence[PassAnnotation],
     *,
     val_frac: float = 0.1,
     held_frac: float = 0.1,
     seed: int = 42,
 ) -> dict:
     import random as _random
-    by_image: dict[str, List[TraceStepAnnotation]] = {}
+    by_image: dict[str, List[PassAnnotation]] = {}
     for ann in annotations:
         by_image.setdefault(ann.image_path, []).append(ann)
     unique = sorted(by_image.keys())
@@ -270,9 +219,9 @@ def split_annotations(
     val_ids   = set(unique[n_train:n_train + n_val])
     held_ids  = set(unique[n_train + n_val:])
 
-    train_a: List[TraceStepAnnotation] = []
-    val_a:   List[TraceStepAnnotation] = []
-    held_a:  List[TraceStepAnnotation] = []
+    train_a: List[PassAnnotation] = []
+    val_a:   List[PassAnnotation] = []
+    held_a:  List[PassAnnotation] = []
     for img_id, anns in by_image.items():
         bucket = (train_a if img_id in train_ids
                   else val_a if img_id in val_ids
@@ -291,12 +240,7 @@ def split_annotations(
 # ---------------------------------------------------------------------------
 
 class OBSERVETrainer:
-    """Behavioral-cloning trainer for OBSERVE on Phase 0R traces.
-
-    Use ``make_loader(annotations, batch_size)`` to get a DataLoader
-    that uses the correct collator. ``train_epoch`` and ``validate``
-    expect that loader's batch shape.
-    """
+    """Calibration trainer for OBSERVE on per-pass uncertainty targets."""
 
     def __init__(self, model, lr: float = 1e-4, weight_decay: float = 0.01):
         self.model = model
@@ -307,12 +251,12 @@ class OBSERVETrainer:
 
     def make_loader(
         self,
-        annotations: Sequence[TraceStepAnnotation],
+        annotations: Sequence[PassAnnotation],
         batch_size: int,
         shuffle: bool,
         num_workers: int = 0,
     ) -> DataLoader:
-        ds = RoutingTraceDataset(annotations)
+        ds = PassDataset(annotations)
         collator = ObserveCollator(self.model.processor)
         return DataLoader(
             ds, batch_size=batch_size, shuffle=shuffle,
@@ -332,8 +276,6 @@ class OBSERVETrainer:
 
         out = self.model(inputs)
         losses = loss_fn(
-            routing_logits=out["routing_logits"],
-            target_class=labels["next_agent"],
             epsilon_logit=out["epistemic_logit"],     epsilon_target=labels["epistemic"],
             aleatoric_logit=out["aleatoric_logit"],   aleatoric_target=labels["aleatoric"],
             confidence_logit=out["confidence_logit"], confidence_target=labels["confidence"],
@@ -342,21 +284,15 @@ class OBSERVETrainer:
         if train:
             losses.total.backward()
             self.optimizer.step()
-
-        pred = out["routing_logits"].argmax(dim=-1)
-        acc = float((pred == labels["next_agent"]).float().mean().item())
         return {
-            "total":   float(losses.total.item()),
-            "routing": float(losses.routing.item()),
-            "cal":     float(losses.calibration.item()),
-            "cons":    float(losses.consistency.item()),
-            "oc":      float(losses.overconfidence.item()),
-            "routing_acc": acc,
+            "total":  float(losses.total.item()),
+            "cal":    float(losses.calibration.item()),
+            "cons":   float(losses.consistency.item()),
+            "oc":     float(losses.overconfidence.item()),
         }
 
     def train_epoch(self, loader: DataLoader, loss_fn, device: torch.device) -> dict:
-        sums = {"total": 0.0, "routing": 0.0, "cal": 0.0,
-                "cons": 0.0, "oc": 0.0, "routing_acc": 0.0}
+        sums = {"total": 0.0, "cal": 0.0, "cons": 0.0, "oc": 0.0}
         n = 0
         for batch in tqdm(loader, desc="train", leave=False):
             stats = self._step(batch, loss_fn, device, train=True)
@@ -367,12 +303,12 @@ class OBSERVETrainer:
 
     @torch.no_grad()
     def validate(self, loader: DataLoader, loss_fn, device: torch.device) -> dict:
-        sums = {"total": 0.0, "routing_acc": 0.0}
+        sums = {"total": 0.0, "cal": 0.0, "cons": 0.0, "oc": 0.0}
         n = 0
         for batch in tqdm(loader, desc="val", leave=False):
             stats = self._step(batch, loss_fn, device, train=False)
-            sums["total"]       += stats["total"]
-            sums["routing_acc"] += stats["routing_acc"]
+            for k in sums:
+                sums[k] += stats[k]
             n += 1
         return {k: v / max(n, 1) for k, v in sums.items()}
 
@@ -383,11 +319,11 @@ class OBSERVETrainer:
             "model_state_dict": self.model.state_dict(),
             "optimizer_state_dict": self.optimizer.state_dict(),
         }, path)
-        logger.info("OBSERVE checkpoint → %s", path)
+        logger.info("OBSERVE checkpoint -> %s", path)
 
     def load(self, path: str | Path) -> None:
         ckpt = torch.load(path, map_location="cpu")
         self.model.load_state_dict(ckpt["model_state_dict"])
         if "optimizer_state_dict" in ckpt:
             self.optimizer.load_state_dict(ckpt["optimizer_state_dict"])
-        logger.info("OBSERVE checkpoint loaded ← %s", path)
+        logger.info("OBSERVE checkpoint loaded <- %s", path)

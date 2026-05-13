@@ -10,8 +10,7 @@ Sections
 3. [Phase 0R — regional deltas (Qwen swarm)](#3-phase-0r--regional-deltas-qwen-swarm)
    - 3a. [Per-tuple flow (iterative KB loop)](#3a-per-tuple-flow-iterative-kb-loop)
    - 3b. [Inside one trace (routed swarm)](#3b-inside-one-trace-routed-swarm)
-   - 3c. [Algorithm 1 routing decision](#3c-algorithm-1-routing-decision)
-   - 3d. [Cross-run K-of-N agreement filter](#3d-cross-run-k-of-n-agreement-filter)
+   - 3d. [Cross-pass K-of-N agreement filter](#3d-cross-run-k-of-n-agreement-filter)
    - 3e. [Conservative merge with existing KB](#3e-conservative-merge-with-existing-kb)
 4. [Phase OBSERVE — distilled student](#4-phase-observe--distilled-student)
 5. [Data shape evolution](#5-data-shape-evolution)
@@ -186,91 +185,51 @@ After every tuple finishes, `_embed_into_registry` merges its per-state
 record back into the disease's `regional_observations` dict — **states
 not processed this run are preserved verbatim**.
 
-### 3b. Inside one trace (routed swarm)
+### 3b. Inside one pass (parallel specialists + consolidator)
 
-Each of the N traces is a sequential traversal of the 5-agent graph,
-starting at MorphologyAgent. Each agent emits
-`{deltas, confidence (κ), handoff_target, reasoning}` and sees the
-canonical slice plus existing KB plus prior trace context as input.
+Each of the N stochastic passes is the same fixed structure: four
+specialists run in PARALLEL on (image, canonical, existing KB), then
+DiagnosisAgent consolidates the union. No routing, no κ-gated handoff,
+no backtrack — passes are stochastic but the agent graph is fixed.
 
 ```mermaid
 flowchart TD
-    ENTRY([entry: MorphologyAgent])
+    INPUT([image + canonical + existing KB])
     MA[MorphologyAgent<br/>owned: lesion_morphology<br/>affected_organs<br/>diagnostic_features]
     SA[SymptomAgent<br/>owned: spread_pattern<br/>diagnostic_features]
     PA[PathogenAgent<br/>owned: look_alikes<br/>type_of_disease]
     SV[SeverityAgent<br/>owned: severity<br/>treatments]
-    DA[DiagnosisAgent<br/>consolidator: dedupe<br/>drop restatements]
-    DONE([per-trace final deltas])
+    DA[DiagnosisAgent<br/>consolidator: dedupe overlapping fields<br/>drop restatements of canonical + existing KB]
+    DONE([per-pass final deltas + kappa])
 
-    ENTRY --> MA
-    MA --> ROUTE[Algorithm 1<br/>kappa-gated]
-    SA --> ROUTE
-    PA --> ROUTE
-    SV --> ROUTE
-    ROUTE -->|backtrack| MA
-    ROUTE -->|forward to specialist| SA
-    ROUTE -->|forward to specialist| PA
-    ROUTE -->|forward to specialist| SV
-    ROUTE -->|terminate| DA
+    INPUT --> MA
+    INPUT --> SA
+    INPUT --> PA
+    INPUT --> SV
+    MA --> DA
+    SA --> DA
+    PA --> DA
+    SV --> DA
     DA --> DONE
 
+    classDef input fill:#ffd,stroke:#660
     classDef agent fill:#fde,stroke:#a06
-    classDef router fill:#eef,stroke:#33a
     classDef done fill:#efe,stroke:#060,stroke-width:2px
+    class INPUT input
     class MA,SA,PA,SV,DA agent
-    class ROUTE router
     class DONE done
 ```
 
-### 3c. Algorithm 1 routing decision
-
-Four rules applied in order. Returns the next agent to call, or
-DiagnosisAgent to terminate.
-
-```mermaid
-flowchart TD
-    CALL[Agent A emits deltas, kappa, model_handoff, reasoning]
-    R1{kappa = low<br/>AND backtrack_count &lt; max_backtracks<br/>AND A not MorphologyAgent}
-    R2{kappa = low<br/>AND backtrack_count &ge; max_backtracks}
-    R3{kappa = high<br/>AND all 4 specialists ran<br/>AND A not DiagnosisAgent}
-    R4{model_handoff set}
-    BACK[Next = MorphologyAgent<br/>regrounding]
-    FWD[Next = default_forward<br/>loop guard]
-    TERM[Next = DiagnosisAgent<br/>early terminate]
-    MODEL[Next = model_handoff]
-    DEF[Next = default_forward]
-
-    CALL --> R1
-    R1 -->|yes| BACK
-    R1 -->|no| R2
-    R2 -->|yes| FWD
-    R2 -->|no| R3
-    R3 -->|yes| TERM
-    R3 -->|no| R4
-    R4 -->|yes| MODEL
-    R4 -->|no| DEF
-
-    classDef decision fill:#fef,stroke:#606
-    classDef action fill:#eef,stroke:#33a
-    class R1,R2,R3,R4 decision
-    class BACK,FWD,TERM,MODEL,DEF action
-```
-
-Per-agent routing menus:
-
-| Agent | DEFAULT_FORWARD | HANDOFF_MENU (model may pick from) |
-|---|---|---|
-| MorphologyAgent | SymptomAgent | Symptom, Severity, Diagnosis |
-| SymptomAgent | PathogenAgent | Morphology, Pathogen, Severity, Diagnosis |
-| PathogenAgent | SeverityAgent | Morphology, Symptom, Severity, Diagnosis |
-| SeverityAgent | DiagnosisAgent | Morphology, Diagnosis |
+Each specialist emits `{deltas, confidence (κ), reasoning}` for the
+fields it owns. The consolidator's output (deltas + κ) becomes that
+pass's final delta list. Validation against external evidence happens
+in the §3d2 verifier stage after K-of-N agreement.
 
 ### 3d. Cross-run K-of-N agreement filter
 
-After all N traces complete, per-trace final-delta lists are pooled,
+After all N passes complete, per-pass final-delta lists are pooled,
 grouped by field, and clustered greedily on `image_shows` Jaccard. Only
-clusters covering at least K distinct run-indices survive.
+clusters covering at least K distinct pass-indices survive.
 
 ```
 Trace 0 final_deltas    [d_00, d_01]
@@ -379,13 +338,13 @@ N-stochastic-traces swarm with a single forward pass.
 ```mermaid
 flowchart TD
     P0R[Phase 0R run<br/>with PATHOME_TRACE_DIR set]
-    JSONL[(phase0r_traces.jsonl<br/>one line per tuple-run<br/>profile_id, path, decisions<br/>context_buffer, final_deltas<br/>existing_kb_at_start)]
-    EXPAND[load_phase0r_traces<br/>expand per-step<br/>TraceStepAnnotation]
+    JSONL[(phase0r_traces.jsonl<br/>one line per tuple-pass<br/>profile_id, specialist_outputs,<br/>consolidator_output, final_deltas,<br/>existing_kb_at_start)]
+    EXPAND[load_phase0r_traces<br/>build per-pass<br/>PassAnnotation]
     SPLIT[split_annotations<br/>group by image_path<br/>train / val / held]
-    MODEL[OBSERVE model<br/>Qwen2.5-VL-7B plus LoRA r=16<br/>heads: routing 5-class, backtrack,<br/>epsilon, alpha, c, OC]
-    TRAIN[OBSERVETrainer<br/>multi-task loss<br/>L = L_rt + 0.4 L_cal<br/>+ 0.2 L_cons + 0.3 L_OC]
+    MODEL[OBSERVE model<br/>Qwen2.5-VL-7B plus LoRA r=16<br/>heads: epsilon, alpha, confidence, OC]
+    TRAIN[OBSERVETrainer<br/>uncertainty loss<br/>L = 0.4 L_cal + 0.2 L_cons + 0.3 L_OC]
     CKPT[(observe_best.pt)]
-    INFER[OBSERVEInference predict<br/>EpistemicAction:<br/>next_agent, backtrack,<br/>kappa, uncertainty, belief]
+    INFER[OBSERVE.get_uncertainty<br/>EpistemicState:<br/>epsilon, alpha, calibrated kappa, OC]
 
     P0R --> JSONL --> EXPAND --> SPLIT --> TRAIN
     MODEL --> TRAIN --> CKPT
@@ -401,28 +360,14 @@ flowchart TD
     class CKPT,INFER deliv
 ```
 
-Per-step supervision derived from each trace's context buffer:
+Per-pass supervision derived from each pass record (no routing labels):
 
 | Target | Source |
 |---|---|
-| target_routing | path[i+1] — which agent the swarm called next |
-| target_backtrack | 1 iff path[i+1] is MorphologyAgent AND path[i] is not MorphologyAgent |
-| target_confidence | kappa in {high, medium, low} mapped to {0.9, 0.6, 0.3} |
-| target_epistemic | (n_final - n_at_step) / max(1, n_final) |
-| target_aleatoric | 1 - kappa_scalar |
-| target_overconfidence | 1 iff kappa is high AND len(deltas at step) == 0 |
-| target_belief | reasoning string the agent emitted |
-
-**Two-phase training paths**:
-- Phase A — `observe.decision_transformer.DecisionTransformerTrainer.fit`
-  consumes the same trace JSONL, weights each step by the trace's
-  delta-mode return `R_t = sum_{t' >= t} r_{t'}` with
-  `r_T = routing_acc * (1 - kappa_ece)`, runs BC with early stopping
-  on val total loss.
-- Phase B — `observe.grpo.GRPOTrainer.fit` samples K candidate
-  actions per prompt, computes within-group advantage
-  `A = r - mean(r)`, applies the clipped policy ratio update against
-  a frozen Phase-A reference policy, KL-anchored.
+| target_confidence    | consolidator kappa mapped to {0.9, 0.6, 0.3} |
+| target_epistemic     | abs(specialist_union - final_deltas) / max(1, specialist_union) |
+| target_aleatoric     | 1 - kappa_scalar |
+| target_overconfidence | 1 iff kappa is high AND len(final_deltas) == 0 |
 
 ---
 
@@ -504,26 +449,27 @@ for OBSERVE training:
               $PATHOME_TRACE_DIR/phase0r_traces.jsonl   (append-mode)
               +------------------------------------------+
               | {                                        |   one line
-              |   "ts": 1715520000.123,                  |   per tuple-run
+              |   "ts": 1715520000.123,                  |   per tuple-pass
               |   "profile_id": "Soybean::Charcoal Rot", |
               |   "crop": "Soybean", "disease": "...",   |
               |   "state": "Alabama",                    |
               |   "primary_image_id": "bugwood::1568038",|
               |   "image_path": ".../bugwood_cache/..",  |
-              |   "run_idx": 0,                          |
-              |   "path": ["MorphologyAgent",            |
-              |            "SymptomAgent", ...,          |
-              |            "DiagnosisAgent"],            |
-              |   "decisions": ["model_choice", ...],    |
-              |   "confidences": ["medium","high",...],  |
-              |   "backtrack_count": 1,                  |
-              |   "early_terminated": true,              |
-              |   "context_buffer": [                    |
-              |     { agent_name, deltas, confidence,    |
-              |       handoff_target, reasoning,         |
-              |       raw_text },                        |
-              |     ...                                  |
+              |   "pass_idx": 0,                         |
+              |   "specialist_outputs": [                |
+              |     { agent_name: "MorphologyAgent",     |
+              |       deltas: [...],                     |
+              |       confidence: "medium",              |
+              |       reasoning, raw_text },             |
+              |     { agent_name: "SymptomAgent", ...},  |
+              |     { agent_name: "PathogenAgent", ...}, |
+              |     { agent_name: "SeverityAgent", ...}, |
               |   ],                                     |
+              |   "consolidator_output": {               |
+              |     agent_name: "DiagnosisAgent",        |
+              |     deltas: [...],                       |
+              |     confidence, reasoning, raw_text      |
+              |   },                                     |
               |   "final_deltas": [...],                 |
               |   "existing_kb_at_start": [...]          |
               | }                                        |
@@ -572,8 +518,6 @@ PlantSwarm/
 |   |                                       split_annotations
 |   |-- loss.py                            multi-task L_rt + L_cal + L_cons + L_OC + L_bel
 |   |-- inference.py                       OBSERVEInference single-pass
-|   |-- decision_transformer.py            Phase A: DT with delta-mode reward
-|   |-- grpo.py                            Phase B: GRPO with delta-mode reward
 |   `-- active_learning.py                 epsilon-aware sample selection
 |
 |-- agents/                                5 delta-extraction agents
@@ -655,8 +599,6 @@ PlantSwarm/
 | VLLM_TEMPERATURE | 0.8 | Per-call sampling temperature |
 | VLLM_N_RUNS | 10 (smoke: 5) | Stochastic traces per tuple |
 | VLLM_AGREEMENT_MIN | 3 (smoke: 2) | K-of-N agreement floor |
-| VLLM_TMAX | 15 (smoke: 8) | Max path length per trace |
-| VLLM_MAX_BACKTRACKS | 1 | Max backtracks (actually honored) |
 | VLLM_SIM_THRESHOLD | 0.4 | Jaccard threshold for clustering + merge |
 | PATHOME_USE_VERIFIER | 1 | Set to 0 to skip the Claude web-search verifier and pass candidates straight to merge as `unverified` |
 | PATHOME_VERIFIER_TIMEOUT | 600 | Verifier `claude -p` timeout (seconds) |

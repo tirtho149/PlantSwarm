@@ -1,15 +1,20 @@
-"""Qwen delta-extraction swarm.
+"""Qwen delta-extraction swarm — parallel specialists + consolidator.
 
-Five agents over Qwen2.5-VL-7B-Instruct. Four specialists each own a
-slice of canonical KB fields and emit candidate deltas for those fields
-based on a single Bugwood photograph; DiagnosisAgent consolidates the
-union, dedupes overlapping fields, and drops restatements of canonical.
+The four specialists (Morphology, Symptom, Pathogen, Severity) each
+own a slice of canonical KB fields and run in PARALLEL on the same
+(image, canonical, existing KB) input. DiagnosisAgent consolidates the
+union, deduping overlapping fields and dropping restatements.
+
+No routing, no κ-gated handoff — the swarm is a hypothesis generator;
+validation comes from Claude+WebSearch downstream.
 """
 
 from .base_agent import (
     ALLOWED_DELTA_FIELDS,
+    AgentDeltaOutput,
     BaseAgent,
     DELTA_USER_PROMPT,
+    parse_agent_output,
 )
 from .diagnosis_agent import DiagnosisAgent
 from .morphology_agent import MorphologyAgent
@@ -25,5 +30,7 @@ __all__ = [
     "PathogenAgent",
     "SeverityAgent",
     "ALLOWED_DELTA_FIELDS",
+    "AgentDeltaOutput",
     "DELTA_USER_PROMPT",
+    "parse_agent_output",
 ]

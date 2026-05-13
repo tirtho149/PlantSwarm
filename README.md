@@ -223,7 +223,7 @@ PATHOME_TRACE_DIR=artifacts/observe_traces \
 
 What this does:
 1. `git pull` (gets the canonical artefacts you pushed in step 2).
-2. `sbatch --wait scripts/submit_phase0r_regional.sh` — boots vLLM, runs the Qwen swarm (N stochastic traces × Algorithm 1 routing), the K-of-N agreement filter, the Claude+WebSearch verifier, and the conservative merge with existing KB. Writes per-trace records to `artifacts/observe_traces/phase0r_traces.jsonl`. Updates `final_registry.json` and `symptoms_seed.json` with the regional deltas and their verification status + `web_support` citations.
+2. `sbatch --wait scripts/submit_phase0r_regional.sh` — boots vLLM, runs the Qwen swarm (N stochastic passes; 4 specialists run in parallel and DiagnosisAgent consolidates per pass), the K-of-N cross-pass agreement filter, the Claude+WebSearch verifier, and the conservative merge with existing KB. Writes per-pass records to `artifacts/observe_traces/phase0r_traces.jsonl`. Updates `final_registry.json` and `symptoms_seed.json` with the regional deltas and their `verification_status` + `web_support` citations.
 3. `sbatch --wait scripts/submit_observe_train.sh` — trains the OBSERVE student on the trace JSONL. Writes `observe/checkpoints/observe_best.pt` and `history.json`.
 4. `sbatch --wait scripts/submit_evaluate_observe.sh` — held-out evaluation. Writes `results/observe_eval.json`.
 5. `git add -f` the results + `git commit` + `git push origin main`.
@@ -468,38 +468,32 @@ schema, the SAGE prompts, and a worked example.
 | Inputs           | `artifacts/pathome_kb/<Crop>/final_registry.json` (canonical, from Phase 0), `BugWood_..._usable.csv`, `.bugwood_cache/` |
 | Outputs          | regional deltas embedded into `final_registry.json[*].regional_observations[state]`; merged `symptoms_seed.json`  |
 
-Inside one (crop, disease, state) call (paper §4 / Algorithm 1, adapted,
-with iterative KB evolution):
+Inside one (crop, disease, state) call (parallel-swarm + verifier; no
+routing):
 
 1. **Load existing regional deltas** for THIS state from
    `final_registry.json` (`existing_deltas_for_state()`). On cold start
    this is empty; on re-runs it's whatever the previous Phase 0R
    committed. The agents see these in their context.
 2. `flatten_canonical()` reduces the SAGE-shaped record to plain values.
-3. **N stochastic routed traces** run independently (default N=10, T=0.8;
-   smoke uses N=5). Each trace is a sequential traversal:
-   - Entry: `MorphologyAgent` (visual grounding).
-   - Each agent emits `{deltas, confidence (κ), handoff_target, reasoning}`
-     and sees three context blocks: the **canonical KB slice** for its
-     owned fields, the **existing KB observations** for this state, and
-     the **prior trace context** (deltas emitted earlier in this trace).
-     Agents are instructed to NOT restate canonical or existing KB.
-   - **Algorithm 1 routing** overrides the model's choice when:
-     - κ=low + backtrack budget remaining → `MorphologyAgent` (regrounding)
-     - κ=low + budget exhausted → default forward (loop guard)
-     - κ=high + all 4 specialists ran → `DiagnosisAgent` (early terminate)
-   - `Tmax=15` caps the path; if reached, force a terminal `DiagnosisAgent`
-     call. `max_backtracks` (default 1) is honored as the actual cap.
-   - Each trace ends with `DiagnosisAgent` consolidating its own context
-     buffer (specialists' deltas) plus the canonical + existing-KB blocks
-     into that trace's final delta list.
-4. **K-of-N agreement filter**: deltas from the N traces are clustered
-   by (`field`, Jaccard similarity over `image_shows` tokens). Clusters
-   whose support covers ≥ K distinct runs (default K=3; smoke K=2) are
-   kept; the rest are dropped as likely hallucination. K-of-N is a
-   *proposal-confidence prior*, not a truth criterion — it filters
-   one-off noise so the verifier doesn't waste API spend on weak
-   candidates.
+3. **N stochastic passes** run independently (default N=10, T=0.8;
+   smoke uses N=5). Each pass is:
+   - The 4 specialists (Morphology, Symptom, Pathogen, Severity) run
+     in **parallel** on `(image, canonical, existing KB)`. Each emits
+     `{deltas, confidence (κ), reasoning}` for the fields it owns.
+   - `DiagnosisAgent` consolidates the union of the 4 specialists'
+     deltas, dropping restatements of canonical / existing KB and
+     deduping overlapping fields.
+   - The consolidator's output is the pass's final delta list.
+   There is no routing, no κ-gated handoff, and no backtrack — passes
+   are stochastic but the agent graph is fixed (parallel + consolidator).
+4. **K-of-N cross-pass agreement filter**: deltas from the N passes are
+   clustered by (`field`, Jaccard similarity over `image_shows` tokens).
+   Clusters whose support covers ≥ K distinct passes (default K=3;
+   smoke K=2) are kept; the rest are dropped as likely hallucination.
+   K-of-N is a *proposal-confidence prior*, not a truth criterion — it
+   filters one-off noise so the verifier doesn't waste API spend on
+   weak candidates.
 5. **Web-grounded verifier** (Claude headless + WebSearch): every
    surviving candidate is sent to `pathome_kb/verifier.py`, which
    searches extension / APS / CABI / peer-reviewed sources for
@@ -540,8 +534,6 @@ VLLM_TIMEOUT        seconds per HTTP call (default 180)
 VLLM_TEMPERATURE    per-call sampling temp (default 0.8; paper §5.3 used 0.9)
 VLLM_N_RUNS         stochastic traces per tuple (default 10; smoke 5)
 VLLM_AGREEMENT_MIN  K-of-N agreement to keep a delta (default 3; smoke 2)
-VLLM_TMAX           max path length per trace (default 15; smoke 8)
-VLLM_MAX_BACKTRACKS paper §5.3 (default 1)
 VLLM_SIM_THRESHOLD  Jaccard threshold for delta clustering AND merge dedup (default 0.4)
 PATHOME_USE_VERIFIER     enable Claude web-search verifier (default 1; 0 = skip)
 PATHOME_VERIFIER_TIMEOUT verifier claude -p timeout in seconds (default 600)
@@ -582,37 +574,26 @@ python scripts/train_observe.py \
     --epochs 5 --batch-size 4
 ```
 
-Per-step supervision derived from each trace:
-- `target_routing`     = next agent in `path`
-- `target_backtrack`   = 1 iff the next step is `MorphologyAgent` after non-Morphology
-- `target_confidence`  = κ ∈ {high, medium, low} → scalar {0.9, 0.6, 0.3}
-- `target_epistemic`   = how many deltas appeared after this step vs final
-- `target_aleatoric`   = 1 − κ scalar (low κ ↔ high irreducible noise)
-- `target_overconfidence` = κ=high but the agent emitted 0 deltas
+Per-pass supervision derived from each pass record (no routing labels):
+- `target_confidence`    = consolidator κ ∈ {high, medium, low} → {0.9, 0.6, 0.3}
+- `target_epistemic`     = `|specialist_union − final_deltas| / max(1, specialist_union)`
+- `target_aleatoric`     = 1 − κ scalar (low κ ↔ high irreducible noise)
+- `target_overconfidence` = 1 iff κ=high AND `len(final_deltas) == 0`
 
-**Inference**: `observe.OBSERVEInference.predict(image, context)` returns
-an `EpistemicAction` (next agent, backtrack, κ scalar, uncertainty,
-belief text) — no swarm, no vLLM HTTP loop.
-
-**Two-phase training** is supported:
-- **Phase A** — Decision Transformer (`observe/decision_transformer.py`)
-  with delta-mode reward `r_T = routing_acc * (1 - kappa_ece)`. Same BC
-  loss as `OBSERVETrainer` but with return-conditioned per-trace
-  weighting and early stopping on val total loss.
-- **Phase B** — GRPO (`observe/grpo.py`) with reward
-  `r = routing_acc * (1 - kappa_ece) - lambda_len * len(path) / Tmax`,
-  clipped policy ratio update against a frozen Phase-A reference
-  policy, KL-anchored.
+**Inference**: `OBSERVE.get_uncertainty(image, context_text)` returns
+an `EpistemicState` (epistemic, aleatoric, calibrated confidence, OC
+flag) — a single forward pass, no swarm, no vLLM HTTP loop.
 
 **Evaluation** — `scripts/evaluate_observe.py` (and
 `scripts/submit_evaluate_observe.sh`) loads a checkpoint and reports
-routing accuracy, backtrack F1, κ MAE/ECE, and OC accuracy on the
-held-out trace fold. The split is image-grouped, so no leakage across
+κ MAE, κ ECE, epistemic MAE, aleatoric MAE, and OC accuracy on the
+held-out fold. The split is image-grouped, so no leakage across
 folds.
 
-**Tests** — `pytest tests/` covers the parser, Algorithm 1 routing
-grid, agreement filter, conservative merge (incl. idempotency),
-existing-deltas extraction, and the OBSERVE annotation chain. 17
+**Tests** — `pytest tests/` covers the parser, agreement filter,
+conservative merge (incl. idempotency + status upgrades),
+existing-deltas extraction, the Claude verifier (mocked), the OBSERVE
+annotation chain, and the visualization pipeline. 17
 tests, no GPU required for the swarm-logic tests.
 
 ---
@@ -693,7 +674,7 @@ section just chain these.
 
 | Script | Purpose | Inputs | Outputs |
 |---|---|---|---|
-| `scripts/submit_phase0r_regional.sh` | Nova SBATCH: boot vLLM, run Qwen swarm (Algorithm 1), agreement filter, Claude web-search verifier, conservative merge | canonical KB, image cache | regional deltas merged into `final_registry.json`; `symptoms_seed.json`; `phase0r_traces.jsonl` if `PATHOME_TRACE_DIR` set |
+| `scripts/submit_phase0r_regional.sh` | Nova SBATCH: boot vLLM, run Qwen swarm (4 specialists in parallel + DiagnosisAgent consolidator, N stochastic passes), K-of-N agreement filter, Claude web-search verifier, conservative merge | canonical KB, image cache | regional deltas merged into `final_registry.json`; `symptoms_seed.json`; `phase0r_traces.jsonl` if `PATHOME_TRACE_DIR` set |
 
 ### OBSERVE — distilled student (Nova, CUDA)
 

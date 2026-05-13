@@ -2,7 +2,9 @@
 agents/severity_agent.py
 ========================
 SeverityAgent — emits deltas for disease advancement at this site and
-for any treatment-relevant stage cues visible in the photograph.
+treatment-relevant stage cues visible in the photograph.
+
+Invoked in parallel with the other specialists; no routing state.
 """
 
 from __future__ import annotations
@@ -13,8 +15,6 @@ from agents.base_agent import BaseAgent
 class SeverityAgent(BaseAgent):
     AGENT_NAME = "SeverityAgent"
     OWNED_FIELDS = ["severity", "treatments"]
-    HANDOFF_MENU = ["MorphologyAgent", "DiagnosisAgent"]
-    DEFAULT_FORWARD = "DiagnosisAgent"
 
     SYSTEM_PROMPT = (
         "You are SeverityAgent. Inspect the photograph for disease "

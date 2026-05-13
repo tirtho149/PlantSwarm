@@ -828,16 +828,24 @@ the input to the trace-driven enhancement pass
 \subsection{Phase~0R: web-grounded delta verification}
 \label{sec:phase0r-verifier}
 
-The Phase~0R Qwen swarm produces $N$ stochastic routed
-traces per (crop, disease, state, image) tuple and a
-$K$-of-$N$ Jaccard agreement filter clusters their final
-deltas into candidate observations. Multi-run agreement
-from a single base model is correlated, not orthogonal,
-evidence --- $N$ agreeing samples can still be $N$
-correlated hallucinations. We therefore treat $K$-of-$N$
-as a \emph{proposal-confidence prior}, not a truth
-criterion, and follow it with an evidence-grounded
-\textbf{verifier}.
+The Phase~0R Qwen swarm produces $N$ stochastic passes per
+(crop, disease, state, image) tuple. Each pass is a fixed
+parallel-then-consolidate graph: the four specialists
+(\texttt{MorphologyAgent}, \texttt{SymptomAgent},
+\texttt{PathogenAgent}, \texttt{SeverityAgent}) run
+\emph{in parallel} on the same input, then
+\texttt{DiagnosisAgent} consolidates the union of their
+deltas. There is no routing, no $\kappa$-gated handoff,
+and no backtrack --- diversity comes from per-pass
+stochastic sampling rather than from a routing policy.
+A $K$-of-$N$ Jaccard agreement filter clusters the
+per-pass final deltas across passes into candidate
+observations. Multi-pass agreement from a single base
+model is correlated, not orthogonal, evidence --- $N$
+agreeing samples can still be $N$ correlated
+hallucinations. We therefore treat $K$-of-$N$ as a
+\emph{proposal-confidence prior}, not a truth criterion,
+and follow it with an evidence-grounded \textbf{verifier}.
 
 The verifier
 (\texttt{pathome\_kb/verifier.py}) takes the agreement
@@ -1064,25 +1072,26 @@ re-observation instruction from $\mathcal{G}_t$.
 \subsection{Training}
 
 \textbf{Training data.}
-\observe trains on the routed-swarm trace JSONL written by
+\observe trains on the per-pass trace JSONL written by
 Phase~0R when \texttt{PATHOME\_TRACE\_DIR} is set
 (\texttt{plantswarm.delta\_pipeline.\_TraceWriter}). One
-record is one $(\text{tuple},\,\text{run})$: the path,
-per-agent deltas, $\kappa$ sequence, decision log, backtrack
-count, and the existing-KB context the agents saw at trace
-start. The supervision is delta-mode --- the swarm's
-observed transition serves as the target action --- rather
-than the original paper's $T_1{-}T_5$ classification target.
+record is one $(\text{tuple}, \text{pass})$ with the four
+parallel specialist outputs, the consolidator output, the
+pass's final delta list, and the existing-KB context the
+agents saw at start. No routing path, no backtrack count
+--- the swarm graph is fixed (parallel specialists then
+consolidator).
 
-\textbf{Label generation from traces.}
-$a^\text{next*}_t$: actual next agent.
-$b_t^*{=}1$ if backtrack occurred.
-$\epsilon_t^*{=}L/L_\text{max}$ if backtrack
-resolved, $0$ otherwise.
-$\alpha_t^*{=}1$ if unresolved after all
-backtracks.
-$\mathrm{OC}_t^*{=}1$ if agent declared
-$\kappa{=}\kH$ and trace ended incorrectly.
+\textbf{Label generation from per-pass records.}
+$c_t^*{=}\kappa\to\{0.9,0.6,0.3\}$ for
+\{high, medium, low\} on the consolidator's output.
+$\epsilon_t^*{=}|n_\text{union}{-}n_\text{final}|/\max(1,n_\text{union})$
+where $n_\text{union}$ is the total specialist-deltas
+count and $n_\text{final}$ is the consolidator-deltas count
+(captures how much the consolidator dedupes or extends).
+$\alpha_t^*{=}1{-}c_t^*$.
+$\mathrm{OC}_t^*{=}1$ iff $\kappa{=}\kH$ and
+$n_\text{final}{=}0$.
 
 \textbf{Phase~A---Decision
 Transformer~\citep{chen2021decision}.}

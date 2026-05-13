@@ -102,18 +102,12 @@ def _make_seed(tmp_path: Path) -> Path:
 
 def _make_history(tmp_path: Path) -> Path:
     history = [
-        {"epoch": 1,
-         "train": {"total": 1.4, "routing": 1.1, "cal": 0.3,
-                   "cons": 0.05, "oc": 0.1, "routing_acc": 0.25},
-         "val":   {"total": 1.3, "routing_acc": 0.30}},
-        {"epoch": 2,
-         "train": {"total": 0.9, "routing": 0.7, "cal": 0.2,
-                   "cons": 0.04, "oc": 0.08, "routing_acc": 0.55},
-         "val":   {"total": 0.95, "routing_acc": 0.50}},
-        {"epoch": 3,
-         "train": {"total": 0.6, "routing": 0.45, "cal": 0.15,
-                   "cons": 0.03, "oc": 0.06, "routing_acc": 0.72},
-         "val":   {"total": 0.7,  "routing_acc": 0.65}},
+        {"epoch": 1, "train": {"total": 1.4, "cal": 0.3, "cons": 0.05, "oc": 0.1},
+                     "val":   {"total": 1.3}},
+        {"epoch": 2, "train": {"total": 0.9, "cal": 0.2, "cons": 0.04, "oc": 0.08},
+                     "val":   {"total": 0.95}},
+        {"epoch": 3, "train": {"total": 0.6, "cal": 0.15, "cons": 0.03, "oc": 0.06},
+                     "val":   {"total": 0.7}},
     ]
     p = tmp_path / "history.json"
     p.write_text(json.dumps(history))
@@ -123,16 +117,8 @@ def _make_history(tmp_path: Path) -> Path:
 def _make_eval(tmp_path: Path) -> Path:
     ev = {
         "n_samples": 200, "n_images": 50,
-        "routing_accuracy": 0.78,
-        "routing_per_class": {
-            "MorphologyAgent": {"support": 60, "accuracy": 0.85},
-            "SymptomAgent":    {"support": 50, "accuracy": 0.72},
-            "PathogenAgent":   {"support": 40, "accuracy": 0.70},
-            "SeverityAgent":   {"support": 30, "accuracy": 0.80},
-            "DiagnosisAgent":  {"support": 20, "accuracy": 0.95},
-        },
-        "backtrack_accuracy": 0.82, "backtrack_f1": 0.65,
         "kappa_mae": 0.12, "kappa_ece": 0.09,
+        "epistemic_mae": 0.15, "aleatoric_mae": 0.18,
         "overconfidence_accuracy": 0.88,
     }
     p = tmp_path / "eval.json"
@@ -148,26 +134,30 @@ def _make_traces(tmp_path: Path) -> Path:
             "profile_id": "Soybean::Charcoal Rot",
             "crop": "Soybean", "disease": "Charcoal Rot", "state": "Alabama",
             "primary_image_id": f"bugwood::{i}", "image_path": f"/tmp/img_{i}.jpg",
-            "run_idx": i, "path": ["MorphologyAgent", "SymptomAgent", "DiagnosisAgent"],
-            "decisions": ["model_choice", "alg1_high_kappa_all_covered_terminate"],
-            "confidences": ["medium", "high"],
-            "backtrack_count": 1 if i % 2 == 0 else 0,
-            "early_terminated": True,
-            "context_buffer": [
-                {"agent_name": "MorphologyAgent",
-                 "deltas": [{"field": "lesion_morphology",
-                             "image_shows": "X", "canonical_says": "", "image_quote": ""}],
-                 "confidence": "medium", "handoff_target": "SymptomAgent",
-                 "reasoning": "", "raw_text": ""},
-                {"agent_name": "SymptomAgent",
-                 "deltas": [{"field": "spread_pattern",
-                             "image_shows": "Y", "canonical_says": "", "image_quote": ""}],
-                 "confidence": "high", "handoff_target": "DiagnosisAgent",
-                 "reasoning": "", "raw_text": ""},
+            "pass_idx": i,
+            "specialist_outputs": [
+                {"agent_name":"MorphologyAgent","confidence":"medium",
+                 "deltas":[{"field":"lesion_morphology","image_shows":"X",
+                            "canonical_says":"","image_quote":""}],
+                 "reasoning":"","raw_text":""},
+                {"agent_name":"SymptomAgent","confidence":"high",
+                 "deltas":[{"field":"spread_pattern","image_shows":"Y",
+                            "canonical_says":"","image_quote":""}],
+                 "reasoning":"","raw_text":""},
+                {"agent_name":"PathogenAgent","confidence":"low","deltas":[],
+                 "reasoning":"","raw_text":""},
+                {"agent_name":"SeverityAgent","confidence":"medium","deltas":[],
+                 "reasoning":"","raw_text":""},
             ],
+            "consolidator_output": {
+                "agent_name":"DiagnosisAgent","confidence":"high",
+                "deltas":[{"field":"lesion_morphology","image_shows":"X",
+                           "canonical_says":"","image_quote":""}],
+                "reasoning":"","raw_text":"",
+            },
             "final_deltas": [
-                {"field": "lesion_morphology", "image_shows": "X",
-                 "canonical_says": "", "image_quote": ""},
+                {"field":"lesion_morphology","image_shows":"X",
+                 "canonical_says":"","image_quote":""},
             ],
             "existing_kb_at_start": [],
         }
@@ -217,8 +207,8 @@ def test_observe_eval_emits_tex(tmp_path, monkeypatch):
                         ["observe_eval", "--eval", str(ev), "--name", "oeval"])
     observe_eval.main()
     tex = (tmp_path / "tex" / "auto_oeval.tex").read_text()
-    assert "Routing accuracy" in tex
-    assert "MorphologyAgent" in tex
+    assert "Kappa MAE" in tex
+    assert "Overconfidence" in tex
 
 
 def test_trace_stats_emits_tex(tmp_path, monkeypatch):

@@ -41,29 +41,18 @@ def parse_args():
     return p.parse_args()
 
 
-def _plot_total_and_acc(plt, history: list, out_png: Path) -> bool:
+def _plot_total_loss(plt, history: list, out_png: Path) -> bool:
     if not history:
         return False
     epochs = [h["epoch"] for h in history]
     train_total = [h["train"].get("total", 0)         for h in history]
     val_total   = [h["val"].get("total",   0)         for h in history]
-    train_acc   = [h["train"].get("routing_acc", 0)   for h in history]
-    val_acc     = [h["val"].get("routing_acc",   0)   for h in history]
-
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4))
-    axes[0].plot(epochs, train_total, "o-", label="train", color="#1E88E5")
-    axes[0].plot(epochs, val_total,   "s-", label="val",   color="#F4511E")
-    axes[0].set_xlabel("Epoch"); axes[0].set_ylabel("Total loss")
-    axes[0].set_title("OBSERVE multi-task loss"); axes[0].legend()
-    axes[0].grid(True, alpha=0.3)
-
-    axes[1].plot(epochs, train_acc, "o-", label="train", color="#1E88E5")
-    axes[1].plot(epochs, val_acc,   "s-", label="val",   color="#F4511E")
-    axes[1].set_xlabel("Epoch"); axes[1].set_ylabel("Routing accuracy")
-    axes[1].set_title("OBSERVE routing accuracy"); axes[1].set_ylim(0, 1)
-    axes[1].legend(); axes[1].grid(True, alpha=0.3)
-
-    fig.tight_layout()
+    fig, ax = plt.subplots(figsize=(7, 4))
+    ax.plot(epochs, train_total, "o-", label="train", color="#1E88E5")
+    ax.plot(epochs, val_total,   "s-", label="val",   color="#F4511E")
+    ax.set_xlabel("Epoch"); ax.set_ylabel("Total loss")
+    ax.set_title("OBSERVE multi-task uncertainty loss"); ax.legend()
+    ax.grid(True, alpha=0.3)
     fig.savefig(out_png, dpi=150, bbox_inches="tight")
     plt.close(fig)
     return True
@@ -73,10 +62,9 @@ def _plot_loss_components(plt, history: list, out_png: Path) -> bool:
     if not history:
         return False
     epochs = [h["epoch"] for h in history]
-    keys = ("routing", "cal", "cons", "oc")
-    colors = {"routing": "#1E88E5", "cal": "#43A047",
-              "cons": "#FB8C00", "oc": "#8E24AA"}
-    fig, ax = plt.subplots(figsize=(8, 4))
+    keys = ("cal", "cons", "oc")
+    colors = {"cal": "#43A047", "cons": "#FB8C00", "oc": "#8E24AA"}
+    fig, ax = plt.subplots(figsize=(7, 4))
     for k in keys:
         ys = [h["train"].get(k, 0) for h in history]
         if any(y for y in ys):
@@ -96,15 +84,15 @@ def _build_tex(name: str, history: list, figures_written: list) -> str:
     if history:
         lines.append(r"\begin{table}[t]")
         lines.append(r"  \centering\small")
-        lines.append(r"  \begin{tabular}{rrrrr}")
+        lines.append(r"  \begin{tabular}{rrr}")
         lines.append(r"    \toprule")
-        lines.append(r"    Epoch & Train loss & Val loss & Train acc & Val acc \\")
+        lines.append(r"    Epoch & Train loss & Val loss \\")
         lines.append(r"    \midrule")
         for h in history:
-            tt = h["train"].get("total", 0.0); vt = h["val"].get("total", 0.0)
-            ta = h["train"].get("routing_acc", 0.0); va = h["val"].get("routing_acc", 0.0)
+            tt = h["train"].get("total", 0.0)
+            vt = h["val"].get("total", 0.0)
             lines.append(
-                f"    {h['epoch']} & {tt:.4f} & {vt:.4f} & {ta:.3f} & {va:.3f} \\\\"
+                f"    {h['epoch']} & {tt:.4f} & {vt:.4f} \\\\"
             )
         lines.append(r"    \bottomrule")
         lines.append(r"  \end{tabular}")
@@ -134,8 +122,8 @@ def main() -> None:
     if have_matplotlib():
         _, plt = get_mpl()
         for tag, fn, caption, label in [
-            ("observe_main",       _plot_total_and_acc,
-             "OBSERVE multi-task training loss and routing accuracy over epochs.",
+            ("observe_main",       _plot_total_loss,
+             "OBSERVE multi-task uncertainty loss over epochs.",
              "observe_curves"),
             ("observe_components", _plot_loss_components,
              "OBSERVE per-component training loss.",

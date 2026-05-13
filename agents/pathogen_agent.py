@@ -1,8 +1,10 @@
 """
 agents/pathogen_agent.py
 ========================
-PathogenAgent — emits deltas for look-alikes the image evidence could
-support, and for type-of-disease nuance the image clarifies.
+PathogenAgent — emits deltas for look-alikes the image could support
+and type-of-disease nuance the image clarifies.
+
+Invoked in parallel with the other specialists; no routing state.
 """
 
 from __future__ import annotations
@@ -13,8 +15,6 @@ from agents.base_agent import BaseAgent
 class PathogenAgent(BaseAgent):
     AGENT_NAME = "PathogenAgent"
     OWNED_FIELDS = ["look_alikes", "type_of_disease"]
-    HANDOFF_MENU = ["MorphologyAgent", "SymptomAgent", "SeverityAgent", "DiagnosisAgent"]
-    DEFAULT_FORWARD = "SeverityAgent"
 
     SYSTEM_PROMPT = (
         "You are PathogenAgent. Inspect the photograph for signs that "

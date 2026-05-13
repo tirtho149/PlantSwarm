@@ -1,17 +1,15 @@
 """
 agents/diagnosis_agent.py
 =========================
-DiagnosisAgent — terminal aggregator for one routed trace.
+DiagnosisAgent — consolidator over the parallel specialists' outputs.
 
-Runs once at the end of every trace. Reads the full context buffer
-(every specialist's deltas + confidence + reasoning), the full canonical
-KB, the image, AND the existing regional KB observations for this
-state. Returns the trace's final delta list — deduped, with restatements
-of canonical or existing KB dropped.
+Receives the union of specialist deltas (Morphology, Symptom, Pathogen,
+Severity) plus the canonical KB, existing regional KB, and the image.
+Dedupes overlapping fields, drops restatements of canonical / existing
+KB, returns the consolidated delta list for this pass.
 
-Cross-run aggregation (N stochastic traces → final delta set) and
-conservative merge with the existing KB are handled by
-``plantswarm.delta_pipeline``, not by this agent.
+There is no routing — this agent simply runs once per pass after the
+four specialists complete in parallel.
 """
 
 from __future__ import annotations
@@ -28,14 +26,14 @@ from agents.base_agent import (
 
 
 CONSOLIDATOR_PROMPT = """\
-You are the consolidator for one routed swarm trace. Below is the
-context buffer for this trace — every specialist that ran, with the
-deltas it emitted and its confidence. Your job is to produce the FINAL
-delta list for THIS trace by:
+You are the consolidator. The four specialist agents (Morphology,
+Symptom, Pathogen, Severity) have each examined this photograph in
+parallel and emitted candidate deltas. Produce the FINAL delta list
+for THIS pass by:
 
-  (1) Deduping overlapping fields — when two specialists target the
-      same field with overlapping content, keep the more specific /
-      better-grounded one.
+  (1) Deduping overlapping fields. When two specialists target the same
+      field with overlapping content, keep the more specific / better-
+      grounded one.
   (2) Dropping any candidate that just restates canonical text OR
       restates an existing KB observation. Both kinds of restatement
       are forbidden.
@@ -49,8 +47,8 @@ State:   {state}
 FULL CANONICAL KB:
 {canonical_full}
 {existing_kb_block}
-TRACE CONTEXT BUFFER:
-{context_buffer}
+SPECIALIST OUTPUTS (parallel):
+{specialist_block}
 
 Output STRICT JSON, no markdown fences, no preamble:
 {{
@@ -62,33 +60,32 @@ Output STRICT JSON, no markdown fences, no preamble:
       "image_quote":    "<one-sentence visual evidence>"
     }}
   ],
-  "confidence":     "high" | "medium" | "low",
-  "handoff_target": null,
-  "reasoning":      "<one-line summary of what survived>"
+  "confidence": "high" | "medium" | "low",
+  "reasoning":  "<one-line summary of what survived>"
 }}
 
 If every candidate is a redundant restatement, return
-{{"deltas": [], "confidence": "...", "handoff_target": null, "reasoning": "..."}}.
+{{"deltas": [], "confidence": "...", "reasoning": "..."}}.
 """
 
 
 class DiagnosisAgent(BaseAgent):
     AGENT_NAME = "DiagnosisAgent"
     OWNED_FIELDS = [f for f in ALLOWED_DELTA_FIELDS if f != "other"] + ["other"]
-    HANDOFF_MENU: List[str] = []
-    DEFAULT_FORWARD = ""
 
     SYSTEM_PROMPT = (
-        "You are DiagnosisAgent, the terminal consolidator for one trace. "
-        "Read the context buffer, dedupe overlapping fields, drop "
-        "restatements of canonical AND existing KB, and return the final "
-        "trace delta list. Output strict JSON only — no prose, no markdown."
+        "You are DiagnosisAgent, the consolidator. Read the parallel "
+        "specialist outputs, dedupe overlapping fields, drop restatements "
+        "of canonical AND existing KB, and return the final pass delta "
+        "list. Output strict JSON only — no prose, no markdown."
     )
 
-    def extract_with_routing(self, **_kwargs):  # noqa: D401
+    def extract_deltas(self, **_kwargs):  # noqa: D401
         raise NotImplementedError(
-            "DiagnosisAgent uses consolidate(), not extract_with_routing()."
+            "DiagnosisAgent uses consolidate(), not extract_deltas()."
         )
+
+    extract_with_routing = extract_deltas      # backwards-compat shim
 
     def consolidate(
         self,
@@ -98,19 +95,17 @@ class DiagnosisAgent(BaseAgent):
         state: str,
         canonical: Dict[str, Any],
         image_data_url: str,
-        context_buffer: List[AgentDeltaOutput],
+        specialist_outputs: List[AgentDeltaOutput],
         existing_kb_deltas: Optional[List[Dict[str, Any]]] = None,
         seed: int = 0,
         temperature: float = 0.2,
     ) -> AgentDeltaOutput:
         existing_block = self._format_existing_kb(existing_kb_deltas or [], state)
         user_prompt = CONSOLIDATOR_PROMPT.format(
-            crop=crop,
-            disease=disease,
-            state=state,
+            crop=crop, disease=disease, state=state,
             canonical_full=self._format_canonical_full(canonical),
             existing_kb_block=existing_block,
-            context_buffer=self._format_context_buffer(context_buffer),
+            specialist_block=self._format_specialist_outputs(specialist_outputs),
             allowed_fields=", ".join(ALLOWED_DELTA_FIELDS),
         )
         messages = [{
@@ -121,22 +116,15 @@ class DiagnosisAgent(BaseAgent):
             ],
         }]
         text, _tokens = self.client.chat(
-            messages=messages,
-            system_prompt=self.SYSTEM_PROMPT,
-            seed=seed,
-            temperature=temperature,
+            messages=messages, system_prompt=self.SYSTEM_PROMPT,
+            seed=seed, temperature=temperature,
         )
-        deltas, confidence, _handoff, reasoning = parse_agent_output(
-            text=text,
-            owned_fields=list(ALLOWED_DELTA_FIELDS),
-            handoff_menu=[],
+        deltas, confidence, reasoning = parse_agent_output(
+            text=text, owned_fields=list(ALLOWED_DELTA_FIELDS),
         )
         return AgentDeltaOutput(
             agent_name=self.AGENT_NAME,
-            deltas=deltas,
-            confidence=confidence,
-            handoff_target=None,
-            reasoning=reasoning,
+            deltas=deltas, confidence=confidence, reasoning=reasoning,
             raw_text=text,
         )
 
@@ -156,12 +144,12 @@ class DiagnosisAgent(BaseAgent):
         ])
 
     @staticmethod
-    def _format_context_buffer(buf: List[AgentDeltaOutput]) -> str:
+    def _format_specialist_outputs(buf: List[AgentDeltaOutput]) -> str:
         if not buf:
             return "  (empty)"
         lines: List[str] = []
-        for step, out in enumerate(buf, 1):
-            lines.append(f"  [{step}] {out.agent_name} (confidence={out.confidence})")
+        for out in buf:
+            lines.append(f"  [{out.agent_name}] (confidence={out.confidence})")
             if out.reasoning:
                 lines.append(f"      reasoning: {out.reasoning}")
             if not out.deltas:

@@ -1,53 +1,56 @@
 """
 plantswarm/delta_pipeline.py
 ============================
-Paper-faithful Qwen swarm for regional delta extraction (PlantSwarm §4 /
-Algorithm 1, adapted for deltas) with iterative KB evolution.
+Qwen swarm + Claude web-search verifier for regional delta extraction.
 
 Per (crop, disease, state, cached Bugwood image):
 
-    load existing regional deltas for THIS state from final_registry.json
-       ↓
-    N stochastic routed traces  →  per-trace consolidated deltas
-       (agents see canonical + existing KB deltas as context)
-       ↓
-    cross-run agreement filter (K-of-N Jaccard clusters)
-       ↓
-    conservative merge with existing:
-       - existing deltas are preserved (idempotent re-runs)
-       - new deltas added only if no existing same-field delta has
-         Jaccard ≥ τ on image_shows
-       - overlapping new deltas bump the existing's `__support__` counter
-       ↓
-    final regional deltas for THIS state
+    load existing regional deltas for THIS state (from final_registry.json)
+       v
+    N stochastic passes — each one is:
+       1) the 4 specialist agents run in PARALLEL on
+          (image, canonical, existing KB) producing per-specialist
+          AgentDeltaOutputs
+       2) DiagnosisAgent consolidates the union of specialist deltas
+          -> per-pass final deltas + consolidator kappa
+       v
+    K-of-N cross-pass agreement filter (Jaccard clusters on image_shows)
+       v
+    Claude headless WebSearch verifier - retrieval-grounded validation
+       v
+    Conservative merge with existing KB - existing always preserved,
+    overlap bumps swarm_support, stronger evidence upgrades
+    verification_status
 
-Algorithm 1 (κ = confidence ∈ {high, medium, low}, b = backtrack count):
+Algorithm 1 routing was removed: there is no kappa-gated handoff, no
+backtrack, no DiagnosisAgent-as-terminal-state. Validation is done by
+the Claude verifier, not by self-consistent routing.
 
-    κ=low  AND b < max_backtracks         → MorphologyAgent (regrounding)
-    κ=low  AND b >= max_backtracks        → default forward (loop guard)
-    κ=high AND all specialists ran        → DiagnosisAgent (early terminate)
-    otherwise                             → model's chosen handoff
-
-Output (per state) matches what pathome_kb.symptoms_adapter expects:
+Per-pass record (one line per (tuple, pass) in trace JSONL):
     {
-      "state":         "Alabama",
-      "deltas":        [{field, canonical_says, image_shows, image_quote,
-                          image_id, __support__, __cluster_size__}, ...],
-      "__image_ids__": ["bugwood::1568038", ...],
-      "__swarm_meta__": {n_runs, agreement_min, paths, merge_counts, ...},
+      "profile_id", "crop", "disease", "state", "primary_image_id",
+      "image_path", "pass_idx", "ts",
+      "specialist_outputs": [
+        {agent_name, deltas, confidence, reasoning, raw_text}, ...   (4 entries)
+      ],
+      "consolidator_output": {
+        agent_name, deltas, confidence, reasoning, raw_text
+      },
+      "final_deltas": [...],                       # == consolidator deltas
+      "existing_kb_at_start": [...]
     }
 
-Configuration via env vars (read at client-build time):
+Configuration via env vars:
     VLLM_BASE_URL          default http://localhost:8000/v1
     VLLM_MODEL             default Qwen/Qwen2.5-VL-7B-Instruct
     VLLM_TIMEOUT           seconds per HTTP call (default 180)
-    VLLM_TEMPERATURE       per-call sampling temperature (default 0.8)
-    VLLM_N_RUNS            stochastic traces per tuple (default 10)
-    VLLM_AGREEMENT_MIN     min K-of-N agreement to keep a delta (default 3)
-    VLLM_TMAX              max path length per trace (default 15)
-    VLLM_MAX_BACKTRACKS    max backtracks per trace (default 1; honoured)
-    VLLM_SIM_THRESHOLD     Jaccard threshold for delta clustering AND merge
-                           dedup (default 0.4)
+    VLLM_TEMPERATURE       sampling temperature (default 0.8)
+    VLLM_N_RUNS            stochastic passes per tuple (default 10)
+    VLLM_AGREEMENT_MIN     K-of-N agreement floor (default 3)
+    VLLM_SIM_THRESHOLD     Jaccard tau for clustering AND merge dedup (0.4)
+    PATHOME_USE_VERIFIER   1 enable Claude+WebSearch verifier (default 1)
+    PATHOME_VERIFIER_TIMEOUT 600
+    PATHOME_VERIFIER_MAX_TURNS 30
 """
 
 from __future__ import annotations
@@ -73,30 +76,13 @@ from agents.symptom_agent import SymptomAgent
 from utils.vllm_client import VLLMClient
 
 
-# ---------------------------------------------------------------------------
-# Agent registry
-# ---------------------------------------------------------------------------
-
-SPECIALIST_NAMES = ("MorphologyAgent", "SymptomAgent", "PathogenAgent", "SeverityAgent")
-
-_AGENT_REGISTRY: Dict[str, type] = {
-    "MorphologyAgent": MorphologyAgent,
-    "SymptomAgent":    SymptomAgent,
-    "PathogenAgent":   PathogenAgent,
-    "SeverityAgent":   SeverityAgent,
-    "DiagnosisAgent":  DiagnosisAgent,
-}
-
-
-def _make_agent(name: str, client: VLLMClient) -> BaseAgent:
-    cls = _AGENT_REGISTRY.get(name)
-    if cls is None:
-        raise ValueError(f"unknown agent: {name}")
-    return cls(client)
+SPECIALIST_CLASSES: Tuple[type, ...] = (
+    MorphologyAgent, SymptomAgent, PathogenAgent, SeverityAgent,
+)
 
 
 # ---------------------------------------------------------------------------
-# Swarm config
+# Swarm config / env helpers
 # ---------------------------------------------------------------------------
 
 def _int_env(name: str, default: int) -> int:
@@ -120,10 +106,8 @@ def build_client_from_env() -> VLLMClient:
     timeout  = _int_env("VLLM_TIMEOUT", 180)
     temperature = _float_env("VLLM_TEMPERATURE", 0.8)
     client = VLLMClient(
-        base_url=base_url,
-        model=model,
-        temperature=temperature,
-        timeout=timeout,
+        base_url=base_url, model=model,
+        temperature=temperature, timeout=timeout,
     )
     client.chat_request_logprobs = False
     return client
@@ -154,17 +138,10 @@ def flatten_canonical(record: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def existing_deltas_for_state(
-    record: Dict[str, Any],
-    state: str,
+    record: Dict[str, Any], state: str,
 ) -> List[Dict[str, Any]]:
     """Pull existing regional deltas for THIS state from a SAGE
-    final_registry.json disease record.
-
-    Returns a list of dicts in the same shape the agents emit:
-    ``{field, canonical_says, image_shows, image_quote, image_id,
-       __support__?, __cluster_size__?}``.
-    Empty list when there are no prior deltas (cold start).
-    """
+    final_registry.json disease record."""
     ro = (record.get("regional_observations") or {}).get(state) or {}
     out: List[Dict[str, Any]] = []
     for d in ro.get("deltas") or []:
@@ -179,16 +156,20 @@ def existing_deltas_for_state(
             "image_quote":    str(d.get("image_quote") or "").strip(),
             "image_id":       str(d.get("image_id") or ""),
         }
-        # Preserve support telemetry if present (both bracket-style and clean keys).
-        for k_src, k_dst in (("__support__", "__support__"),
-                             ("support",      "__support__"),
-                             ("__cluster_size__", "__cluster_size__"),
-                             ("cluster_size",     "__cluster_size__")):
+        for k_src in ("__support__", "support", "swarm_support",
+                      "__cluster_size__", "cluster_size"):
             if k_src in d:
                 try:
-                    entry[k_dst] = int(d[k_src])
+                    entry[k_src.replace("cluster_size", "__cluster_size__")
+                              .replace("support", "__support__")
+                              .replace("swarm___support__", "__support__")
+                              .replace("____", "__")] = int(d[k_src])
                 except (TypeError, ValueError):
                     pass
+        if "verification_status" in d:
+            entry["verification_status"] = str(d["verification_status"])
+        if isinstance(d.get("web_support"), list):
+            entry["web_support"] = d["web_support"]
         out.append(entry)
     return out
 
@@ -198,12 +179,6 @@ def existing_deltas_for_state(
 # ---------------------------------------------------------------------------
 
 def _load_image_data_url(path: Path) -> str:
-    """Return a ``data:<mime>;base64,...`` URL for the cached image.
-
-    The Bugwood cache resolves .jpg / .jpeg / .png / .webp — using the
-    file extension to drive MIME beats hardcoding image/jpeg for PNG /
-    WEBP frames.
-    """
     p = Path(path)
     mt, _ = mimetypes.guess_type(str(p))
     if not mt or not mt.startswith("image/"):
@@ -213,55 +188,10 @@ def _load_image_data_url(path: Path) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Algorithm 1 — routing decision
+# One stochastic pass — parallel specialists + consolidator
 # ---------------------------------------------------------------------------
 
-def algorithm1_handoff(
-    *,
-    current_agent_name: str,
-    model_handoff: Optional[str],
-    confidence: str,
-    backtrack_count: int,
-    max_backtracks: int,
-    specialists_run: set,
-    default_forward: str,
-) -> Tuple[Optional[str], str]:
-    """Apply paper Algorithm 1 to override the model's chosen handoff.
-
-    Returns (next_agent_or_None, decision_reason). ``None`` means
-    terminate. Reason string is for trace logging.
-    """
-    # Rule 1: low confidence + budget remaining → MorphologyAgent (regrounding).
-    if (
-        confidence == "low"
-        and backtrack_count < max_backtracks
-        and current_agent_name != "MorphologyAgent"
-    ):
-        return "MorphologyAgent", "alg1_low_kappa_backtrack"
-
-    # Rule 2: low confidence + budget exhausted → default forward (loop guard).
-    if confidence == "low" and backtrack_count >= max_backtracks:
-        return default_forward or "DiagnosisAgent", "alg1_loop_guard_forward"
-
-    # Rule 3: high confidence + all specialists already contributed → terminate.
-    if (
-        confidence == "high"
-        and len(specialists_run) >= len(SPECIALIST_NAMES)
-        and current_agent_name != "DiagnosisAgent"
-    ):
-        return "DiagnosisAgent", "alg1_high_kappa_all_covered_terminate"
-
-    # Rule 4: otherwise use the model's choice (or fall back to default forward).
-    if model_handoff:
-        return model_handoff, "model_choice"
-    return default_forward or "DiagnosisAgent", "default_forward"
-
-
-# ---------------------------------------------------------------------------
-# One stochastic trace
-# ---------------------------------------------------------------------------
-
-def _run_single_trace(
+def _run_single_pass(
     *,
     crop: str,
     disease: str,
@@ -270,111 +200,66 @@ def _run_single_trace(
     image_data_url: str,
     existing_deltas: List[Dict[str, Any]],
     client: VLLMClient,
-    run_idx: int,
+    pass_idx: int,
     seed: int,
     temperature: float,
-    entry_agent: str = "MorphologyAgent",
-    Tmax: int = 15,
-    max_backtracks: int = 1,
+    parallel_specialists: bool = True,
 ) -> Dict[str, Any]:
-    """One routed traversal of the swarm. Returns a trace record."""
-    context_buffer: List[AgentDeltaOutput] = []
-    path: List[str] = []
-    decisions: List[str] = []
-    backtrack_count = 0
-    specialists_run: set = set()
+    """One pass = 4 specialists in parallel + DiagnosisAgent consolidator."""
+    specialists: List[BaseAgent] = [cls(client) for cls in SPECIALIST_CLASSES]
 
-    current = entry_agent
-    early_terminated = False
-
-    while len(path) < Tmax:
-        if current == "DiagnosisAgent":
-            consolidator = DiagnosisAgent(client)
-            out = consolidator.consolidate(
-                crop=crop,
-                disease=disease,
-                state=state,
-                canonical=canonical,
-                image_data_url=image_data_url,
-                context_buffer=context_buffer,
+    def _run_one(idx_agent: Tuple[int, BaseAgent]) -> AgentDeltaOutput:
+        i, ag = idx_agent
+        try:
+            return ag.extract_deltas(
+                crop=crop, disease=disease, state=state,
+                canonical=canonical, image_data_url=image_data_url,
                 existing_kb_deltas=existing_deltas,
-                seed=seed + 1000,
+                seed=seed + i,                # vary seed across specialists
                 temperature=temperature,
             )
-            path.append(current)
-            context_buffer.append(out)
-            decisions.append("terminate_diagnosis")
-            early_terminated = True
-            break
+        except Exception as e:
+            print(f"    [{ag.AGENT_NAME}] error: {type(e).__name__}: {e}")
+            return AgentDeltaOutput(agent_name=ag.AGENT_NAME)
 
-        agent = _make_agent(current, client)
-        out = agent.extract_with_routing(
-            crop=crop,
-            disease=disease,
-            state=state,
-            canonical=canonical,
-            image_data_url=image_data_url,
-            prior_context=context_buffer,
+    pairs = list(enumerate(specialists))
+    if parallel_specialists and len(pairs) > 1:
+        with ThreadPoolExecutor(max_workers=len(pairs)) as pool:
+            specialist_outputs = list(pool.map(_run_one, pairs))
+    else:
+        specialist_outputs = [_run_one(p) for p in pairs]
+
+    consolidator = DiagnosisAgent(client)
+    try:
+        consolidator_output = consolidator.consolidate(
+            crop=crop, disease=disease, state=state,
+            canonical=canonical, image_data_url=image_data_url,
+            specialist_outputs=specialist_outputs,
             existing_kb_deltas=existing_deltas,
-            seed=seed + len(path),
-            temperature=temperature,
+            seed=seed + 1000, temperature=temperature,
         )
-        path.append(current)
-        context_buffer.append(out)
-        if current in SPECIALIST_NAMES:
-            specialists_run.add(current)
-
-        nxt, reason = algorithm1_handoff(
-            current_agent_name=current,
-            model_handoff=out.handoff_target,
-            confidence=out.confidence,
-            backtrack_count=backtrack_count,
-            max_backtracks=max_backtracks,
-            specialists_run=specialists_run,
-            default_forward=agent.DEFAULT_FORWARD,
+    except Exception as e:
+        print(f"    [DiagnosisAgent] consolidation failed "
+              f"({type(e).__name__}: {e}); using specialist union")
+        union: List[Dict[str, str]] = []
+        for s in specialist_outputs:
+            union.extend(s.deltas)
+        consolidator_output = AgentDeltaOutput(
+            agent_name="DiagnosisAgent",
+            deltas=union, confidence="low",
+            reasoning="consolidator failed; using specialist union",
         )
-        decisions.append(reason)
-
-        if nxt is None:
-            break
-
-        if nxt == "MorphologyAgent" and current != "MorphologyAgent":
-            backtrack_count += 1
-
-        current = nxt
-
-    # If we hit Tmax without DiagnosisAgent, force a terminal consolidation now.
-    if not early_terminated:
-        consolidator = DiagnosisAgent(client)
-        out = consolidator.consolidate(
-            crop=crop,
-            disease=disease,
-            state=state,
-            canonical=canonical,
-            image_data_url=image_data_url,
-            context_buffer=context_buffer,
-            existing_kb_deltas=existing_deltas,
-            seed=seed + 1000,
-            temperature=temperature,
-        )
-        path.append("DiagnosisAgent")
-        context_buffer.append(out)
-        decisions.append("tmax_forced_terminate")
 
     return {
-        "run_idx":          run_idx,
-        "path":             path,
-        "context_buffer":   context_buffer,
-        "final_deltas":     context_buffer[-1].deltas,
-        "confidences":      [c.confidence for c in context_buffer],
-        "decisions":        decisions,
-        "backtrack_count":  backtrack_count,
-        "early_terminated": early_terminated,
+        "pass_idx":            pass_idx,
+        "specialist_outputs":  specialist_outputs,
+        "consolidator_output": consolidator_output,
+        "final_deltas":        consolidator_output.deltas,
     }
 
 
 # ---------------------------------------------------------------------------
-# Similarity helpers (shared by agreement filter + merge)
+# Similarity helpers (agreement filter + merge dedup)
 # ---------------------------------------------------------------------------
 
 def _tokenize(s: str) -> set:
@@ -398,7 +283,6 @@ def _cluster_by_similarity(
     items: List[Tuple[int, Dict[str, str]]],
     threshold: float,
 ) -> List[List[Tuple[int, Dict[str, str]]]]:
-    """Greedy any-member Jaccard clustering on image_shows tokens."""
     clusters: List[List[Tuple[int, Dict[str, str]]]] = []
     for run_idx, d in items:
         d_tokens = _tokenize(d.get("image_shows", ""))
@@ -418,31 +302,31 @@ def _cluster_by_similarity(
 
 
 def _agreement_filter(
-    per_run_deltas: List[List[Dict[str, str]]],
+    per_pass_deltas: List[List[Dict[str, str]]],
     *,
     min_support: int,
     similarity_threshold: float = 0.4,
 ) -> List[Dict[str, str]]:
-    """Keep deltas surviving K-of-N agreement."""
-    all_with_run: List[Tuple[int, Dict[str, str]]] = []
-    for run_idx, deltas in enumerate(per_run_deltas):
+    """K-of-N agreement clustering across stochastic passes."""
+    all_with_pass: List[Tuple[int, Dict[str, str]]] = []
+    for pass_idx, deltas in enumerate(per_pass_deltas):
         for d in deltas or []:
-            all_with_run.append((run_idx, d))
+            all_with_pass.append((pass_idx, d))
 
     by_field: Dict[str, List[Tuple[int, Dict[str, str]]]] = defaultdict(list)
-    for run_idx, d in all_with_run:
-        by_field[d.get("field", "other")].append((run_idx, d))
+    for pass_idx, d in all_with_pass:
+        by_field[d.get("field", "other")].append((pass_idx, d))
 
     survivors: List[Dict[str, str]] = []
     for fld, items in by_field.items():
         clusters = _cluster_by_similarity(items, threshold=similarity_threshold)
         for cluster in clusters:
-            run_set = {ri for ri, _ in cluster}
-            if len(run_set) >= min_support:
+            pass_set = {pi for pi, _ in cluster}
+            if len(pass_set) >= min_support:
                 rep = max((d for _, d in cluster),
                           key=lambda d: len(d.get("image_shows", "")))
                 rep = dict(rep)
-                rep["__support__"]      = len(run_set)
+                rep["__support__"]      = len(pass_set)
                 rep["__cluster_size__"] = len(cluster)
                 survivors.append(rep)
     return survivors
@@ -453,7 +337,6 @@ def _agreement_filter(
 # ---------------------------------------------------------------------------
 
 def _support_of(d: Dict[str, Any]) -> int:
-    """Read swarm support from any of the legacy keys."""
     for k in ("swarm_support", "__support__", "support"):
         if k in d:
             try:
@@ -464,8 +347,6 @@ def _support_of(d: Dict[str, Any]) -> int:
 
 
 def _set_support(d: Dict[str, Any], val: int) -> None:
-    """Write swarm support to BOTH the new and legacy keys for
-    consumer compatibility."""
     d["swarm_support"] = int(val)
     d["__support__"]   = int(val)
 
@@ -476,21 +357,9 @@ def _merge_with_existing(
     new: List[Dict[str, Any]],
     similarity_threshold: float,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
-    """Merge ``new`` candidates into ``existing`` deltas conservatively.
-
-    Policy:
-      - Every existing delta is preserved (idempotent re-runs).
-      - A new delta is added iff no existing delta in the same field has
-        Jaccard ≥ ``similarity_threshold`` on ``image_shows``.
-      - When a new delta overlaps with an existing one, the existing's
-        ``swarm_support`` is incremented by the new's ``swarm_support``.
-        The new delta itself is dropped, BUT if the new delta is
-        "verified" and the existing wasn't, we upgrade the existing's
-        ``verification_status`` and merge in the new ``web_support``
-        citations.
-    """
+    """Conservative merge — existing preserved, overlap bumps support,
+    stronger verification status upgrades existing."""
     merged: List[Dict[str, Any]] = [dict(e) for e in existing]
-    # Promote legacy __support__ to swarm_support on the way in.
     for e in merged:
         _set_support(e, _support_of(e))
 
@@ -525,13 +394,11 @@ def _merge_with_existing(
             e = merged[overlap_idx]
             _set_support(e, _support_of(e) + _support_of(n))
             counts["n_overlaps_bumped"] += 1
-            # If the new candidate has stronger verification, upgrade.
             n_status = n.get("verification_status", "unverified")
             e_status = e.get("verification_status", "unverified")
             if _STATUS_RANK.get(n_status, 0) > _STATUS_RANK.get(e_status, 0):
                 e["verification_status"] = n_status
                 counts["n_upgraded"] += 1
-            # Merge web_support citations (dedupe by URL).
             existing_urls = {(s or {}).get("url", "") for s in (e.get("web_support") or [])}
             for s in n.get("web_support") or []:
                 if (s or {}).get("url", "") not in existing_urls:
@@ -553,12 +420,7 @@ def _merge_with_existing(
 # ---------------------------------------------------------------------------
 
 class _TraceWriter:
-    """Append-mode JSONL writer with an fsync after every record.
-
-    Thread-safe — used by ``run_for_state``'s parallel inner pool.
-    When ``PATHOME_TRACE_DIR`` is set, per-trace records are persisted
-    one line per (tuple, run) for downstream OBSERVE training.
-    """
+    """Append-mode JSONL writer with fsync."""
 
     def __init__(self, path: Path):
         self.path = Path(path)
@@ -585,13 +447,13 @@ def _trace_writer_from_env() -> Optional[_TraceWriter]:
     return _TraceWriter(Path(trace_dir) / fname)
 
 
-def _serialize_trace(
+def _serialize_pass(
     *,
     tuple_meta: Dict[str, Any],
-    trace: Dict[str, Any],
+    pass_record: Dict[str, Any],
     existing_deltas: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
-    """Flatten one trace dict into a JSONL-serializable record for OBSERVE."""
+    """Flatten one pass record into a JSONL-serializable line for OBSERVE."""
     return {
         "ts":               time.time(),
         "profile_id":       tuple_meta["profile_id"],
@@ -600,14 +462,10 @@ def _serialize_trace(
         "state":            tuple_meta["state"],
         "primary_image_id": tuple_meta["primary_image_id"],
         "image_path":       tuple_meta["image_path"],
-        "run_idx":          trace["run_idx"],
-        "path":             trace["path"],
-        "decisions":        trace["decisions"],
-        "confidences":      trace["confidences"],
-        "backtrack_count":  trace["backtrack_count"],
-        "early_terminated": trace["early_terminated"],
-        "context_buffer":   [asdict(c) for c in trace["context_buffer"]],
-        "final_deltas":     trace["final_deltas"],
+        "pass_idx":         pass_record["pass_idx"],
+        "specialist_outputs": [asdict(s) for s in pass_record["specialist_outputs"]],
+        "consolidator_output": asdict(pass_record["consolidator_output"]),
+        "final_deltas":        pass_record["final_deltas"],
         "existing_kb_at_start": list(existing_deltas),
     }
 
@@ -630,36 +488,23 @@ def run_for_state(
     n_runs: Optional[int] = None,
     agreement_min: Optional[int] = None,
     temperature: Optional[float] = None,
-    Tmax: Optional[int] = None,
-    max_backtracks: Optional[int] = None,
     similarity_threshold: Optional[float] = None,
-    parallel_runs: bool = True,
+    parallel_passes: bool = True,
+    parallel_specialists: bool = True,
     seed_base: int = 42,
     trace_writer: Optional[_TraceWriter] = None,
 ) -> Dict[str, Any]:
-    """N stochastic routed traces → cross-run agreement → conservative
-    merge with existing → final deltas for this (crop, disease, state).
-
-    ``existing_deltas`` is the list of regional deltas already in the KB
-    for this state (from prior runs). Empty list = cold start.
-    All ``None`` knobs fall back to the corresponding ``VLLM_*`` env var
-    or the documented default.
-    """
+    """N stochastic passes -> K-of-N agreement -> verifier -> merge."""
     if client is None:
         client = build_client_from_env()
 
-    # `is None` checks (not `or`) so a caller passing 0.0 / 0 is honoured.
     if n_runs              is None: n_runs              = _int_env  ("VLLM_N_RUNS",          10)
     if agreement_min       is None: agreement_min       = _int_env  ("VLLM_AGREEMENT_MIN",    3)
     if temperature         is None: temperature         = _float_env("VLLM_TEMPERATURE",      0.8)
-    if Tmax                is None: Tmax                = _int_env  ("VLLM_TMAX",            15)
-    if max_backtracks      is None: max_backtracks      = _int_env  ("VLLM_MAX_BACKTRACKS",   1)
     if similarity_threshold is None: similarity_threshold = _float_env("VLLM_SIM_THRESHOLD",  0.4)
 
     n_runs              = max(1, int(n_runs))
     agreement_min       = max(1, min(int(agreement_min), n_runs))
-    Tmax                = max(1, int(Tmax))
-    max_backtracks      = max(0, int(max_backtracks))
     similarity_threshold = max(0.0, min(1.0, float(similarity_threshold)))
     existing = list(existing_deltas or [])
 
@@ -667,60 +512,48 @@ def run_for_state(
     image_data_url = _load_image_data_url(image_path)
 
     def _one(i: int) -> Dict[str, Any]:
-        return _run_single_trace(
-            crop=crop,
-            disease=disease,
-            state=state,
-            canonical=canonical,
-            image_data_url=image_data_url,
-            existing_deltas=existing,
-            client=client,
-            run_idx=i,
-            seed=seed_base + i * 100,
+        return _run_single_pass(
+            crop=crop, disease=disease, state=state,
+            canonical=canonical, image_data_url=image_data_url,
+            existing_deltas=existing, client=client,
+            pass_idx=i, seed=seed_base + i * 100,
             temperature=temperature,
-            Tmax=Tmax,
-            max_backtracks=max_backtracks,
+            parallel_specialists=parallel_specialists,
         )
 
-    traces: List[Dict[str, Any]] = []
-    if parallel_runs and n_runs > 1:
+    passes: List[Dict[str, Any]] = []
+    if parallel_passes and n_runs > 1:
         with ThreadPoolExecutor(max_workers=min(n_runs, 8)) as pool:
-            for t in pool.map(_one, range(n_runs)):
-                traces.append(t)
+            for p in pool.map(_one, range(n_runs)):
+                passes.append(p)
     else:
         for i in range(n_runs):
-            traces.append(_one(i))
+            passes.append(_one(i))
 
-    # Persist per-trace records (OBSERVE training data) if a writer is wired.
+    # Persist per-pass records for OBSERVE training, if requested.
     if trace_writer is not None:
         tuple_meta = {
             "profile_id":       profile_id or f"{crop}::{disease}",
-            "crop":             crop,
-            "disease":          disease,
-            "state":            state,
-            "primary_image_id": primary_image_id,
-            "image_path":       str(image_path),
+            "crop":             crop, "disease": disease, "state": state,
+            "primary_image_id": primary_image_id, "image_path": str(image_path),
         }
-        for t in traces:
+        for p in passes:
             try:
-                trace_writer.write(_serialize_trace(
-                    tuple_meta=tuple_meta, trace=t, existing_deltas=existing,
+                trace_writer.write(_serialize_pass(
+                    tuple_meta=tuple_meta, pass_record=p,
+                    existing_deltas=existing,
                 ))
             except Exception as e:
                 print(f"    [trace_writer] error: {type(e).__name__}: {e}")
 
-    # Cross-run agreement → proposal-confidence prior.
-    per_run_final = [t["final_deltas"] for t in traces]
+    # Cross-pass agreement.
+    per_pass_final = [p["final_deltas"] for p in passes]
     candidates = _agreement_filter(
-        per_run_final,
-        min_support=agreement_min,
+        per_pass_final, min_support=agreement_min,
         similarity_threshold=similarity_threshold,
     )
 
-    # Claude-headless web-search verifier — retrieval-grounded validation.
-    # K-of-N agreement is a NOISE FILTER, not a truth criterion: candidates
-    # that survive agreement are sent to a Claude verifier which judges
-    # each one against extension/pathology web sources before merging.
+    # Claude web-search verifier.
     use_verifier = os.environ.get("PATHOME_USE_VERIFIER", "1") not in ("0", "false", "False")
     verifier_meta: Dict[str, Any] = {"enabled": use_verifier}
     if use_verifier and candidates:
@@ -730,12 +563,9 @@ def run_for_state(
         try:
             verdict = verify_candidates(
                 crop=crop, disease=disease, state=state,
-                canonical=canonical,
-                existing_kb_deltas=existing,
-                candidates=candidates,
-                primary_image_id=primary_image_id,
-                timeout_secs=v_timeout,
-                max_turns=v_turns,
+                canonical=canonical, existing_kb_deltas=existing,
+                candidates=candidates, primary_image_id=primary_image_id,
+                timeout_secs=v_timeout, max_turns=v_turns,
             )
         except Exception as e:
             print(f"    [verifier] failure ({type(e).__name__}: {e}); "
@@ -757,9 +587,6 @@ def run_for_state(
             "n_duplicates_existing": len(verdict.get("duplicates_of_existing", [])),
         })
     else:
-        # Pure agreement path (verifier disabled or no candidates). Carry
-        # support count into the schema's swarm_support key so the storage
-        # layer stays uniform.
         new_for_merge = []
         for c in candidates:
             cc = dict(c)
@@ -768,14 +595,11 @@ def run_for_state(
             cc.setdefault("web_support", [])
             new_for_merge.append(cc)
 
-    # Conservative merge with existing KB.
+    # Conservative merge.
     merged, merge_counts = _merge_with_existing(
-        existing=existing,
-        new=new_for_merge,
+        existing=existing, new=new_for_merge,
         similarity_threshold=similarity_threshold,
     )
-
-    # Stamp image_id on any newly-added delta that doesn't already carry one.
     for d in merged:
         d.setdefault("image_id", primary_image_id)
 
@@ -787,14 +611,9 @@ def run_for_state(
             "n_runs":               n_runs,
             "agreement_min":        agreement_min,
             "temperature":          temperature,
-            "Tmax":                 Tmax,
-            "max_backtracks":       max_backtracks,
             "similarity_threshold": similarity_threshold,
-            "paths":                [t["path"] for t in traces],
-            "path_lengths":         [len(t["path"]) for t in traces],
-            "backtrack_counts":     [t["backtrack_count"] for t in traces],
-            "early_terminated":     [t["early_terminated"] for t in traces],
-            "n_raw_per_run":        [len(t["final_deltas"]) for t in traces],
+            "kappa_per_pass":       [p["consolidator_output"].confidence for p in passes],
+            "n_raw_per_pass":       [len(p["final_deltas"]) for p in passes],
             "n_after_agreement":    len(candidates),
             "verifier":             verifier_meta,
             "merge":                merge_counts,
@@ -807,7 +626,6 @@ def run_for_state(
 # ---------------------------------------------------------------------------
 
 class WorkItem(NamedTuple):
-    """One (crop, disease, state) work unit for the batch runner."""
     profile_id:       str
     crop:             str
     disease:          str
@@ -826,15 +644,6 @@ def run_batch(
     max_parallel: int = 4,
     trace_writer: Optional[_TraceWriter] = None,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
-    """Run the swarm across many (profile, state) tuples.
-
-    Returns ``{profile_id: {state: record}}`` where ``record`` already
-    contains the merged-with-existing delta list for that state.
-
-    When ``PATHOME_TRACE_DIR`` is set in the environment (or
-    ``trace_writer`` is passed), per-trace records are appended to
-    ``<dir>/phase0r_traces.jsonl`` for downstream OBSERVE training.
-    """
     if client is None:
         client = build_client_from_env()
     if trace_writer is None:
@@ -847,16 +656,13 @@ def run_batch(
 
     def _worker(it: WorkItem) -> Tuple[str, str, Dict[str, Any]]:
         record = run_for_state(
-            crop=it.crop,
-            disease=it.disease,
-            state=it.state,
+            crop=it.crop, disease=it.disease, state=it.state,
             canonical_record=it.canonical_record,
             image_path=it.image_path,
             primary_image_id=it.primary_image_id,
             existing_deltas=it.existing_deltas,
             profile_id=it.profile_id,
-            client=client,
-            trace_writer=trace_writer,
+            client=client, trace_writer=trace_writer,
         )
         record["__image_ids__"] = list(it.image_ids) or [it.primary_image_id]
         return it.profile_id, it.state, record
@@ -878,7 +684,7 @@ def run_batch(
             mg = (meta.get("merge") or {})
             vf = (meta.get("verifier") or {})
             n_deltas = len(record.get("deltas") or [])
-            tag = "✓" if n_deltas else "·"
+            tag = "ok" if n_deltas else "..."
             v_summary = (
                 f"vfy={vf.get('n_verified', 0)}/{vf.get('n_provisional', 0)}/"
                 f"{vf.get('n_contradictory', 0)}, "
@@ -887,8 +693,7 @@ def run_batch(
             print(
                 f"    [{completed}/{total}] {tag} {profile_id} / {state}  "
                 f"deltas={n_deltas} (N={meta.get('n_runs')}, "
-                f"K≥{meta.get('agreement_min')}, "
-                f"{v_summary}"
+                f"K>={meta.get('agreement_min')}, {v_summary}"
                 f"existing={mg.get('n_existing', 0)}, "
                 f"added={mg.get('n_added', 0)}, "
                 f"bumped={mg.get('n_overlaps_bumped', 0)})"

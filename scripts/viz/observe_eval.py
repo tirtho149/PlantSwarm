@@ -1,11 +1,11 @@
 """
 scripts/viz/observe_eval.py
 ============================
-Evaluation visualizations from results/observe_eval.json:
+Evaluation visualizations from results/observe_eval.json.
 
-  - per-agent-class routing accuracy bar chart
-  - kappa MAE / ECE summary table
-  - backtrack / overconfidence summary
+After Algorithm-1 routing removal the eval is uncertainty-only. We
+emit a metrics summary table plus a small bar chart of the four MAE /
+ECE / OC-accuracy values.
 
 Outputs:
   results/figures/observe_eval.png
@@ -40,20 +40,26 @@ def parse_args():
     return p.parse_args()
 
 
-def _plot_per_class(plt, per_class: dict, out_png: Path) -> bool:
-    if not per_class:
-        return False
-    names = list(per_class.keys())
-    accs  = [per_class[n]["accuracy"] for n in names]
-    supports = [per_class[n]["support"] for n in names]
+def _plot_metrics_bar(plt, eval_data: dict, out_png: Path) -> bool:
+    """Single bar chart over the uncertainty metrics."""
+    metrics = [
+        ("kappa_mae",                eval_data.get("kappa_mae", 0.0),                "#1E88E5"),
+        ("kappa_ece",                eval_data.get("kappa_ece", 0.0),                "#43A047"),
+        ("epistemic_mae",            eval_data.get("epistemic_mae", 0.0),            "#FB8C00"),
+        ("aleatoric_mae",            eval_data.get("aleatoric_mae", 0.0),            "#E53935"),
+        ("overconfidence_accuracy",  eval_data.get("overconfidence_accuracy", 0.0),  "#5E35B1"),
+    ]
+    names  = [m[0] for m in metrics]
+    values = [m[1] for m in metrics]
+    colors = [m[2] for m in metrics]
     fig, ax = plt.subplots(figsize=(8, 4))
-    bars = ax.barh(names, accs, color="#1E88E5")
-    for bar, sup in zip(bars, supports):
-        ax.text(bar.get_width() + 0.01, bar.get_y() + bar.get_height() / 2,
-                f"n={sup}", va="center", fontsize=9)
-    ax.set_xlim(0, 1)
-    ax.set_xlabel("Routing accuracy")
-    ax.set_title("OBSERVE per-agent-class routing accuracy")
+    bars = ax.barh(names, values, color=colors)
+    for bar, v in zip(bars, values):
+        ax.text(bar.get_width() + 0.005, bar.get_y() + bar.get_height() / 2,
+                f"{v:.3f}", va="center", fontsize=9)
+    ax.set_xlim(0, max(1.0, max(values) * 1.15))
+    ax.set_xlabel("Value")
+    ax.set_title("OBSERVE held-out uncertainty metrics")
     ax.grid(True, axis="x", alpha=0.3)
     fig.savefig(out_png, dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -71,39 +77,17 @@ def _build_tex(name: str, eval_data: dict, figures_written: list) -> str:
     lines.append(r"    Metric & Value \\")
     lines.append(r"    \midrule")
     lines.append(f"    Samples (held)         & {eval_data.get('n_samples', 0)} \\\\")
-    lines.append(f"    Routing accuracy       & {eval_data.get('routing_accuracy', 0):.3f} \\\\")
-    lines.append(f"    Backtrack accuracy     & {eval_data.get('backtrack_accuracy', 0):.3f} \\\\")
-    lines.append(f"    Backtrack F1           & {eval_data.get('backtrack_f1', 0):.3f} \\\\")
     lines.append(f"    Kappa MAE              & {eval_data.get('kappa_mae', 0):.3f} \\\\")
     lines.append(f"    Kappa ECE (10 bins)    & {eval_data.get('kappa_ece', 0):.3f} \\\\")
+    lines.append(f"    Epistemic MAE          & {eval_data.get('epistemic_mae', 0):.3f} \\\\")
+    lines.append(f"    Aleatoric MAE          & {eval_data.get('aleatoric_mae', 0):.3f} \\\\")
     lines.append(f"    Overconfidence acc.    & {eval_data.get('overconfidence_accuracy', 0):.3f} \\\\")
     lines.append(r"    \bottomrule")
     lines.append(r"  \end{tabular}")
-    lines.append(r"  \caption{OBSERVE held-out evaluation summary.}")
+    lines.append(r"  \caption{OBSERVE held-out uncertainty evaluation.}")
     lines.append(r"  \label{tab:observe_eval}")
     lines.append(r"\end{table}")
     lines.append("")
-
-    per_class = eval_data.get("routing_per_class") or {}
-    if per_class:
-        lines.append(r"\begin{table}[t]")
-        lines.append(r"  \centering\small")
-        lines.append(r"  \begin{tabular}{lrr}")
-        lines.append(r"    \toprule")
-        lines.append(r"    Agent & Support & Accuracy \\")
-        lines.append(r"    \midrule")
-        for name, d in per_class.items():
-            lines.append(
-                f"    {latex_escape(name)} & {d.get('support', 0)} "
-                f"& {d.get('accuracy', 0):.3f} \\\\"
-            )
-        lines.append(r"    \bottomrule")
-        lines.append(r"  \end{tabular}")
-        lines.append(r"  \caption{OBSERVE per-agent-class routing accuracy.}")
-        lines.append(r"  \label{tab:observe_eval_per_class}")
-        lines.append(r"\end{table}")
-        lines.append("")
-
     for fig_name, caption, label in figures_written:
         lines.append(figure_includegraphics(fig_name, caption, label))
         lines.append("")
@@ -119,20 +103,20 @@ def main() -> None:
         eval_data = json.load(f)
 
     print("=== OBSERVE eval ===")
-    for k in ("n_samples", "routing_accuracy", "backtrack_accuracy",
-              "kappa_mae", "kappa_ece"):
-        print(f"  {k:20s} : {eval_data.get(k)}")
+    for k in ("n_samples", "kappa_mae", "kappa_ece",
+              "epistemic_mae", "aleatoric_mae", "overconfidence_accuracy"):
+        print(f"  {k:24s} : {eval_data.get(k)}")
 
     figures_written: list = []
     if have_matplotlib():
         _, plt = get_mpl()
         out_png = fig_path(args.name)
-        if _plot_per_class(plt, eval_data.get("routing_per_class") or {}, out_png):
+        if _plot_metrics_bar(plt, eval_data, out_png):
             print(f"  wrote {out_png}")
             figures_written.append((
                 args.name,
-                "OBSERVE per-agent-class routing accuracy on the held-out fold.",
-                "observe_eval_per_class",
+                "OBSERVE held-out uncertainty metrics.",
+                "observe_eval_metrics",
             ))
     else:
         print("  matplotlib not installed — table-only output")
