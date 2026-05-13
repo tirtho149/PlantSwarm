@@ -55,24 +55,25 @@ def parse_args() -> argparse.Namespace:
                    help="crop tag to find shards under data/wds_shards/<crop>_<strategy>/")
     p.add_argument("--shards-root", default="data/wds_shards")
     p.add_argument("--save-root", default="train_and_eval/checkpoints")
-    p.add_argument("--model", default="ViT-B-16",
-                   help="Architecture. Default ViT-B-16 with --pretrained openai. "
-                        "Pass an hf-hub: path to warm-start from another model.")
-    p.add_argument("--pretrained", default="openai",
-                   help="OpenAI CLIP init for ViT-B-16 (neutral, NOT bio-specific). "
-                        "Set empty when --model is an hf-hub: path.")
-    p.add_argument("--batch-size", type=int, default=256,
-                   help="per-GPU batch size — full fine-tune fits ~256 on one A100")
+    p.add_argument("--model", default="hf-hub:imageomics/bioclip",
+                   help="Warm-start from BioCLIP (TreeOfLife-10M pretraining, no "
+                        "caption supervision — non-tautological starting point for "
+                        "demonstrating that KB captions add value). Pass ViT-B-16 + "
+                        "--pretrained openai for from-scratch.")
+    p.add_argument("--pretrained", default="",
+                   help="Empty when --model is an hf-hub: path; 'openai' for "
+                        "ViT-B-16 from-scratch.")
+    p.add_argument("--batch-size", type=int, default=512,
+                   help="per-GPU batch size — locked encoders let us fit ~512 on one A100")
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--warmup", type=int, default=200)
     p.add_argument("--nproc-per-node", type=int, default=1,
                    help="GPUs on this node (torchrun --nproc_per_node)")
-    p.add_argument("--lock-encoders", action="store_true",
-                   help="Freeze the visual + text encoders, train ONLY the two "
-                        "projector heads (~800K params). Useful if you're warm-starting "
-                        "from a domain-specific HF checkpoint; not recommended from "
-                        "openai init since the frozen features lack bio-vocab.")
+    p.add_argument("--full-finetune", action="store_true",
+                   help="UNFREEZE the backbones (~86M trainable). Default is "
+                        "projectors-only training (--lock-image --lock-text, ~800K "
+                        "trainable) since BioCLIP already supplies bio-vocab features.")
     p.add_argument("--dry-run", action="store_true",
                    help="echo the command, don't execute")
     return p.parse_args()
@@ -131,10 +132,11 @@ def main() -> None:
     if proj == "dual":
         cmd += ["--dual-projector"]
     # Single-projector is the absence of --dual-projector.
-    if args.lock_encoders:
+    if not args.full_finetune:
         # Projectors-only training. transformer.py::lock keeps proj and
         # caption_proj trainable; the rest of the visual + text towers are
         # frozen. ~800K trainable params vs ~86M for full fine-tune.
+        # Default ON because BioCLIP already supplies strong bio-features.
         cmd += ["--lock-image", "--lock-text"]
 
     # The training module lives at train_and_eval/open_clip_train/ -
@@ -149,7 +151,7 @@ def main() -> None:
     print(f"  projector     : {proj}")
     print(f"  epochs        : {epochs}")
     print(f"  model init    : {args.model} pretrained={args.pretrained or '(default)'}")
-    print(f"  trainable     : {'PROJECTORS-ONLY (~800K params)' if args.lock_encoders else 'FULL FINE-TUNE (~86M params)'}")
+    print(f"  trainable     : {'FULL FINE-TUNE (~86M params)' if args.full_finetune else 'PROJECTORS-ONLY (~800K params)'}")
     print(f"  shards (train): {len(train_shards)}  in {train_dir}")
     print(f"  shards (val)  : {len(val_shards)}    in {val_dir}")
     print(f"  save_dir      : {save_dir}")
