@@ -35,17 +35,17 @@ flowchart TD
     P0R[Phase 0R - regional deltas<br/>Qwen swarm<br/>load existing then N traces then agreement then merge]
     ADAPT[Adapter merge<br/>symptoms_adapter.py]
     SEED([symptoms_seed.json<br/>KB deliverable])
-    TRACES[(phase0r_traces.jsonl<br/>per-trace records<br/>written when PATHOME_TRACE_DIR is set)]
-    TRAIN[Train OBSERVE<br/>Qwen2.5-VL-7B plus LoRA<br/>per-step behavioral cloning]
+    BUGWOOD[(Bugwood field photos<br/>filtered CSV + .bugwood_cache<br/>Tomato by default)]
+    TRAIN[Train OBSERVE<br/>SigLIP-2 + LoRA on vision q/k/v<br/>cosine sim against KB text prototypes]
     CKPT([observe_best.pt<br/>model deliverable])
-    EVAL[Evaluate OBSERVE<br/>scripts/evaluate_observe.py<br/>held-out routing acc, kappa ECE]
+    EVAL[Evaluate OBSERVE<br/>scripts/evaluate_observe.py<br/>PV + PW top-1 / top-5 / macro F1]
     METRICS([results/observe_eval.json<br/>metrics deliverable])
 
     SETUP --> CACHE --> P0
     P0 --> PUSH --> PULL --> P0R
     VLLM -.serves.-> P0R --> ADAPT --> SEED
-    P0R -.persists.-> TRACES
-    TRACES --> TRAIN --> CKPT
+    SEED --> TRAIN
+    BUGWOOD --> TRAIN --> CKPT
     CKPT --> EVAL --> METRICS
 
     classDef local fill:#dff,stroke:#066,stroke-width:1px
@@ -54,7 +54,7 @@ flowchart TD
     classDef terminal fill:#efe,stroke:#060,stroke-width:2px
     class SETUP,CACHE,P0 local
     class VLLM,P0R,ADAPT gpu
-    class TRACES,TRAIN,EVAL student
+    class BUGWOOD,TRAIN,EVAL student
     class SEED,CKPT,METRICS terminal
 ```
 
@@ -65,7 +65,7 @@ flowchart TD
 | Phase 0 (Claude) | LOCAL only (OAuth) | CPU + Anthropic API | smoke ~30 min / prod 16-24 h |
 | Phase 0R (Qwen) | GPU host with vLLM | 1x A100-80GB | smoke ~20-40 min / prod 10-20 h |
 | Adapter merge | Same as Phase 0R | CPU, seconds | trivial |
-| Phase OBSERVE (train) | GPU host with CUDA | 1x A100 | ~4-8 h on Phase 0R traces |
+| Phase OBSERVE (train) | GPU host with CUDA | 1x A100 | ~30-90 min on Tomato (~600 imgs, 10 epochs) |
 
 ---
 
@@ -330,44 +330,68 @@ Properties:
 
 ---
 
-## 4. Phase OBSERVE — distilled student
+## 4. Phase OBSERVE — KB-augmented OOD classifier
 
-Trained on Phase 0R trace JSONL. At inference, replaces the
-N-stochastic-traces swarm with a single forward pass.
+A cheap text-conditioned image classifier whose class set is defined
+by PathomeDB. Trained on Bugwood (Tomato by default), evaluated on
+PlantVillage and PlantWild — two heavy cross-domain distribution
+shifts (field photos to lab cutouts to in-the-wild).
 
 ```mermaid
 flowchart TD
-    P0R[Phase 0R run<br/>with PATHOME_TRACE_DIR set]
-    JSONL[(phase0r_traces.jsonl<br/>one line per tuple-pass<br/>profile_id, specialist_outputs,<br/>consolidator_output, final_deltas,<br/>existing_kb_at_start)]
-    EXPAND[load_phase0r_traces<br/>build per-pass<br/>PassAnnotation]
-    SPLIT[split_annotations<br/>group by image_path<br/>train / val / held]
-    MODEL[OBSERVE model<br/>Qwen2.5-VL-7B plus LoRA r=16<br/>heads: epsilon, alpha, confidence, OC]
-    TRAIN[OBSERVETrainer<br/>uncertainty loss<br/>L = 0.4 L_cal + 0.2 L_cons + 0.3 L_OC]
+    SEED[(symptoms_seed.json<br/>canonical + regional)]
+    PROTO[build_disease_prototype<br/>+ build_healthy_prototype<br/>one text prompt per class]
+    CSV[(BugWood_Diseases_usable.csv<br/>+ .bugwood_cache/)]
+    DS[BugwoodTomatoDataset<br/>filter NormCrop = Tomato<br/>drop missing images / classes]
+    MODEL[OBSERVE model<br/>SigLIP-2 + LoRA on vision q,k,v<br/>frozen text tower + learnable logit_scale]
+    TRAIN[OBSERVETrainer<br/>encode prototypes once per epoch<br/>softmax CE over cosine x temperature]
     CKPT[(observe_best.pt)]
-    INFER[OBSERVE.get_uncertainty<br/>EpistemicState:<br/>epsilon, alpha, calibrated kappa, OC]
+    PV[(PlantVillage<br/>Tomato folder per class)]
+    PW[(PlantWild<br/>Tomato folder per class)]
+    EVAL[evaluate_observe.py<br/>extend class set with PV / PW classes<br/>synthesise zero-shot prototypes]
+    METRICS[(observe_eval.json<br/>top-1 / top-5 / macro F1<br/>per-class KB vs zero-shot)]
 
-    P0R --> JSONL --> EXPAND --> SPLIT --> TRAIN
+    SEED --> PROTO --> MODEL
+    CSV --> DS --> TRAIN
     MODEL --> TRAIN --> CKPT
-    CKPT --> INFER
+    CKPT --> EVAL
+    PV --> EVAL
+    PW --> EVAL
+    EVAL --> METRICS
 
     classDef src fill:#fde,stroke:#a06
     classDef stage fill:#eef,stroke:#33a
     classDef model fill:#efd,stroke:#060
     classDef deliv fill:#efe,stroke:#060,stroke-width:2px
-    class P0R,JSONL src
-    class EXPAND,SPLIT,TRAIN stage
+    class SEED,CSV,PV,PW src
+    class PROTO,DS,TRAIN,EVAL stage
     class MODEL model
-    class CKPT,INFER deliv
+    class CKPT,METRICS deliv
 ```
 
-Per-pass supervision derived from each pass record (no routing labels):
+What the trainer optimises per minibatch:
 
-| Target | Source |
-|---|---|
-| target_confidence    | consolidator kappa mapped to {0.9, 0.6, 0.3} |
-| target_epistemic     | abs(specialist_union - final_deltas) / max(1, specialist_union) |
-| target_aleatoric     | 1 - kappa_scalar |
-| target_overconfidence | 1 iff kappa is high AND len(final_deltas) == 0 |
+```
+img_embeds = vision_tower_with_LoRA(pixel_values)          # [B, D]
+proto      = text_tower(class_prototype_texts)             # [C, D]  (cached)
+logits     = exp(logit_scale) * (img_embeds @ proto.T)     # [B, C]
+loss       = cross_entropy(logits, class_id)
+```
+
+Why this design for Bugwood -> PV / PW OOD:
+
+- The style gap (field photo -> lab cutout -> in-the-wild) is huge,
+  but the disease identity is the same. Conditioning classification
+  on textual disease descriptions makes the classifier invariant to
+  visual-style shifts in a way a pure vision classifier isn't.
+- SigLIP-2 is already contrastively pretrained on web-scale image +
+  text pairs. LoRA on the vision attention projections is the cheap
+  intervention that nudges it toward agricultural imagery without
+  forgetting that pretraining.
+- Open vocabulary: any disease with a KB prototype can be scored,
+  including PV / PW classes the model never saw images of during
+  training. The evaluator synthesises a one-line prototype for PV
+  classes not in the trained set.
 
 ---
 
@@ -442,41 +466,9 @@ The adapter strips the `__` prefix from telemetry keys but preserves
 the content — consumers see `support`, `cluster_size`, `swarm_meta` as
 clean keys.
 
-When `PATHOME_TRACE_DIR` is set, Phase 0R also writes per-trace records
-for OBSERVE training:
-
-```
-              $PATHOME_TRACE_DIR/phase0r_traces.jsonl   (append-mode)
-              +------------------------------------------+
-              | {                                        |   one line
-              |   "ts": 1715520000.123,                  |   per tuple-pass
-              |   "profile_id": "Soybean::Charcoal Rot", |
-              |   "crop": "Soybean", "disease": "...",   |
-              |   "state": "Alabama",                    |
-              |   "primary_image_id": "bugwood::1568038",|
-              |   "image_path": ".../bugwood_cache/..",  |
-              |   "pass_idx": 0,                         |
-              |   "specialist_outputs": [                |
-              |     { agent_name: "MorphologyAgent",     |
-              |       deltas: [...],                     |
-              |       confidence: "medium",              |
-              |       reasoning, raw_text },             |
-              |     { agent_name: "SymptomAgent", ...},  |
-              |     { agent_name: "PathogenAgent", ...}, |
-              |     { agent_name: "SeverityAgent", ...}, |
-              |   ],                                     |
-              |   "consolidator_output": {               |
-              |     agent_name: "DiagnosisAgent",        |
-              |     deltas: [...],                       |
-              |     confidence, reasoning, raw_text      |
-              |   },                                     |
-              |   "final_deltas": [...],                 |
-              |   "existing_kb_at_start": [...]          |
-              | }                                        |
-              +------------------------------------------+
-```
-
-This is the source the OBSERVE trainer reads.
+When `PATHOME_TRACE_DIR` is set, Phase 0R also writes per-pass trace
+records (`phase0r_traces.jsonl`) for diagnostics and the
+`viz_traces.sh` aggregator. These are not consumed by OBSERVE.
 
 ---
 
@@ -510,15 +502,19 @@ PlantSwarm/
 |   |                                       _TraceWriter (PATHOME_TRACE_DIR)
 |   `-- latex/                             EMNLP 2026 paper sources
 |
-|-- observe/                               Phase OBSERVE distilled student
-|   |-- model.py                           Qwen2.5-VL-7B + LoRA + 6 heads
-|   |-- trainer.py                         RoutingTraceDataset (Phase 0R JSONL),
-|   |                                       TraceStepAnnotation,
-|   |                                       OBSERVETrainer,
-|   |                                       split_annotations
-|   |-- loss.py                            multi-task L_rt + L_cal + L_cons + L_OC + L_bel
-|   |-- inference.py                       OBSERVEInference single-pass
-|   `-- active_learning.py                 epsilon-aware sample selection
+|-- observe/                               Phase OBSERVE KB-augmented classifier
+|   |-- model.py                           SigLIP-2 + LoRA (q,k,v on vision tower)
+|   |                                       + learnable logit_scale, no class head
+|   |-- prototypes.py                      build_disease_prototype,
+|   |                                       build_healthy_prototype,
+|   |                                       load_seed_prototypes
+|   |-- dataset.py                         ClassIndex, BugwoodTomatoDataset,
+|   |                                       PVFolderDataset, PWFolderDataset
+|   |-- trainer.py                         encode_class_prototypes, ImageCollator,
+|   |                                       OBSERVETrainer, split_indices
+|   |-- loss.py                            softmax_classification_loss +
+|   |                                       sigmoid_pairwise_loss (SigLIP-style)
+|   `-- inference.py                       OBSERVEInference single-image classify
 |
 |-- agents/                                5 delta-extraction agents
 |   |-- base_agent.py                      DELTA_USER_PROMPT,

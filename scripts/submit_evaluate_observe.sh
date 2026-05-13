@@ -18,11 +18,15 @@ PATHOME_REPO="${PATHOME_REPO:-$(pwd)}"
 cd "$PATHOME_REPO"
 
 # ============================================================================
-# Evaluate a trained OBSERVE checkpoint on the held-out slice of the trace
-# JSONL. Reports routing_accuracy, backtrack_acc, kappa_ece + MAE, OC accuracy.
+# Evaluate a trained OBSERVE checkpoint on PlantVillage and/or PlantWild
+# (Tomato by default). Reports per-dataset top-1 / top-5 / macro-F1 and
+# per-class accuracy (split by KB-known vs zero-shot synthesised classes).
 #
-# Override at submit time:
-#   OBSERVE_CKPT=...  PATHOME_TRACE_FILE=...  OBSERVE_HELD_FRAC=0.1 \
+# Common overrides:
+#   OBSERVE_CKPT=observe/checkpoints/observe_best.pt \
+#   PV_ROOT=/path/to/PlantVillage \
+#   PW_ROOT=/path/to/PlantWild \
+#   OBSERVE_CROP=Tomato \
 #     sbatch scripts/submit_evaluate_observe.sh
 # ============================================================================
 
@@ -40,26 +44,45 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export TOKENIZERS_PARALLELISM=false
 
 CKPT="${OBSERVE_CKPT:-observe/checkpoints/observe_best.pt}"
-TRACES="${PATHOME_TRACE_FILE:-artifacts/observe_traces/phase0r_traces.jsonl}"
 OUT="${OBSERVE_EVAL_OUT:-results/observe_eval.json}"
-HELD_FRAC="${OBSERVE_HELD_FRAC:-0.1}"
+CROP="${OBSERVE_CROP:-Tomato}"
+PV_ROOT="${PV_ROOT:-}"
+PW_ROOT="${PW_ROOT:-}"
+PV_CLASSES_JSON="${PV_CLASSES_JSON:-data/pv_classes.json}"
+BACKBONE="${OBSERVE_BACKBONE:-google/siglip-base-patch16-224}"
+LORA_R="${OBSERVE_LORA_R:-8}"
+LORA_ALPHA="${OBSERVE_LORA_ALPHA:-16}"
+BATCH="${OBSERVE_EVAL_BATCH:-32}"
 
 if [ ! -f "$CKPT" ]; then
   echo "ERROR: checkpoint not found at $CKPT"
   exit 1
 fi
-if [ ! -f "$TRACES" ]; then
-  echo "ERROR: trace JSONL not found at $TRACES"
+if [ -z "$PV_ROOT" ] && [ -z "$PW_ROOT" ]; then
+  echo "ERROR: set at least one of PV_ROOT / PW_ROOT to a folder-per-class dataset."
   exit 1
 fi
 
 mkdir -p logs "$(dirname "$OUT")"
 
-python scripts/evaluate_observe.py \
-  --ckpt "$CKPT" \
-  --traces "$TRACES" \
-  --out "$OUT" \
-  --held-frac "$HELD_FRAC"
+CMD=(python scripts/evaluate_observe.py
+     --ckpt "$CKPT"
+     --crop "$CROP"
+     --pv-classes-json "$PV_CLASSES_JSON"
+     --backbone "$BACKBONE"
+     --lora-r "$LORA_R"
+     --lora-alpha "$LORA_ALPHA"
+     --batch-size "$BATCH"
+     --out "$OUT")
+
+if [ -n "$PV_ROOT" ]; then
+  CMD+=(--pv-root "$PV_ROOT")
+fi
+if [ -n "$PW_ROOT" ]; then
+  CMD+=(--pw-root "$PW_ROOT")
+fi
+
+"${CMD[@]}"
 
 echo
 echo "OBSERVE eval complete: $(date)"

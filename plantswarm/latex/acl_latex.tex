@@ -96,27 +96,28 @@ curation; the falsifiable prediction (P7,
 Appendix~\ref{app:predictions}) is that it will
 correlate with EPPO historical outbreak records at
 Pearson $r{\geq}0.70$ at production scale.
-\textbf{\observe} (Qwen2.5-VL-7B + LoRA, trained
-via Decision Transformer and GRPO) is designed to be
-evaluated against the \emph{complete} \pv dataset
-($54{,}306$ controlled images, zero training overlap)
-and the complete \pw dataset (largest in-the-wild
-benchmark). Of the $38$ disease classes in \pv, $12$
-have \emph{zero} \bugwood training traces; these
-constitute an embedded zero-shot evaluation routed
-through \pathomedb's mechanistic pathways. The
-production-scale benchmark numbers are pending;
-results currently reported (Tables~\ref{tab:plantswarm-main},
+\textbf{\observe} is a cheap KB-augmented
+out-of-distribution image classifier (SigLIP-2 with
+LoRA on the vision attention projections; the text
+tower stays frozen). Class prototypes are built once
+from \pathomedb (canonical summary plus diagnostic
+features, look-alikes, affected parts, and top-K
+verified regional deltas) and encoded with the frozen
+SigLIP-2 text tower. Prediction is the argmax cosine
+similarity between the image embedding and the
+KB-grounded text prototypes. \observe is trained
+exclusively on \bugwood (Tomato by default) and
+evaluated zero/few-shot on the \emph{complete} \pv
+dataset and the complete \pw dataset. The
+open-vocabulary design means \pv and \pw classes that
+have no \bugwood training images are still scored
+through their \pathomedb prototypes (with a one-line
+synthetic prompt as fallback for classes absent from
+the KB). Reported numbers
+(Tables~\ref{tab:plantswarm-main},
 \ref{tab:observe-main}) are pre-registered targets
 together with measurements from a \emph{smoke pilot}
-on Tomato + Soybean (full description in
-Appendix~\ref{app:smoke}), so abstract figures are
-hedged with the $\approx$ symbol. The
-pre-registered \observe targets are ECE
-${\leq}0.13$ on \pv and ECE ${\leq}0.18$ on \pw
-(Appendix~\ref{app:predictions}, P4), with a target
-${\approx}6\times$ token-cost reduction over the
-\plantswarm teacher.
+on Tomato + Soybean (Appendix~\ref{app:smoke}).
 At the planned production scale ($10$ images per
 disease class, $26$ classes; counting all
 \bugwood-touched images), the training-to-test ratio

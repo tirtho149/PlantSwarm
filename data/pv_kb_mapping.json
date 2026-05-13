@@ -1,0 +1,352 @@
+{
+  "dataset": "PlantVillage",
+  "kb_source": "artifacts/pathome_kb/{Soybean,Tomato}/final_registry.json",
+  "n_pv_classes": 38,
+  "n_matched": 6,
+  "n_ambiguous": 0,
+  "n_missing": 32,
+  "mapping": [
+    {
+      "pv_folder": "Apple___Apple_scab",
+      "pv_crop": "Apple",
+      "pv_disease": "Apple Scab",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Apple___Black_rot",
+      "pv_crop": "Apple",
+      "pv_disease": "Black Rot",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Apple___Cedar_apple_rust",
+      "pv_crop": "Apple",
+      "pv_disease": "Cedar Apple Rust",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Apple___healthy",
+      "pv_crop": "Apple",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Blueberry___healthy",
+      "pv_crop": "Blueberry",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Cherry_(including_sour)___Powdery_mildew",
+      "pv_crop": "Cherry",
+      "pv_disease": "Powdery Mildew",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Cherry_(including_sour)___healthy",
+      "pv_crop": "Cherry",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+      "pv_crop": "Corn",
+      "pv_disease": "Cercospora Leaf Spot",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Corn_(maize)___Common_rust_",
+      "pv_crop": "Corn",
+      "pv_disease": "Common Rust",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Corn_(maize)___Northern_Leaf_Blight",
+      "pv_crop": "Corn",
+      "pv_disease": "Northern Leaf Blight",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Corn_(maize)___healthy",
+      "pv_crop": "Corn",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Grape___Black_rot",
+      "pv_crop": "Grape",
+      "pv_disease": "Black Rot",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Grape___Esca_(Black_Measles)",
+      "pv_crop": "Grape",
+      "pv_disease": "Esca",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+      "pv_crop": "Grape",
+      "pv_disease": "Leaf Blight",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Grape___healthy",
+      "pv_crop": "Grape",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Orange___Haunglongbing_(Citrus_greening)",
+      "pv_crop": "Orange",
+      "pv_disease": "Huanglongbing",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Peach___Bacterial_spot",
+      "pv_crop": "Peach",
+      "pv_disease": "Bacterial Spot",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Peach___healthy",
+      "pv_crop": "Peach",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Pepper,_bell___Bacterial_spot",
+      "pv_crop": "Bell Pepper",
+      "pv_disease": "Bacterial Spot",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Pepper,_bell___healthy",
+      "pv_crop": "Bell Pepper",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Potato___Early_blight",
+      "pv_crop": "Potato",
+      "pv_disease": "Early Blight",
+      "pv_kind": "disease",
+      "kb_match": "Early Blight",
+      "status": "matched",
+      "reason": "exact match in Tomato KB"
+    },
+    {
+      "pv_folder": "Potato___Late_blight",
+      "pv_crop": "Potato",
+      "pv_disease": "Late Blight",
+      "pv_kind": "disease",
+      "kb_match": "Late Blight",
+      "status": "matched",
+      "reason": "exact match in Tomato KB"
+    },
+    {
+      "pv_folder": "Potato___healthy",
+      "pv_crop": "Potato",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Raspberry___healthy",
+      "pv_crop": "Raspberry",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Soybean___healthy",
+      "pv_crop": "Soybean",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Squash___Powdery_mildew",
+      "pv_crop": "Squash",
+      "pv_disease": "Powdery Mildew",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Strawberry___Leaf_scorch",
+      "pv_crop": "Strawberry",
+      "pv_disease": "Leaf Scorch",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no match"
+    },
+    {
+      "pv_folder": "Strawberry___healthy",
+      "pv_crop": "Strawberry",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Tomato___Bacterial_spot",
+      "pv_crop": "Tomato",
+      "pv_disease": "Bacterial Spot",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Tomato___Early_blight",
+      "pv_crop": "Tomato",
+      "pv_disease": "Early Blight",
+      "pv_kind": "disease",
+      "kb_match": "Early Blight",
+      "status": "matched",
+      "reason": "exact crop match"
+    },
+    {
+      "pv_folder": "Tomato___Late_blight",
+      "pv_crop": "Tomato",
+      "pv_disease": "Late Blight",
+      "pv_kind": "disease",
+      "kb_match": "Late Blight",
+      "status": "matched",
+      "reason": "exact crop match"
+    },
+    {
+      "pv_folder": "Tomato___Leaf_Mold",
+      "pv_crop": "Tomato",
+      "pv_disease": "Leaf Mold",
+      "pv_kind": "disease",
+      "kb_match": "Tomato Leaf Mould",
+      "status": "matched",
+      "reason": "exact crop match"
+    },
+    {
+      "pv_folder": "Tomato___Septoria_leaf_spot",
+      "pv_crop": "Tomato",
+      "pv_disease": "Septoria Leaf Spot",
+      "pv_kind": "disease",
+      "kb_match": "Septoria Leaf Spot",
+      "status": "matched",
+      "reason": "exact crop match"
+    },
+    {
+      "pv_folder": "Tomato___Spider_mites Two-spotted_spider_mite",
+      "pv_crop": "Tomato",
+      "pv_disease": "Two-spotted Spider Mite",
+      "pv_kind": "pest",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Tomato___Target_Spot",
+      "pv_crop": "Tomato",
+      "pv_disease": "Target Spot",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+      "pv_crop": "Tomato",
+      "pv_disease": "Tomato Yellow Leaf Curl Virus",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Tomato___Tomato_mosaic_virus",
+      "pv_crop": "Tomato",
+      "pv_disease": "Tomato Mosaic Virus",
+      "pv_kind": "disease",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    },
+    {
+      "pv_folder": "Tomato___healthy",
+      "pv_crop": "Tomato",
+      "pv_disease": "healthy",
+      "pv_kind": "healthy",
+      "kb_match": null,
+      "status": "missing",
+      "reason": "no KB entry; alias table marks N/A"
+    }
+  ]
+}

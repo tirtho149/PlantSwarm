@@ -11,8 +11,10 @@ After Algorithm-1 routing removal:
                           verification status upgrades)
   - existing_deltas_for_state (extract prior regional deltas from a
                                final_registry.json record)
-  - annotation_from_pass + load_phase0r_traces (OBSERVE training
-                                                data ingest)
+
+OBSERVE-side tests live in tests/test_observe.py — the trainer no
+longer touches Phase 0R traces (OBSERVE is now a KB-augmented OOD
+classifier trained on Bugwood images, not on swarm traces).
 """
 
 from __future__ import annotations
@@ -216,90 +218,3 @@ def test_existing_deltas_for_state_extracts_and_skips_empty():
     assert existing_deltas_for_state(rec, "Iowa") == []
 
 
-# ---------------------------------------------------------------------------
-# Trace JSONL ingest (per-pass shape, post Algorithm-1 removal)
-# ---------------------------------------------------------------------------
-
-def test_annotation_from_pass_basic():
-    pytest.importorskip("torch")
-    from observe.trainer import annotation_from_pass
-    rec = {
-        "profile_id": "Soybean::Charcoal Rot",
-        "crop": "Soybean", "disease": "Charcoal Rot", "state": "Alabama",
-        "image_path": "/tmp/img.jpg",
-        "primary_image_id": "bugwood::1",
-        "pass_idx": 0,
-        "specialist_outputs": [
-            {"agent_name":"MorphologyAgent",
-             "deltas":[{"field":"lesion_morphology","image_shows":"X",
-                        "canonical_says":"","image_quote":""}],
-             "confidence":"medium","reasoning":"r1","raw_text":""},
-            {"agent_name":"SymptomAgent",
-             "deltas":[{"field":"spread_pattern","image_shows":"S",
-                        "canonical_says":"","image_quote":""}],
-             "confidence":"high","reasoning":"r2","raw_text":""},
-            {"agent_name":"PathogenAgent",  "deltas":[], "confidence":"low",
-             "reasoning":"","raw_text":""},
-            {"agent_name":"SeverityAgent",  "deltas":[], "confidence":"medium",
-             "reasoning":"","raw_text":""},
-        ],
-        "consolidator_output": {
-            "agent_name":"DiagnosisAgent",
-            "deltas":[{"field":"lesion_morphology","image_shows":"X",
-                       "canonical_says":"","image_quote":""}],
-            "confidence":"high","reasoning":"consolidated","raw_text":"",
-        },
-        "final_deltas":[{"field":"lesion_morphology","image_shows":"X",
-                         "canonical_says":"","image_quote":""}],
-        "existing_kb_at_start":[],
-    }
-    ann = annotation_from_pass(rec)
-    assert ann is not None
-    assert ann.confidence == 0.9     # high → 0.9
-    assert ann.aleatoric == pytest.approx(0.1)
-    assert ann.n_final_deltas == 1
-    assert ann.n_specialist_union == 2
-    assert ann.overconfidence is False
-
-
-def test_load_phase0r_traces_full_chain(tmp_path):
-    pytest.importorskip("torch")
-    from observe.trainer import load_phase0r_traces
-    p = tmp_path / "phase0r_traces.jsonl"
-    rec = {
-        "profile_id": "X::Y", "crop": "X", "disease": "Y", "state": "Z",
-        "image_path": "/tmp/img.jpg", "primary_image_id": "bugwood::1",
-        "pass_idx": 0,
-        "specialist_outputs": [],
-        "consolidator_output": {"agent_name":"DiagnosisAgent","deltas":[],
-                                "confidence":"medium","reasoning":"","raw_text":""},
-        "final_deltas": [], "existing_kb_at_start": [],
-    }
-    p.write_text(json.dumps(rec) + "\n")
-    anns = load_phase0r_traces(str(p))
-    assert len(anns) == 1
-    assert anns[0].confidence == 0.6
-
-
-def test_split_annotations_no_image_leak():
-    pytest.importorskip("torch")
-    from observe.trainer import PassAnnotation, split_annotations
-    anns = [
-        PassAnnotation(
-            image_path=f"/tmp/img_{i}.jpg",
-            crop="X", disease="Y", state="Z",
-            context_text="...",
-            confidence=0.6, epistemic=0.5, aleatoric=0.4, overconfidence=False,
-            profile_id="X::Y", pass_idx=0,
-            n_final_deltas=0, n_specialist_union=0,
-        )
-        for i in range(10)
-    ]
-    s = split_annotations(anns, val_frac=0.2, held_frac=0.2, seed=42)
-    train_imgs = {a.image_path for a in s["train"]}
-    val_imgs   = {a.image_path for a in s["val"]}
-    held_imgs  = {a.image_path for a in s["held"]}
-    assert not (train_imgs & val_imgs)
-    assert not (train_imgs & held_imgs)
-    assert not (val_imgs   & held_imgs)
-    assert len(s["train"]) + len(s["val"]) + len(s["held"]) == 10

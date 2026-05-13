@@ -1,15 +1,17 @@
 """
 scripts/viz/observe_curves.py
 =============================
-Training curve visualizations from observe/checkpoints/history.json:
+Training curve visualizations from observe/checkpoints/history.json.
 
-  - train + val total loss per epoch
-  - train + val routing accuracy per epoch
-  - per-loss-component breakdown
+OBSERVE is now a KB-augmented OOD classifier (SigLIP-2 + LoRA), so the
+metrics tracked per epoch are:
+
+    train: {"loss": float, "top1": float}
+    val:   {"loss": float, "top1": float}
 
 Outputs:
-  results/figures/observe_curves.png
-  results/figures/observe_loss_components.png
+  results/figures/observe_curves.png      (loss curves)
+  results/figures/observe_top1.png        (top-1 curves)
   plantswarm/latex/auto_observe_curves.tex
 
 Usage:
@@ -41,36 +43,57 @@ def parse_args():
     return p.parse_args()
 
 
-def _plot_total_loss(plt, history: list, out_png: Path) -> bool:
+def _train_metric(h: dict, key: str) -> float:
+    """Tolerate either {'loss': x, 'top1': y} or legacy {'total': x}."""
+    block = h.get("train") or {}
+    if key in block:
+        return float(block[key])
+    # Legacy fallback for older histories.
+    if key == "loss" and "total" in block:
+        return float(block["total"])
+    return 0.0
+
+
+def _val_metric(h: dict, key: str) -> float:
+    block = h.get("val") or {}
+    if key in block:
+        return float(block[key])
+    if key == "loss" and "total" in block:
+        return float(block["total"])
+    return 0.0
+
+
+def _plot_loss(plt, history: list, out_png: Path) -> bool:
     if not history:
         return False
     epochs = [h["epoch"] for h in history]
-    train_total = [h["train"].get("total", 0)         for h in history]
-    val_total   = [h["val"].get("total",   0)         for h in history]
+    train  = [_train_metric(h, "loss") for h in history]
+    val    = [_val_metric(h,   "loss") for h in history]
     fig, ax = plt.subplots(figsize=(7, 4))
-    ax.plot(epochs, train_total, "o-", label="train", color="#1E88E5")
-    ax.plot(epochs, val_total,   "s-", label="val",   color="#F4511E")
-    ax.set_xlabel("Epoch"); ax.set_ylabel("Total loss")
-    ax.set_title("OBSERVE multi-task uncertainty loss"); ax.legend()
-    ax.grid(True, alpha=0.3)
+    ax.plot(epochs, train, "o-", label="train", color="#1E88E5")
+    ax.plot(epochs, val,   "s-", label="val",   color="#F4511E")
+    ax.set_xlabel("Epoch"); ax.set_ylabel("Cross-entropy loss")
+    ax.set_title("OBSERVE classification loss (per epoch)")
+    ax.legend(); ax.grid(True, alpha=0.3)
     fig.savefig(out_png, dpi=150, bbox_inches="tight")
     plt.close(fig)
     return True
 
 
-def _plot_loss_components(plt, history: list, out_png: Path) -> bool:
+def _plot_top1(plt, history: list, out_png: Path) -> bool:
     if not history:
         return False
     epochs = [h["epoch"] for h in history]
-    keys = ("cal", "cons", "oc")
-    colors = {"cal": "#43A047", "cons": "#FB8C00", "oc": "#8E24AA"}
+    train  = [_train_metric(h, "top1") for h in history]
+    val    = [_val_metric(h,   "top1") for h in history]
+    if not any(train) and not any(val):
+        return False
     fig, ax = plt.subplots(figsize=(7, 4))
-    for k in keys:
-        ys = [h["train"].get(k, 0) for h in history]
-        if any(y for y in ys):
-            ax.plot(epochs, ys, "o-", label=k, color=colors.get(k))
-    ax.set_xlabel("Epoch"); ax.set_ylabel("Component loss (train)")
-    ax.set_title("OBSERVE per-component training loss")
+    ax.plot(epochs, train, "o-", label="train", color="#43A047")
+    ax.plot(epochs, val,   "s-", label="val",   color="#8E24AA")
+    ax.set_xlabel("Epoch"); ax.set_ylabel("Top-1 accuracy")
+    ax.set_ylim(0, 1)
+    ax.set_title("OBSERVE top-1 accuracy (per epoch)")
     ax.legend(); ax.grid(True, alpha=0.3)
     fig.savefig(out_png, dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -84,19 +107,21 @@ def _build_tex(name: str, history: list, figures_written: list) -> str:
     if history:
         lines.append(r"\begin{table}[t]")
         lines.append(r"  \centering\small")
-        lines.append(r"  \begin{tabular}{rrr}")
+        lines.append(r"  \begin{tabular}{rrrrr}")
         lines.append(r"    \toprule")
-        lines.append(r"    Epoch & Train loss & Val loss \\")
+        lines.append(r"    Epoch & Train loss & Val loss & Train top-1 & Val top-1 \\")
         lines.append(r"    \midrule")
         for h in history:
-            tt = h["train"].get("total", 0.0)
-            vt = h["val"].get("total", 0.0)
+            tl = _train_metric(h, "loss")
+            vl = _val_metric(h,   "loss")
+            tt = _train_metric(h, "top1")
+            vt = _val_metric(h,   "top1")
             lines.append(
-                f"    {h['epoch']} & {tt:.4f} & {vt:.4f} \\\\"
+                f"    {h['epoch']} & {tl:.4f} & {vl:.4f} & {tt:.3f} & {vt:.3f} \\\\"
             )
         lines.append(r"    \bottomrule")
         lines.append(r"  \end{tabular}")
-        lines.append(r"  \caption{OBSERVE training history.}")
+        lines.append(r"  \caption{OBSERVE training history (KB-augmented classifier).}")
         lines.append(r"  \label{tab:observe_history}")
         lines.append(r"\end{table}")
         lines.append("")
@@ -122,12 +147,12 @@ def main() -> None:
     if have_matplotlib():
         _, plt = get_mpl()
         for tag, fn, caption, label in [
-            ("observe_main",       _plot_total_loss,
-             "OBSERVE multi-task uncertainty loss over epochs.",
-             "observe_curves"),
-            ("observe_components", _plot_loss_components,
-             "OBSERVE per-component training loss.",
-             "observe_components"),
+            ("observe_curves", _plot_loss,
+             "OBSERVE classification loss over epochs.",
+             "fig:observe_loss"),
+            ("observe_top1",   _plot_top1,
+             "OBSERVE top-1 accuracy over epochs.",
+             "fig:observe_top1"),
         ]:
             out_png = fig_path(tag)
             if fn(plt, history, out_png):

@@ -1,8 +1,8 @@
-# PlantSwarm + PathomeDB — Canonical KB + Qwen-Swarm Regional Deltas + OBSERVE student
+# PlantSwarm + PathomeDB — Canonical KB + Qwen-Swarm Regional Deltas + OBSERVE OOD classifier
 
 A three-stage pipeline that produces an image-grounded plant disease
-knowledge base for the 484 Bugwood IPMNet classes, plus a student model
-that learns to imitate the swarm at inference:
+knowledge base for the 484 Bugwood IPMNet classes, plus a small
+KB-augmented classifier evaluated under heavy cross-domain shift:
 
 1. **Phase 0  — canonical KB** (LOCAL, Claude). Discovery →
    extraction → reconciliation produces a text-grounded
@@ -14,16 +14,22 @@ that learns to imitate the swarm at inference:
    photograph, and emits state-specific deltas — additions or
    contradictions backed by image evidence. Deltas never restate
    canonical.
-3. **Phase OBSERVE — distilled student** (LoRA fine-tune of
-   Qwen2.5-VL-7B). Trained on Phase 0R trace JSONL (per-step
-   {state, action} pairs from the swarm). At inference, replaces the
-   N-stochastic-traces swarm with a single forward pass — ~6× faster.
+3. **Phase OBSERVE — KB-augmented OOD classifier**
+   (SigLIP-2 + LoRA). Image -> SigLIP-2 vision tower (frozen base +
+   LoRA q/k/v) -> embedding; class prototypes built from
+   canonical + regional KB blocks (PathomeDB) are encoded once by the
+   frozen SigLIP-2 text tower. Prediction is the argmax cosine
+   similarity. Trained on Bugwood (field photos, Tomato by default),
+   evaluated on PlantVillage (lab cutouts — easy OOD) and PlantWild
+   (in-the-wild — hard OOD). Open-vocabulary: any disease with a KB
+   prototype can be scored, including diseases never seen as training
+   images.
 
 The terminal deliverable from the KB side is **`symptoms_seed.json`**
 (canonical text + image-grounded deltas per state). The OBSERVE
 checkpoint at **`observe/checkpoints/observe_best.pt`** is the
-secondary deliverable — it can act as a single-pass swarm replacement
-for new images.
+secondary deliverable — a cheap text-conditioned image classifier
+that benefits from PathomeDB's KB at zero extra training cost.
 
 ```
   ┌─────────────────────┐       ┌─────────────────────┐       ┌─────────────────────┐
@@ -217,15 +223,14 @@ cd /work/<your-scratch>/PlantSwarm
 git pull origin main
 
 # Run all three SBATCH-submitted Nova phases, chained via sbatch --wait.
-PATHOME_TRACE_DIR=artifacts/observe_traces \
-  bash scripts/e2e_nova.sh
+bash scripts/e2e_nova.sh
 ```
 
 What this does:
 1. `git pull` (gets the canonical artefacts you pushed in step 2).
-2. `sbatch --wait scripts/submit_phase0r_regional.sh` — boots vLLM, runs the Qwen swarm (N stochastic passes; 4 specialists run in parallel and DiagnosisAgent consolidates per pass), the K-of-N cross-pass agreement filter, the Claude+WebSearch verifier, and the conservative merge with existing KB. Writes per-pass records to `artifacts/observe_traces/phase0r_traces.jsonl`. Updates `final_registry.json` and `symptoms_seed.json` with the regional deltas and their `verification_status` + `web_support` citations.
-3. `sbatch --wait scripts/submit_observe_train.sh` — trains the OBSERVE student on the trace JSONL. Writes `observe/checkpoints/observe_best.pt` and `history.json`.
-4. `sbatch --wait scripts/submit_evaluate_observe.sh` — held-out evaluation. Writes `results/observe_eval.json`.
+2. `sbatch --wait scripts/submit_phase0r_regional.sh` — boots vLLM, runs the Qwen swarm (N stochastic passes; 4 specialists run in parallel and DiagnosisAgent consolidates per pass), the K-of-N cross-pass agreement filter, the Claude+WebSearch verifier, and the conservative merge with existing KB. Updates `final_registry.json` and `symptoms_seed.json` with the regional deltas and their `verification_status` + `web_support` citations.
+3. `sbatch --wait scripts/submit_observe_train.sh` — trains the OBSERVE classifier on Bugwood (Tomato by default). Uses the KB seed JSON for per-class text prototypes; the SigLIP-2 vision tower with LoRA on q/k/v is the only trainable part. Writes `observe/checkpoints/observe_best.pt` and `history.json`.
+4. `sbatch --wait scripts/submit_evaluate_observe.sh` — runs the trained classifier on PlantVillage and/or PlantWild (set `PV_ROOT` / `PW_ROOT`). Writes `results/observe_eval.json` with per-dataset top-1, top-5, macro F1, and per-class accuracy split by KB-known vs zero-shot classes.
 5. `git add -f` the results + `git commit` + `git push origin main`.
 
 **Smoke variant** (2 crops):
@@ -234,7 +239,6 @@ PATHOME_ONLY_CROPS="Soybean,Tomato" \
   PATHOME_SEED_QUICK=1 \
   PATHOME_USABLE_CSV=smoke/BugWood_Diseases_smoke_usable.csv \
   PATHOME_SEED_FILE=smoke/artifacts/pathome_seed/symptoms_seed.json \
-  PATHOME_TRACE_DIR=artifacts/observe_traces \
   bash scripts/e2e_nova.sh
 ```
 
@@ -295,10 +299,9 @@ PATHOME_SKIP_PDF=1         bash scripts/e2e_visualize.sh   # figures only
 ```
 artifacts/pathome_kb/<Crop>/final_registry.json     canonical + regional KB
 artifacts/pathome_seed/symptoms_seed.json           merged seed (terminal deliverable)
-artifacts/observe_traces/phase0r_traces.jsonl       OBSERVE training data
-observe/checkpoints/observe_best.pt                 trained student
+observe/checkpoints/observe_best.pt                 trained KB-augmented OOD classifier
 observe/checkpoints/history.json                    training history
-results/observe_eval.json                           held-out metrics
+results/observe_eval.json                           PV / PW eval metrics
 results/figures/*.png                               figures for the paper
 plantswarm/latex/auto_*.tex                         LaTeX snippets the paper \input{}s
 plantswarm/latex/acl_latex.pdf                      compiled paper PDF
@@ -541,60 +544,81 @@ PATHOME_VERIFIER_MAX_TURNS verifier max turns for WebSearch (default 30)
 PATHOME_IMAGE_CACHE_DIR  optional override prepended to the cache search path
 ```
 
-### Phase OBSERVE — distilled student (LoRA fine-tune)
+### Phase OBSERVE — KB-augmented OOD classifier
 
-OBSERVE is a Qwen2.5-VL-7B + LoRA student that learns to imitate the
-swarm. At inference, it replaces N stochastic traces with a single
-forward pass.
+OBSERVE is a cheap SigLIP-2 + LoRA classifier whose class labels come
+from PathomeDB text prototypes. Image -> SigLIP-2 vision tower (frozen
+base + LoRA on vision q/k/v) -> embedding; class prototypes built
+from canonical + regional KB blocks are encoded once by the frozen
+SigLIP-2 text tower. Prediction is the argmax cosine similarity. The
+classifier is trained on Bugwood (Tomato by default, ~600 field
+photos, 14 classes that match the KB) and evaluated zero/few-shot on
+PlantVillage and PlantWild.
 
 |                  |                                                                                                |
 |------------------|------------------------------------------------------------------------------------------------|
 | Where it runs    | GPU host with CUDA (A100-class)                                                                |
 | Compute          | 1× A100, 8 CPUs, 64 GB RAM                                                                     |
-| Walltime         | ~4–8 h on Phase 0R trace JSONL (depends on N traces × tuples)                                  |
-| Inputs           | `$PATHOME_TRACE_FILE` (default: `artifacts/observe_traces/phase0r_traces.jsonl`)               |
+| Walltime         | ~30–90 min on Tomato (~600 images, 10 epochs)                                                  |
+| Inputs           | `$PATHOME_SEED_JSON` (KB), `$PATHOME_BUGWOOD_CSV` (training rows), `$PATHOME_BUGWOOD_CACHE`    |
 | Outputs          | `observe/checkpoints/{observe_best, observe_last}.pt`, `history.json`                          |
-
-**Generate training data**: re-run Phase 0R with the trace writer enabled:
-```bash
-PATHOME_TRACE_DIR=artifacts/observe_traces \
-  sbatch scripts/submit_phase0r_regional.sh
-```
-This appends one JSONL record per (tuple, run) to
-`artifacts/observe_traces/phase0r_traces.jsonl` — every per-step
-context, agent action, κ confidence, and final delta set is captured.
 
 **Train**:
 ```bash
 sbatch scripts/submit_observe_train.sh
 # or directly:
 python scripts/train_observe.py \
-    --traces artifacts/observe_traces/phase0r_traces.jsonl \
-    --save-dir observe/checkpoints/ \
-    --epochs 5 --batch-size 4
+    --seed artifacts/pathome_seed/symptoms_seed.json \
+    --bugwood-csv BugWood_Diseases_usable.csv \
+    --cache-dir .bugwood_cache \
+    --crop Tomato \
+    --backbone google/siglip-base-patch16-224 \
+    --include-healthy \
+    --epochs 10 --batch-size 32 --lora-r 8
 ```
 
-Per-pass supervision derived from each pass record (no routing labels):
-- `target_confidence`    = consolidator κ ∈ {high, medium, low} → {0.9, 0.6, 0.3}
-- `target_epistemic`     = `|specialist_union − final_deltas| / max(1, specialist_union)`
-- `target_aleatoric`     = 1 − κ scalar (low κ ↔ high irreducible noise)
-- `target_overconfidence` = 1 iff κ=high AND `len(final_deltas) == 0`
+What the trainer does:
+- Loads the seed JSON and builds one text prototype per KB profile for
+  the requested crop. Each prototype packs canonical summary +
+  diagnostic features + look-alikes + affected parts + top-K verified
+  regional deltas into a single multi-sentence prompt for the SigLIP-2
+  text tower.
+- Optionally appends a synthetic `<crop>::healthy` prototype so the
+  classifier can recognise non-disease leaves (PathomeDB itself
+  doesn't cover healthy).
+- Loads Bugwood field photos via the filtered usable CSV +
+  `.bugwood_cache/<image_number>.jpg`, filters to the requested crop,
+  drops rows whose disease isn't in the KB.
+- Stratified train / val split (default 15% val).
+- Per epoch: encode the class prototypes once with the frozen text
+  tower, then train the LoRA-adapted vision tower to minimise softmax
+  cross-entropy over cosine·temperature logits.
+- Saves the best checkpoint by val top-1 plus full history.
 
-**Inference**: `OBSERVE.get_uncertainty(image, context_text)` returns
-an `EpistemicState` (epistemic, aleatoric, calibrated confidence, OC
-flag) — a single forward pass, no swarm, no vLLM HTTP loop.
+**Inference**: `OBSERVEInference(ckpt).classify(image, topk=5)` returns
+a `ClassificationResult` with top-k labels and softmax probabilities.
 
 **Evaluation** — `scripts/evaluate_observe.py` (and
-`scripts/submit_evaluate_observe.sh`) loads a checkpoint and reports
-κ MAE, κ ECE, epistemic MAE, aleatoric MAE, and OC accuracy on the
-held-out fold. The split is image-grouped, so no leakage across
-folds.
+`scripts/submit_evaluate_observe.sh`) loads a checkpoint and runs it
+against PlantVillage and/or PlantWild folder-per-class datasets:
+```bash
+OBSERVE_CKPT=observe/checkpoints/observe_best.pt \
+  PV_ROOT=/path/to/PlantVillage \
+  PW_ROOT=/path/to/PlantWild \
+  sbatch scripts/submit_evaluate_observe.sh
+```
+The evaluator extends the trained class index with any PV/PW classes
+not seen at training time, synthesising a minimal `"A field photograph
+of <crop> affected by <disease>."` prototype for each. Per dataset it
+reports top-1, top-5, macro F1, and per-class accuracy with a
+KB-known vs zero-shot flag.
 
 **Tests** — `pytest tests/` covers the parser, agreement filter,
 conservative merge (incl. idempotency + status upgrades),
-existing-deltas extraction, the Claude verifier (mocked), the OBSERVE
-annotation chain, and the visualization pipeline. 17
-tests, no GPU required for the swarm-logic tests.
+existing-deltas extraction, the Claude verifier (mocked), the
+OBSERVE prototype + dataset machinery, and the visualization
+pipeline. The OBSERVE tests require `torch` to be installed; the
+swarm-logic tests don't.
 
 ---
 
@@ -676,19 +700,19 @@ section just chain these.
 |---|---|---|---|
 | `scripts/submit_phase0r_regional.sh` | Nova SBATCH: boot vLLM, run Qwen swarm (4 specialists in parallel + DiagnosisAgent consolidator, N stochastic passes), K-of-N agreement filter, Claude web-search verifier, conservative merge | canonical KB, image cache | regional deltas merged into `final_registry.json`; `symptoms_seed.json`; `phase0r_traces.jsonl` if `PATHOME_TRACE_DIR` set |
 
-### OBSERVE — distilled student (Nova, CUDA)
+### OBSERVE — KB-augmented OOD classifier (Nova, CUDA)
 
 | Script | Purpose | Inputs | Outputs |
 |---|---|---|---|
-| `scripts/submit_observe_train.sh` | Train OBSERVE on Phase 0R trace JSONL (BC + multi-task loss) | `phase0r_traces.jsonl` | `observe/checkpoints/{observe_best,observe_last}.pt`, `history.json` |
-| `scripts/submit_evaluate_observe.sh` | Held-out eval: routing acc + κ ECE + per-class breakdown | checkpoint, traces | `results/observe_eval.json` |
+| `scripts/submit_observe_train.sh` | Train SigLIP-2 + LoRA on Bugwood (Tomato by default) against KB text prototypes | `symptoms_seed.json`, filtered CSV, `.bugwood_cache/` | `observe/checkpoints/{observe_best,observe_last}.pt`, `history.json` |
+| `scripts/submit_evaluate_observe.sh` | Eval on PV / PW: top-1 / top-5 / macro F1 + per-class accuracy, with KB-known vs zero-shot split | checkpoint, `PV_ROOT` and/or `PW_ROOT` | `results/observe_eval.json` |
 
 ### Visualization (LOCAL)
 
 | Script | Purpose | Inputs | Outputs |
 |---|---|---|---|
 | `scripts/viz_kb.sh` | KB stats: per-status pie, field-count bar, support histogram, per-state coverage | `symptoms_seed.json` | `results/figures/kb_*.png`, `plantswarm/latex/auto_kb_stats.tex` |
-| `scripts/viz_observe.sh` | OBSERVE training curves + held-out eval bar | `history.json`, `observe_eval.json` | `results/figures/observe_*.png`, `plantswarm/latex/auto_observe_{curves,eval}.tex` |
+| `scripts/viz_observe.sh` | OBSERVE training loss + top-1 curves + PV / PW per-class bars | `history.json`, `observe_eval.json` | `results/figures/observe_*.png`, `plantswarm/latex/auto_observe_{curves,eval}.tex` |
 | `scripts/viz_traces.sh` | Phase 0R trace stats: path lengths, κ-by-agent | `phase0r_traces.jsonl` | `results/figures/trace_*.png`, `plantswarm/latex/auto_trace_stats.tex` |
 | `scripts/viz_all.sh` | Run all three viz scripts in sequence | — | — |
 | `scripts/build_latex_pdf.sh` | Compile the paper PDF (`acl_latex.tex`) | the `auto_*.tex` snippets above | `plantswarm/latex/acl_latex.pdf` |

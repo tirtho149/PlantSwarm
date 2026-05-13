@@ -102,12 +102,12 @@ def _make_seed(tmp_path: Path) -> Path:
 
 def _make_history(tmp_path: Path) -> Path:
     history = [
-        {"epoch": 1, "train": {"total": 1.4, "cal": 0.3, "cons": 0.05, "oc": 0.1},
-                     "val":   {"total": 1.3}},
-        {"epoch": 2, "train": {"total": 0.9, "cal": 0.2, "cons": 0.04, "oc": 0.08},
-                     "val":   {"total": 0.95}},
-        {"epoch": 3, "train": {"total": 0.6, "cal": 0.15, "cons": 0.03, "oc": 0.06},
-                     "val":   {"total": 0.7}},
+        {"epoch": 1, "train": {"loss": 1.4, "top1": 0.25},
+                     "val":   {"loss": 1.3, "top1": 0.30}},
+        {"epoch": 2, "train": {"loss": 0.9, "top1": 0.55},
+                     "val":   {"loss": 0.95, "top1": 0.52}},
+        {"epoch": 3, "train": {"loss": 0.6, "top1": 0.72},
+                     "val":   {"loss": 0.70, "top1": 0.68}},
     ]
     p = tmp_path / "history.json"
     p.write_text(json.dumps(history))
@@ -116,10 +116,30 @@ def _make_history(tmp_path: Path) -> Path:
 
 def _make_eval(tmp_path: Path) -> Path:
     ev = {
-        "n_samples": 200, "n_images": 50,
-        "kappa_mae": 0.12, "kappa_ece": 0.09,
-        "epistemic_mae": 0.15, "aleatoric_mae": 0.18,
-        "overconfidence_accuracy": 0.88,
+        "crop": "Tomato",
+        "evals": {
+            "plantvillage": {
+                "n_samples":     200,
+                "top1_accuracy": 0.62,
+                "top5_accuracy": 0.91,
+                "macro_f1":      0.57,
+                "per_class": {
+                    "Tomato::Early Blight":      {"support": 100, "correct": 70, "accuracy": 0.70, "in_kb": True},
+                    "Tomato::Late Blight":       {"support": 60,  "correct": 38, "accuracy": 0.63, "in_kb": True},
+                    "Tomato::Septoria Leaf Spot":{"support": 40,  "correct": 16, "accuracy": 0.40, "in_kb": False},
+                },
+            },
+            "plantwild": {
+                "n_samples":     50,
+                "top1_accuracy": 0.40,
+                "top5_accuracy": 0.78,
+                "macro_f1":      0.36,
+                "per_class": {
+                    "Tomato::Early Blight": {"support": 30, "correct": 14, "accuracy": 0.47, "in_kb": True},
+                    "Tomato::Late Blight":  {"support": 20, "correct": 6,  "accuracy": 0.30, "in_kb": True},
+                },
+            },
+        },
     }
     p = tmp_path / "eval.json"
     p.write_text(json.dumps(ev))
@@ -207,8 +227,10 @@ def test_observe_eval_emits_tex(tmp_path, monkeypatch):
                         ["observe_eval", "--eval", str(ev), "--name", "oeval"])
     observe_eval.main()
     tex = (tmp_path / "tex" / "auto_oeval.tex").read_text()
-    assert "Kappa MAE" in tex
-    assert "Overconfidence" in tex
+    assert "Top-1 accuracy" in tex
+    assert "Macro F1"      in tex
+    assert "plantvillage"  in tex
+    assert "plantwild"     in tex
 
 
 def test_trace_stats_emits_tex(tmp_path, monkeypatch):
