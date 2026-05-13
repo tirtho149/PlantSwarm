@@ -481,17 +481,17 @@ trait-rich) is routed through separate heads to avoid interference.
 
 ```mermaid
 flowchart TB
-    IMG([image])
-    LBL([taxon text:<br/>"Tomato Early Blight"])
-    CAP([KB caption:<br/>"A field photograph of Tomato<br/>affected by Early Blight ...<br/>Regional variations: in TX, ..."])
+    IMG(["image"])
+    LBL(["taxon text — 'Tomato Early Blight'"])
+    CAP(["KB caption — 'A field photograph of Tomato<br/>affected by Early Blight … Regional<br/>variations: in TX, …'"])
 
     VIS["Visual Encoder<br/>ViT-B/16<br/>(OpenAI pretrained init)"]
     PTAX["Projector_tax<br/>(label-aligned)"]
     PCAP["Projector_caption<br/>(caption-aligned)"]
     TXT["Text Encoder<br/>(shared CLIP text tower)"]
 
-    LOSS_TAX["Contrastive loss<br/>InfoNCE<br/>(image_tax ↔ taxon text)"]
-    LOSS_CAP["Contrastive loss<br/>InfoNCE<br/>(image_cap ↔ caption)"]
+    LOSS_TAX["Contrastive loss — InfoNCE<br/>(image_tax ↔ taxon text)"]
+    LOSS_CAP["Contrastive loss — InfoNCE<br/>(image_cap ↔ caption)"]
 
     IMG --> VIS
     VIS --> PTAX
