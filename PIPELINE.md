@@ -43,7 +43,109 @@ flowchart LR
     class E eval
 ```
 
-The next three sections walk through each phase in turn.
+The next three sections walk through each phase in turn. First, what
+the pipeline actually sees on disk.
+
+---
+
+## Data sources and distributions
+
+Three datasets feed the pipeline. **Bugwood** provides the training
+images for the classifier; **PlantVillage** and **PlantWild** are the
+two out-of-distribution evaluation sets. All numbers below are for
+the Tomato slice — the current scope of the OBSERVE classifier.
+
+### Bugwood (training set, in-the-wild)
+
+Geo-tagged field photographs from the IPMNet image library, captured
+by extension agents and researchers. After filtering to usable rows
+with a resolved crop, disease, and state, the Tomato slice has
+**605 images across 18 disease classes and 14 US states**. The matrix
+below gives per-(state, class) counts for the top five classes; the
+remaining 13 Tomato classes are grouped under "Others".
+
+| State            | TSWV | Late Blight | Early Blight | Leaf Mould | Septoria | Others | **Total** |
+|------------------|---:|---:|---:|---:|---:|---:|---:|
+| North Carolina   |  90 |  50 |  17 |   0 |   0 | 115 |   **272** |
+| Kentucky         |  14 |   0 |   8 |  15 |   9 |  37 |    **83** |
+| Alabama          |   8 |  26 |   2 |   2 |   0 |  42 |    **80** |
+| Maine            |   0 |  12 |  12 |  10 |  13 |  12 |    **59** |
+| Virginia         |   2 |  23 |   0 |   5 |   1 |   9 |    **40** |
+| Mississippi      |   0 |   0 |   4 |   6 |   0 |  20 |    **30** |
+| Smaller (8 sts)  |   9 |   8 |   5 |   1 |   2 |  16 |    **41** |
+| **Total**        | **123** | **119** | **48** | **39** | **25** | **251** | **605** |
+
+The eight smaller states (New York, Louisiana, Delaware, South
+Carolina, Connecticut, Georgia, Florida, Kansas) each contribute
+fewer than 12 Tomato images. North Carolina alone supplies 45% of
+the training images, and four classes — Tomato Spotted Wilt Virus
+(TSWV), Late Blight, Early Blight, Leaf Mould — account for 71% of
+the total. This concentration is the data-imbalance reality the
+classifier has to handle; it's also why the Phase 2 regional deltas
+are dominated by a few states (NC, KY, AL, ME, VA) and most other
+states will end up with empty regional blocks for now.
+
+### PlantVillage (evaluation set, lab cutouts — easy OOD)
+
+The widely used PlantVillage benchmark — controlled studio
+photographs of single leaves on uniform backgrounds. The full dataset
+has **38 classes across 14 crops and 54,306 images**; the Tomato
+slice has **10 classes and 18,160 images**. Per-class breakdown for
+the Tomato slice (counts from the canonical PV release):
+
+| PV class                            | Images | In PathomeDB | Prototype source |
+|-------------------------------------|---:|:--:|:--|
+| Tomato Bacterial Spot               | 2,127 | no  | zero-shot prompt |
+| Tomato Early Blight                 | 1,000 | yes | KB block |
+| Tomato Late Blight                  | 1,909 | yes | KB block |
+| Tomato Leaf Mold                    |   952 | yes | KB block |
+| Tomato Septoria Leaf Spot           | 1,771 | yes | KB block |
+| Tomato Spider Mites (Two-spotted)   | 1,676 | no  | zero-shot prompt |
+| Tomato Target Spot                  | 1,404 | no  | zero-shot prompt |
+| Tomato Yellow Leaf Curl Virus       | 5,357 | no  | zero-shot prompt |
+| Tomato Mosaic Virus                 |   373 | no  | zero-shot prompt |
+| Tomato healthy                      | 1,591 | template | synthetic healthy prompt |
+| **Total**                           | **18,160** | 4 KB + 1 template | |
+
+The "In PathomeDB" column drives the KB-known vs zero-shot split in
+the evaluation. Four of the ten Tomato classes have a full KB
+profile from Phase 1+2 (so the classifier has both training images
+*and* a rich KB prototype). Five classes fall back to a one-line
+synthesised prompt at evaluation time (no KB block, no training
+images — pure zero-shot through the SigLIP-2 text geometry). The
+healthy class uses the synthetic healthy template.
+
+### PlantWild (evaluation set, in-the-wild — hard OOD)
+
+A separately collected in-the-wild benchmark released in 2024 with
+**89 classes and ~18,500 images**. Tomato-relevant classes overlap
+the PlantVillage disease vocabulary but the images themselves are
+taken in real field conditions — cluttered backgrounds, variable
+lighting, non-isolated leaves, smartphone capture. The Tomato slice
+typically covers the same 8-10 disease classes as PlantVillage
+(exact set depends on the release version). Per-class image counts
+are read directly from the dataset root at evaluation time, since
+the released folder layout is what the loader operates on.
+
+### Why both PlantVillage and PlantWild
+
+The two evaluation sets pose the same question — "does a classifier
+trained on Bugwood field photographs generalize to a domain it has
+never seen?" — but at different difficulties.
+
+- **PlantVillage** shifts the *visual style* (field → lab cutout)
+  while keeping the disease identity vocabulary mostly stable. It is
+  the easier shift and tests style-invariance.
+- **PlantWild** shifts the *collection itself* (Bugwood field photos
+  → a different in-the-wild dataset). The visual style is closer to
+  Bugwood but the photographer pool, camera distribution, and
+  geographic coverage are different. It is the harder shift and
+  tests collection-invariance.
+
+The KB-known vs zero-shot per-class split is reported on both,
+isolating how much of any accuracy gap is due to the model having a
+KB prototype for the class versus going through the synthesised
+fallback prompt.
 
 ---
 
