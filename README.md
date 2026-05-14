@@ -284,15 +284,35 @@ results/pathomeood_report.md                        paper-style master report
 | 4 | NOVA | `sh_04_train_encoder_nova.sh` | BioCAP-style ViT-B/16 dual-projector CLIP encoder fine-tuned on Bugwood + KB-grounded captions (warm-started from BioCLIP) |
 | 5 | LOCAL | `sh_05_tabpfn_local.sh` | 7 frozen encoders (6 off-shelf + your step-4 trained one) emit image_emb + KB-caption_emb + crop_text_emb + state_text_emb; TabPFN classifies; Grad-CAM; eval on PV / PD / PW |
 
-Each step script does its own `git pull --ff-only` at the start and
-`git push` at the end, so a normal end-to-end run never needs the
-helpers below. They exist for manual hand-offs — e.g. after a step
-crashes mid-run, or when you want to refresh Nova before sbatching:
+### Manual hand-off helpers (push / pull)
+
+Each `sh_NN` step script does its own `git pull --ff-only` at the
+start and `git push` at the end, so a normal end-to-end run never
+needs these helpers. They exist for manual hand-offs — e.g. after a
+step crashes mid-run, when you want to refresh Nova before sbatching,
+or when you want to sync the entire working tree (not just the per-
+step artifacts) between hosts.
 
 | Direction | Script | What |
 |---|---|---|
-| LOCAL → GitHub or NOVA → GitHub | `sh_push_to_github.sh` | **HARD push**: `git add -A` stages every changed / new file under the repo (all subdirs included), commit, push. `COMMIT_MSG=...` for the message, `PATHOME_INCLUDE_IGNORED=1` to also push .gitignore'd files, `PATHOME_FORCE_PUSH=1` for `--force-with-lease`, `PATHOME_DRY_RUN=1` to preview. |
-| GitHub → LOCAL or GitHub → NOVA | `sh_pull_from_github.sh` | Fast-forward `git pull`. Refuses to clobber uncommitted local edits (tells you to commit / stash first). |
+| LOCAL → GitHub or NOVA → GitHub | `scripts/sh_push_to_github.sh` | **HARD push.** `git add -A .` stages every changed / new file under the repo (every subdir included), commits, and pushes. |
+| GitHub → LOCAL or GitHub → NOVA | `scripts/sh_pull_from_github.sh` | `git fetch` + `git pull --ff-only`. Refuses to clobber uncommitted local edits (tells you to `commit` or `stash` first). |
+
+**`sh_push_to_github.sh` is a hard push** — every file, every
+subdirectory under the repo root goes up in one commit. Knobs:
+
+| Env var | Default | Effect |
+|---|---|---|
+| `COMMIT_MSG` | timestamped "hard push" | Commit message |
+| `PATHOME_INCLUDE_IGNORED` | `0` | `1` → also force-add `.gitignore`'d files (large caches, checkpoints, data dirs) with `git add -A -f` |
+| `PATHOME_FORCE_PUSH` | `0` | `1` → use `git push --force-with-lease` (only when local + remote have diverged) |
+| `PATHOME_DRY_RUN` | `0` | `1` → print plan + the (potentially huge) untracked / ignored counts without staging or pushing |
+| `GIT_REMOTE` | `origin` | Remote name |
+| `GIT_BRANCH` | `main` | Branch to push to |
+
+Before staging, the script prints a preview of the working-tree
+status and the count of untracked (and, with `PATHOME_INCLUDE_IGNORED=1`,
+ignored) paths. Ctrl-C if it's about to grab something unintended.
 
 ```bash
 # Hard-push everything (from either host) — every file, every subdir:
@@ -310,7 +330,7 @@ PATHOME_FORCE_PUSH=1 bash scripts/sh_push_to_github.sh
 # Preview without staging or pushing:
 PATHOME_DRY_RUN=1 bash scripts/sh_push_to_github.sh
 
-# Pull on the other host:
+# Pull on the other host (fast-forward; aborts on uncommitted edits):
 bash scripts/sh_pull_from_github.sh
 ```
 
