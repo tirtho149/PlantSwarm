@@ -291,13 +291,24 @@ crashes mid-run, or when you want to refresh Nova before sbatching:
 
 | Direction | Script | What |
 |---|---|---|
-| LOCAL → GitHub or NOVA → GitHub | `sh_push_to_github.sh` | Stage relevant artifacts (KB, judgement, results, figures, tables, usable CSV) + commit + push. `PATHOME_PUSH_PATHS=...` to override the glob list, `COMMIT_MSG=...` for the message, `PATHOME_DRY_RUN=1` to preview. |
+| LOCAL → GitHub or NOVA → GitHub | `sh_push_to_github.sh` | **HARD push**: `git add -A` stages every changed / new file under the repo (all subdirs included), commit, push. `COMMIT_MSG=...` for the message, `PATHOME_INCLUDE_IGNORED=1` to also push .gitignore'd files, `PATHOME_FORCE_PUSH=1` for `--force-with-lease`, `PATHOME_DRY_RUN=1` to preview. |
 | GitHub → LOCAL or GitHub → NOVA | `sh_pull_from_github.sh` | Fast-forward `git pull`. Refuses to clobber uncommitted local edits (tells you to commit / stash first). |
 
 ```bash
-# Push current state to GitHub (from either host):
+# Hard-push everything (from either host) — every file, every subdir:
 bash scripts/sh_push_to_github.sh
+
+# Same, but with a specific commit message:
 COMMIT_MSG="hand-off after partial swarm run" bash scripts/sh_push_to_github.sh
+
+# Also push gitignored files (caches, large data, checkpoints):
+PATHOME_INCLUDE_IGNORED=1 bash scripts/sh_push_to_github.sh
+
+# Force-push if local and remote have diverged:
+PATHOME_FORCE_PUSH=1 bash scripts/sh_push_to_github.sh
+
+# Preview without staging or pushing:
+PATHOME_DRY_RUN=1 bash scripts/sh_push_to_github.sh
 
 # Pull on the other host:
 bash scripts/sh_pull_from_github.sh
