@@ -55,8 +55,9 @@ PV_ROOT="${PV_ROOT:-data/eval/PlantVillage}"
 PW_ROOT="${PW_ROOT:-data/eval/PlantWild}"
 PLANTDOC_ROOT="${PLANTDOC_ROOT:-data/eval/PlantDoc/test}"
 
-ENCODERS="${ENCODERS:-bioclip,clip_vitb16,siglip_vitb16}"
+ENCODERS="${ENCODERS:-bioclip,bioclip2,clip_vitb16,siglip_vitb16,fgclip,biotrove}"
 STRATEGIES="${STRATEGIES:-label_only,summary_only,canonical_full,canonical_deltas_1,canonical_deltas_3,canonical_deltas_5,canonical_deltas_7}"
+GRADCAM_PER_CLASS="${GRADCAM_PER_CLASS:-3}"
 
 echo "================================================================="
 echo " STEP 4 — TabPFN classification over PathomeOOD features"
@@ -127,35 +128,66 @@ else
   echo "  [skip] PATHOME_SKIP_FEATURES=1"
 fi
 
-# Step 4 — TabPFN matrix.
+# Step 4 — TabPFN matrix (14 variants + 6 zero-shot baselines + few-shot).
 if [ "${PATHOME_SKIP_TABPFN:-0}" != "1" ]; then
   echo
-  echo "[4/6] TabPFN classifier — variant matrix + 5 baselines"
+  echo "[4/7] TabPFN classifier — 14-variant matrix + zero-shot baselines + few-shot"
   python scripts/tabpfn_eval.py \
       --features-root data/bugwood_features \
       --eval-root     data/eval_features \
       --results-dir   "$RESULTS_DIR" \
-      --include-baselines
+      --include-baselines \
+      --include-fewshot
 else
   echo "  [skip] PATHOME_SKIP_TABPFN=1"
 fi
 
-# Step 5 — aggregate paper-style tables.
+# Step 5 — Grad-CAM (qualitative figures + quantitative energy-pointing
+# if bboxes are present).
+if [ "${PATHOME_SKIP_GRADCAM:-0}" != "1" ]; then
+  echo
+  echo "[5/7] Grad-CAM per encoder × eval set"
+  IFS=',' read -ra enc_arr <<<"$ENCODERS"
+  for enc in "${enc_arr[@]}"; do
+    for kind_root_pair in "plantvillage:$PV_ROOT" \
+                          "plantdoc:$PLANTDOC_ROOT" \
+                          "plantwild:$PW_ROOT"; do
+      IFS=':' read -r kind root <<<"$kind_root_pair"
+      if [ ! -d "$root" ]; then
+        echo "  [$enc/$kind] root $root not found; skipping"
+        continue
+      fi
+      echo "  [gradcam] $enc / $kind"
+      python scripts/gradcam_eval.py \
+          --encoder        "$enc" \
+          --eval-root      "$root" \
+          --eval-kind      "$kind" \
+          --max-per-class  "$GRADCAM_PER_CLASS" \
+          ${BBOX_CSV:+--bbox-csv "$BBOX_CSV"} \
+          || echo "    Grad-CAM failed for $enc/$kind; continuing"
+    done
+  done
+else
+  echo "  [skip] PATHOME_SKIP_GRADCAM=1"
+fi
+
+# Step 6 — aggregate paper-style tables.
 if [ "${PATHOME_SKIP_AGG:-0}" != "1" ]; then
   echo
-  echo "[5/6] Aggregate paper-style tables"
+  echo "[6/7] Aggregate paper-style tables"
   python scripts/aggregate_pathomeood_tables.py --results-dir "$RESULTS_DIR" \
       --out-dir results/tables --report results/pathomeood_report.md
 else
   echo "  [skip] PATHOME_SKIP_AGG=1"
 fi
 
-# Step 6 — push.
+# Step 7 — push.
 echo
-echo "[6/6] git push results"
+echo "[7/7] git push results"
 git add -f results/pathomeood_report.md \
            results/tables/*.md \
-           "$RESULTS_DIR"/*/*.json 2>/dev/null || true
+           "$RESULTS_DIR"/*/*.json \
+           results/figures/gradcam/*/*/*/*.png 2>/dev/null || true
 if git diff --cached --quiet; then
   echo "  no results changed; skipping commit"
 else

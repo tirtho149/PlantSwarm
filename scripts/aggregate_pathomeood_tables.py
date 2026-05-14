@@ -24,7 +24,8 @@ Skipped (and explained in the report):
     Tables 5, 11, 21  — human-eval, no annotators
     Table 7           — MLLM-captioner ablation, user chose KB-only path
     Table 12          — retrieval bench stats (covered by Table 2)
-    Table 14          — CUB localization, no bounding boxes
+    Table 14          — Grad-CAM localization (qualitative PNGs + optional
+                          energy-pointing-game when bboxes provided)
     Tables 15, 16     — format-example ablations, N/A for KB path
 
 Usage:
@@ -40,11 +41,11 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 
-# Variant tag → feature-ablation config (TabPFN matrix; mirrors
-# scripts/tabpfn_eval.py::VARIANTS). Axes are FEATURE-LEVEL ablations:
-# encoder choice + caption strategy + KB-covered/non-covered subset.
-# No training-loop variants anymore (the trained-CLIP path is
-# deprecated; everything goes through frozen-encoder + TabPFN now).
+# Variant tag → feature-ablation config. Mirrors tabpfn_eval.py::VARIANTS.
+# 14-variant matrix: 7 caption strategies + 5 encoder ablations + 2 KB-
+# coverage subsets. All variants use frozen encoders + TabPFN — there
+# is no training. The CAPTIONS and CROP/STATE features are EMBEDDED
+# via the paired text tower (semantic embeddings, not one-hot).
 VARIANTS: Dict[str, Dict[str, object]] = {
     "T01": dict(encoder="bioclip",       strategy="label_only",         subset="all"),
     "T02": dict(encoder="bioclip",       strategy="summary_only",       subset="all"),
@@ -53,15 +54,23 @@ VARIANTS: Dict[str, Dict[str, object]] = {
     "T05": dict(encoder="bioclip",       strategy="canonical_deltas_1", subset="all"),
     "T06": dict(encoder="bioclip",       strategy="canonical_deltas_5", subset="all"),
     "T07": dict(encoder="bioclip",       strategy="canonical_deltas_7", subset="all"),
-    "T08": dict(encoder="clip_vitb16",   strategy="canonical_deltas_3", subset="all"),   # encoder ablation
-    "T09": dict(encoder="siglip_vitb16", strategy="canonical_deltas_3", subset="all"),   # encoder ablation
-    "T10": dict(encoder="bioclip",       strategy="canonical_deltas_3", subset="covered"),
-    "T11": dict(encoder="bioclip",       strategy="canonical_deltas_3", subset="non_covered"),
+    "T08": dict(encoder="clip_vitb16",   strategy="canonical_deltas_3", subset="all"),
+    "T09": dict(encoder="siglip_vitb16", strategy="canonical_deltas_3", subset="all"),
+    "T10": dict(encoder="bioclip2",      strategy="canonical_deltas_3", subset="all"),
+    "T11": dict(encoder="fgclip",        strategy="canonical_deltas_3", subset="all"),
+    "T12": dict(encoder="biotrove",      strategy="canonical_deltas_3", subset="all"),
+    "T13": dict(encoder="bioclip",       strategy="canonical_deltas_3", subset="covered"),
+    "T14": dict(encoder="bioclip",       strategy="canonical_deltas_3", subset="non_covered"),
 }
 
 # Off-shelf zero-shot baselines (cosine-sim against class-name templates;
-# no TabPFN). Produced by scripts/tabpfn_eval.py --include-baselines.
-BASELINES = ["clip_vitb16_zs", "siglip_vitb16_zs", "bioclip_zs", "bioclip2_zs"]
+# no TabPFN). One per encoder. Produced by tabpfn_eval.py --include-baselines.
+BASELINES = ["clip_vitb16_zs", "siglip_vitb16_zs", "bioclip_zs",
+             "bioclip2_zs", "fgclip_zs", "biotrove_zs"]
+
+# Encoders used in Grad-CAM (Table 14 + qualitative figures).
+GRADCAM_ENCODERS = ["bioclip", "bioclip2", "clip_vitb16",
+                    "siglip_vitb16", "fgclip", "biotrove"]
 
 # Paper-canonical column order for zero-shot results
 EVAL_DATASETS_T1 = ["plantvillage", "plantwild"]
@@ -171,12 +180,14 @@ def build_table_03(results_dir: Path) -> str:
 
 
 def build_table_04(results_dir: Path) -> str:
-    rows = [["Variant", "Subset",       "PlantVillage", "PlantWild"]]
-    for v in ["T04", "T10", "T11"]:
+    rows = [["Variant", "Subset", "PlantVillage", "PlantDoc", "PlantWild"]]
+    for v in ["T04", "T13", "T14"]:
         info = VARIANTS[v]
         pv = _zero_shot_top1(results_dir, v, "plantvillage")
+        pd = _zero_shot_top1(results_dir, v, "plantdoc")
         pw = _zero_shot_top1(results_dir, v, "plantwild")
-        rows.append([v, str(info["subset"]), _fmt_pct(pv), _fmt_pct(pw)])
+        rows.append([v, str(info["subset"]),
+                     _fmt_pct(pv), _fmt_pct(pd), _fmt_pct(pw)])
     return _md_table("Table 4 — KB-covered vs non-covered subset (%)", rows)
 
 
@@ -226,24 +237,39 @@ def build_table_20(results_dir: Path) -> str:
 
 
 def build_figure_03(results_dir: Path) -> str:
-    """Encoder ablation: T04 (BioCLIP), T08 (CLIP-openai), T09 (SigLIP).
-
-    Replaces the original BioCAP "projector mode × epochs" ablation
-    (which is meaningless for the TabPFN pipeline since there's no
-    projector or training loop) with the more useful encoder-choice
-    ablation.
-    """
-    rows = [["Variant", "Encoder", "Strategy", "PlantVillage", "PlantDoc", "PlantWild"]]
-    for v in ["T04", "T08", "T09"]:
+    """Encoder importance: 6 frozen encoders on the canonical-deltas_3
+    caption strategy. Replaces the paper's "projector mode × epochs"
+    Figure 3 (which is meaningless for the TabPFN pipeline)."""
+    rows = [["Variant", "Encoder", "PlantVillage", "PlantDoc", "PlantWild", "Mean"]]
+    for v in ["T04", "T08", "T09", "T10", "T11", "T12"]:
         info = VARIANTS[v]
         pv = _zero_shot_top1(results_dir, v, "plantvillage")
         pd = _zero_shot_top1(results_dir, v, "plantdoc")
         pw = _zero_shot_top1(results_dir, v, "plantwild")
+        vals = [v_ for v_ in (pv, pd, pw) if v_ is not None]
+        mean = sum(vals) / len(vals) if vals else None
         rows.append([
-            v, str(info["encoder"]), str(info["strategy"]),
-            _fmt_pct(pv), _fmt_pct(pd), _fmt_pct(pw),
+            v, str(info["encoder"]),
+            _fmt_pct(pv), _fmt_pct(pd), _fmt_pct(pw), _fmt_pct(mean),
         ])
-    return _md_table("Figure 3 — Encoder ablation (frozen + TabPFN, %)", rows)
+    return _md_table("Figure 3 — Encoder importance (TabPFN, %)", rows)
+
+
+def build_table_14(results_dir: Path) -> str:
+    """Grad-CAM localization score (energy-based pointing game) per
+    encoder × eval set. Reads results/pathomeood_eval/<encoder>_gradcam/
+    <dataset>.json (produced by scripts/gradcam_eval.py). Empty cells
+    mean either no bboxes were available or gradcam wasn't run for that
+    pairing."""
+    rows = [["Encoder", "PlantVillage", "PlantDoc", "PlantWild"]]
+    for enc in GRADCAM_ENCODERS:
+        row = [enc]
+        for kind in ("plantvillage", "plantdoc", "plantwild"):
+            payload = _safe_load(results_dir / f"{enc}_gradcam" / f"{kind}.json")
+            score = (payload or {}).get("mean_pointing_score") if payload else None
+            row.append(_fmt_pct(score) if isinstance(score, (int, float)) else "—")
+        rows.append(row)
+    return _md_table("Table 14 — Grad-CAM localization (energy-pointing-game, %)", rows)
 
 
 def build_table_08() -> str:
@@ -325,6 +351,7 @@ def main() -> None:
         "table_06": lambda: build_table_06(results_dir),
         "table_08": build_table_08,
         "table_13": build_table_13,
+        "table_14": lambda: build_table_14(results_dir),
         "table_18": lambda: build_table_18(results_dir),
         "table_19": lambda: build_table_19(results_dir),
         "table_20": lambda: build_table_20(results_dir),
@@ -353,8 +380,12 @@ def main() -> None:
         "  - **Tables 5, 11, 21**: human-evaluation tables — need human raters\n"
         "  - **Table 7**: MLLM-captioner family/size ablation — user chose KB-only path\n"
         "  - **Table 12**: retrieval-bench stats — equivalent info in Table 2\n"
-        "  - **Table 14**: CUB localization — Bugwood has no bounding boxes\n"
         "  - **Tables 15, 16**: format-example ablations — N/A for KB path\n"
+        "\n"
+        "Table 14 (Grad-CAM localization) is reproduced *qualitatively* on\n"
+        "PV/PD/PW (heatmap PNGs under `results/figures/gradcam/<encoder>/`)\n"
+        "and *quantitatively* (energy-pointing-game) when bbox annotations\n"
+        "are supplied via `--bbox-csv`.\n"
         "\n"
         "## Reproduced tables\n"
         "\n"

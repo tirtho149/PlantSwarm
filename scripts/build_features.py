@@ -1,8 +1,7 @@
 """
 scripts/build_features.py
 =========================
-Extract fixed-dimension multimodal features for the TabPFN classifier
-step of the PathomeOOD pipeline.
+Extract multimodal features for the TabPFN classifier step.
 
 For each (encoder, caption_strategy) pair the script produces:
 
@@ -10,36 +9,51 @@ For each (encoder, caption_strategy) pair the script produces:
       X_train         (N_train, D_total)    feature matrix
       y_train         (N_train,)            integer class labels
       class_names     (C,)                  list of "Crop Disease" strings
-      meta            dict with feature-block widths
-
-And separately for the eval sets:
-
+      used_kb         (N_train,)            1 if row had a real KB profile
+                                            (vs fallback caption template);
+                                            drives T10/T11 covered/non-covered
+                                            subsets at TabPFN time
+      block_widths    JSON                  per-block widths so the
+                                            classifier can PCA the
+                                            embedding portion separately
+      crops_vocab     list                  ordered list of crop names
+                                            (preserved for compatibility)
   data/eval_features/<encoder>_<strategy>_<dataset>.npz
-      X_eval          (N_eval, D_total)
-      y_eval          (N_eval,)             integer class id (mapped onto
-                                            class_names from the matching
-                                            Bugwood file)
-      class_names     same as train file
-      eval_paths      list of file paths (for debugging / error analysis)
+      same shape; y_eval entries are -1 when the test class isn't in train
 
-Per-image feature vector (D_total ≈ 1100 for BioCLIP + KB caption + crop):
+Feature vector layout (D_total ≈ 1500–2500):
 
-    [ image_emb         | caption_emb       | crop_onehot ]
-    (D_image ~512-1024)   (D_text ~512)       (D_crop ~200)
+    [ image_emb        | caption_emb       | crop_emb         | state_emb       ]
+    (D_image ~512–1024)  (D_text ~512)       (D_text ~512)      (D_text ~512)
 
-State and geo (lat/lon) are intentionally OMITTED because PV / PD / PW
-don't carry per-image state — keeping the test-time feature pipeline
-parameter-free is more important than the small Bugwood-train signal
-loss. The training class signal comes through `crop_onehot` (which is
-always available since folder names give it on every eval set).
+  - image_emb        frozen visual encoder on the image
+  - caption_emb      paired text tower on the KB-derived caption
+  - crop_emb         paired text tower on "a photograph of <crop> plant"
+                     (EMBEDDING based, not one-hot — captures semantic
+                      similarity between e.g. Tomato and Potato)
+  - state_emb        paired text tower on "a photograph taken in <state>"
+                     (Bugwood-only; at test time we use "unknown
+                      location" which becomes a fixed sentinel embedding)
 
-Supported encoders (see ENCODERS below): bioclip, clip_vitb16,
-siglip_vitb16, biocliplab2 (BioCLIP-2). Add more by extending ENCODERS.
+Why text embeddings instead of one-hot
+--------------------------------------
+- One-hot makes "Tomato" and "Cucumber" maximally distant in feature
+  space (orthogonal), losing crop-family priors. Text embeddings put
+  semantically related crops close together.
+- One-hot can't generalize to test-set crops that weren't in training.
+  Text embeddings can (the encoder knows what "Apple" means even if
+  no Apple training images existed).
+- Dimensional consistency: image_emb, caption_emb, crop_emb, state_emb
+  all come from the same encoder family, so they live in compatible
+  spaces (image-text alignment matters for the joint geometry).
+
+Supported encoders (see ENCODERS below): bioclip, bioclip2, clip_vitb16,
+siglip_vitb16, fgclip, biotrove. Add more by extending ENCODERS.
 
 Usage
 -----
   python scripts/build_features.py \\
-      --captions data/bugwood_captions/Tomato_canonical_deltas_3.parquet \\
+      --captions data/bugwood_captions/all_canonical_deltas_3.parquet \\
       --encoder  bioclip \\
       --eval-pv  data/eval/PlantVillage \\
       --eval-pd  data/eval/PlantDoc/test \\
@@ -52,7 +66,6 @@ import argparse
 import csv
 import json
 import os
-import re
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -63,7 +76,7 @@ import numpy as np
 
 from plantswarm.captioning import (
     build_disease_caption, build_fallback_caption, build_healthy_caption,
-    load_kb_profiles, taxon_text,
+    load_kb_profiles,
 )
 from scripts.evaluate_pathomeood import (
     normalize_pv_folder, normalize_pw_folder, normalize_plantdoc_folder,
@@ -71,7 +84,7 @@ from scripts.evaluate_pathomeood import (
 
 
 # ---------------------------------------------------------------------------
-# Encoder registry — maps user-facing name to (open_clip_model, pretrained_tag)
+# Encoder registry (6 visual+text encoders for the importance ablation)
 # ---------------------------------------------------------------------------
 
 ENCODERS: Dict[str, Tuple[str, Optional[str]]] = {
@@ -79,7 +92,16 @@ ENCODERS: Dict[str, Tuple[str, Optional[str]]] = {
     "bioclip2":        ("hf-hub:imageomics/bioclip-2",      None),
     "clip_vitb16":     ("ViT-B-16",                         "openai"),
     "siglip_vitb16":   ("hf-hub:timm/ViT-B-16-SigLIP-256",  None),
+    "fgclip":          ("hf-hub:qihoo360/fg-clip-base",     None),
+    "biotrove":        ("hf-hub:BGLab/BioTrove-CLIP",       None),
 }
+
+
+# Sentinel value for missing state at test time. Plugged into the same
+# text-tower formatter so its embedding is dimensionally identical to
+# real state embeddings — TabPFN just sees "another point in state-
+# embedding space" instead of a special NaN.
+UNKNOWN_STATE_SENTINEL = "unknown"
 
 
 # ---------------------------------------------------------------------------
@@ -93,7 +115,7 @@ def parse_args() -> argparse.Namespace:
                         "build_pathomeood_captions.py)")
     p.add_argument("--encoder", required=True, choices=sorted(ENCODERS),
                    help="frozen visual+text encoder used to produce the "
-                        "image_emb and caption_emb columns")
+                        "image_emb, caption_emb, crop_emb and state_emb columns")
     p.add_argument("--kb-root", default="artifacts/pathome_kb")
     p.add_argument("--strategy", default=None,
                    help="caption strategy for eval-set text encoding "
@@ -118,13 +140,7 @@ def parse_args() -> argparse.Namespace:
 # ---------------------------------------------------------------------------
 
 def load_encoder(name: str, device: Optional[str] = None):
-    """Returns (visual_encoder, text_encoder, preprocess, tokenizer, device).
-
-    The same `open_clip` model object is used for both image and text
-    encoding so the embeddings live in a shared space — critical for
-    the caption_emb feature to be meaningful when concatenated with the
-    image_emb.
-    """
+    """Returns (model, preprocess, tokenizer, device)."""
     try:
         import torch
         import open_clip
@@ -155,8 +171,6 @@ def encode_images(
             imgs = [preprocess(Image.open(p).convert("RGB")) for p in batch_paths]
             x = torch.stack(imgs).to(device)
             f = model.encode_image(x)
-            # BioCAP-fork returns a tuple when --dual-projector is active;
-            # off-shelf encoders return a single tensor. Handle both.
             if isinstance(f, tuple):
                 f = f[0]
             f = f / f.norm(dim=-1, keepdim=True)
@@ -181,12 +195,38 @@ def encode_texts(
     return np.concatenate(feats, axis=0) if feats else np.zeros((0, 512), dtype=np.float32)
 
 
+def encode_texts_cached(
+    model, tokenizer, device, texts: Sequence[str], batch_size: int,
+) -> "np.ndarray":
+    """Encode each UNIQUE text once and broadcast back. Crops and states
+    have very few unique values; caching avoids re-tokenizing them."""
+    uniq = list(dict.fromkeys(texts))
+    if not uniq:
+        return np.zeros((0, 512), dtype=np.float32)
+    enc = encode_texts(model, tokenizer, device, uniq, batch_size)
+    idx = {t: i for i, t in enumerate(uniq)}
+    return np.stack([enc[idx[t]] for t in texts], axis=0)
+
+
 # ---------------------------------------------------------------------------
-# Captions / KB
+# Text formatters for metadata embeddings
+# ---------------------------------------------------------------------------
+
+def crop_prompt(crop: str) -> str:
+    return f"a photograph of a {crop} plant."
+
+
+def state_prompt(state: Optional[str]) -> str:
+    if not state or state.lower() in ("", "unknown", "n/a", "na"):
+        return "a photograph taken at an unknown location."
+    return f"a photograph taken in {state}."
+
+
+# ---------------------------------------------------------------------------
+# Captions I/O
 # ---------------------------------------------------------------------------
 
 def _read_caption_rows(path: Path) -> List[Dict[str, str]]:
-    """Load the captions parquet/TSV produced by build_pathomeood_captions.py."""
     suf = path.suffix.lower()
     if suf == ".parquet":
         import pyarrow.parquet as pq  # type: ignore
@@ -199,37 +239,27 @@ def _read_caption_rows(path: Path) -> List[Dict[str, str]]:
 def _resolve_strategy(captions_path: Path, override: Optional[str]) -> str:
     if override:
         return override
-    # Filename pattern: <crop>_<strategy>.{parquet,tsv}
     name = captions_path.stem
     if "_" in name:
-        # everything after the first underscore is the strategy
         return name.split("_", 1)[1]
     return "canonical_full"
 
 
-def _build_class_universe(captions_rows: List[Dict[str, str]]) -> List[str]:
-    """Class universe = unique 'Crop Disease' strings from training rows."""
+def _build_class_universe(rows: List[Dict[str, str]]) -> List[str]:
     seen = []
-    for r in captions_rows:
+    for r in rows:
         label = f"{r['crop']} {r['disease']}"
         if label not in seen:
             seen.append(label)
     return seen
 
 
-def _build_crop_vocabulary(captions_rows: List[Dict[str, str]]) -> List[str]:
+def _build_crop_vocab(rows: List[Dict[str, str]]) -> List[str]:
     seen = []
-    for r in captions_rows:
+    for r in rows:
         if r["crop"] not in seen:
             seen.append(r["crop"])
     return seen
-
-
-def _onehot(value: str, vocab: List[str]) -> "np.ndarray":
-    out = np.zeros((len(vocab),), dtype=np.float32)
-    if value in vocab:
-        out[vocab.index(value)] = 1.0
-    return out
 
 
 # ---------------------------------------------------------------------------
@@ -249,21 +279,20 @@ def build_train_features(
         raise SystemExit(f"no non-holdout rows in {captions_path}")
 
     classes = _build_class_universe(rows)
-    crops = _build_crop_vocabulary(rows)
+    crops_vocab = _build_crop_vocab(rows)
     class_id = {c: i for i, c in enumerate(classes)}
 
-    # Load encoder + run forward passes on images + captions.
     print(f"  loading encoder: {encoder_name}")
     model, preprocess, tokenizer, dev = load_encoder(encoder_name, device)
 
-    img_paths = [Path(r["image_path"]) for r in rows]
-    keep_mask = np.array([p.is_file() for p in img_paths])
-    if not keep_mask.all():
-        print(f"  WARNING: {(~keep_mask).sum()}/{len(rows)} image paths "
-              f"missing on disk; dropping those rows")
-    rows = [r for r, k in zip(rows, keep_mask) if k]
-    img_paths = [Path(r["image_path"]) for r in rows]
+    # Filter rows with missing image files.
+    keep = [Path(r["image_path"]).is_file() for r in rows]
+    if not all(keep):
+        n_drop = sum(1 for k in keep if not k)
+        print(f"  WARNING: dropping {n_drop} rows with missing image files")
+    rows = [r for r, k in zip(rows, keep) if k]
 
+    img_paths = [Path(r["image_path"]) for r in rows]
     print(f"  encoding {len(img_paths)} images")
     image_emb = encode_images(model, preprocess, dev, img_paths, batch_size)
 
@@ -271,28 +300,53 @@ def build_train_features(
     captions = [r["caption_text"] for r in rows]
     caption_emb = encode_texts(model, tokenizer, dev, captions, batch_size)
 
-    # Metadata: crop one-hot only (state isn't reliably available on eval).
-    crop_oh = np.stack([_onehot(r["crop"], crops) for r in rows], axis=0)
+    print(f"  encoding crop names (text-embedded, not one-hot)")
+    crop_emb = encode_texts_cached(
+        model, tokenizer, dev,
+        [crop_prompt(r["crop"]) for r in rows],
+        batch_size,
+    )
 
-    X = np.concatenate([image_emb, caption_emb, crop_oh], axis=1).astype(np.float32)
-    y = np.array([class_id[f"{r['crop']} {r['disease']}"] for r in rows], dtype=np.int64)
+    print(f"  encoding state metadata")
+    state_emb = encode_texts_cached(
+        model, tokenizer, dev,
+        [state_prompt(r.get("state")) for r in rows],
+        batch_size,
+    )
+
+    X = np.concatenate([image_emb, caption_emb, crop_emb, state_emb],
+                       axis=1).astype(np.float32)
+    y = np.array(
+        [class_id[f"{r['crop']} {r['disease']}"] for r in rows],
+        dtype=np.int64,
+    )
+    used_kb = np.array(
+        [int(str(r.get("used_kb", "0")) == "1") for r in rows],
+        dtype=np.int8,
+    )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    block_widths = dict(
+        image=int(image_emb.shape[1]),
+        caption=int(caption_emb.shape[1]),
+        crop=int(crop_emb.shape[1]),
+        state=int(state_emb.shape[1]),
+    )
     meta = dict(
         encoder=encoder_name,
-        d_image=int(image_emb.shape[1]),
-        d_caption=int(caption_emb.shape[1]),
-        d_crop=int(crop_oh.shape[1]),
+        block_widths=block_widths,
         n_classes=len(classes),
-        crops=crops,
+        crops=crops_vocab,
     )
     np.savez_compressed(
         out_path,
-        X=X, y=y,
+        X=X, y=y, used_kb=used_kb,
         class_names=np.array(classes, dtype=object),
         meta=json.dumps(meta),
     )
-    print(f"  wrote {out_path}  X={X.shape}  y={y.shape}  C={len(classes)}")
+    n_kb = int((used_kb == 1).sum())
+    print(f"  wrote {out_path}  X={X.shape}  y={y.shape}  C={len(classes)}  "
+          f"used_kb={n_kb} ({100 * n_kb / max(1, len(y)):.1f}%)")
     return meta
 
 
@@ -308,7 +362,6 @@ _NORMALIZERS = {
 
 
 def _collect_eval_paths(root: Path, kind: str, crop_filter: Optional[str]):
-    """Walk folder-per-class root → (paths, crop_disease_pairs)."""
     norm = _NORMALIZERS[kind]
     paths: List[Path] = []
     labels: List[Tuple[str, str]] = []
@@ -346,47 +399,56 @@ def build_eval_features(
 ) -> None:
     paths, labels = _collect_eval_paths(eval_root, eval_kind, crop_filter)
     if not paths:
-        print(f"  [{eval_kind}] no images in {eval_root} for crop={crop_filter}")
+        print(f"  [{eval_kind}] no images for crop={crop_filter}")
         return
-    print(f"  [{eval_kind}] {len(paths)} images across "
-          f"{len(set(labels))} (crop, disease) pairs")
+    print(f"  [{eval_kind}] {len(paths)} images")
 
-    # Load encoder again for eval-set encoding.
     model, preprocess, tokenizer, dev = load_encoder(encoder_name, device)
 
-    # Image embeddings.
     image_emb = encode_images(model, preprocess, dev, paths, batch_size)
 
-    # Caption embeddings: look up KB for each (crop, disease); use fallback
-    # template when missing. SAME strategy as the train captions.
+    # Caption embedding via KB lookup per (crop, disease).
     profiles = load_kb_profiles(str(kb_root))
     captions: List[str] = []
+    used_kb_eval: List[int] = []
     for crop, disease in labels:
         if disease.lower() == "healthy":
-            cap = build_healthy_caption(crop)
+            captions.append(build_healthy_caption(crop))
+            used_kb_eval.append(0)
+            continue
+        rec = profiles.get((crop, disease))
+        if rec is None:
+            captions.append(build_fallback_caption(crop, disease, strategy))
+            used_kb_eval.append(0)
         else:
-            rec = profiles.get((crop, disease))
-            if rec is None:
-                cap = build_fallback_caption(crop, disease, strategy)
-            else:
-                try:
-                    cap = build_disease_caption(
-                        crop=crop, disease=disease,
-                        disease_record=rec, strategy=strategy, state=None,
-                    )
-                except ValueError:
-                    # missing deltas for a delta strategy → fall back
-                    cap = build_fallback_caption(crop, disease, strategy)
-        captions.append(cap)
+            try:
+                captions.append(build_disease_caption(
+                    crop=crop, disease=disease,
+                    disease_record=rec, strategy=strategy, state=None,
+                ))
+                used_kb_eval.append(1)
+            except ValueError:
+                captions.append(build_fallback_caption(crop, disease, strategy))
+                used_kb_eval.append(0)
     caption_emb = encode_texts(model, tokenizer, dev, captions, batch_size)
 
-    # crop one-hot in the same vocabulary as train.
-    crops_vocab = train_meta["crops"]
-    crop_oh = np.stack([_onehot(crop, crops_vocab) for crop, _ in labels], axis=0)
+    crop_emb = encode_texts_cached(
+        model, tokenizer, dev,
+        [crop_prompt(c) for c, _ in labels],
+        batch_size,
+    )
 
-    X = np.concatenate([image_emb, caption_emb, crop_oh], axis=1).astype(np.float32)
+    # At test time we don't know the state. Use the sentinel embedding;
+    # TabPFN will treat it as a fixed point in state-space.
+    state_emb = encode_texts_cached(
+        model, tokenizer, dev,
+        [state_prompt(UNKNOWN_STATE_SENTINEL)] * len(labels),
+        batch_size,
+    )
 
-    # Map test labels to train-class ids; -1 means class not seen in training.
+    X = np.concatenate([image_emb, caption_emb, crop_emb, state_emb],
+                       axis=1).astype(np.float32)
+
     class_to_id = {c: i for i, c in enumerate(train_classes)}
     y = np.array([
         class_to_id.get(f"{crop} {disease}", -1)
@@ -397,12 +459,14 @@ def build_eval_features(
     np.savez_compressed(
         out_path,
         X=X, y=y,
+        used_kb=np.array(used_kb_eval, dtype=np.int8),
         class_names=np.array(train_classes, dtype=object),
         eval_paths=np.array([str(p) for p in paths], dtype=object),
         eval_labels=np.array(labels, dtype=object),
     )
+    n_in_train = (y >= 0).sum()
     print(f"  wrote {out_path}  X={X.shape}  y={y.shape}  "
-          f"in-train={(y >= 0).sum()} OOC-classes={(y < 0).sum()}")
+          f"in-train-class={int(n_in_train)} oof={int(len(y) - n_in_train)}")
 
 
 # ---------------------------------------------------------------------------
@@ -411,29 +475,25 @@ def build_eval_features(
 
 def main() -> None:
     args = parse_args()
-
     captions_path = Path(args.captions)
     strategy = _resolve_strategy(captions_path, args.strategy)
     encoder_tag = args.encoder
 
-    # Train features.
     out_train = Path(args.out_train) if args.out_train else (
         Path("data/bugwood_features") / f"{encoder_tag}_{strategy}.npz"
     )
     print(f"=== build_features (train) ===")
-    print(f"  captions  : {captions_path}")
-    print(f"  encoder   : {encoder_tag}")
-    print(f"  strategy  : {strategy}")
-    print(f"  out_train : {out_train}")
+    print(f"  captions     : {captions_path}")
+    print(f"  encoder      : {encoder_tag}")
+    print(f"  strategy     : {strategy}")
+    print(f"  out_train    : {out_train}")
     meta = build_train_features(
         captions_path, encoder_tag, out_train, args.batch_size, args.device,
     )
 
-    # Load train classes for ID mapping in eval files.
     npz = np.load(out_train, allow_pickle=True)
     train_classes = npz["class_names"].tolist()
 
-    # Eval features (each test set).
     eval_root = Path(args.out_eval_root)
     for kind, src in (
         ("plantvillage", args.eval_pv),
@@ -448,8 +508,8 @@ def main() -> None:
             continue
         out_eval = eval_root / f"{encoder_tag}_{strategy}_{kind}.npz"
         print(f"\n=== build_features (eval: {kind}) ===")
-        print(f"  root      : {root}")
-        print(f"  out       : {out_eval}")
+        print(f"  root         : {root}")
+        print(f"  out          : {out_eval}")
         build_eval_features(
             root, kind, encoder_tag, strategy, meta, train_classes,
             Path(args.kb_root), out_eval, args.batch_size, args.device,
