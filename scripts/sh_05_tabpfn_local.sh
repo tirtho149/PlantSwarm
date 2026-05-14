@@ -44,6 +44,12 @@ CROPS="${CROPS:-smoke}"
 GIT_REMOTE="${GIT_REMOTE:-origin}"
 GIT_BRANCH="${GIT_BRANCH:-main}"
 
+PY="${PYTHON_BIN:-$(command -v python || command -v python3 || true)}"
+if [ -z "$PY" ]; then
+  echo "ERROR: no python / python3 on PATH. Install Python 3 or set PYTHON_BIN."
+  exit 2
+fi
+
 case "$CROPS" in
   smoke) CROP_TAG="Tomato";;
   all)   CROP_TAG="all";;
@@ -84,9 +90,9 @@ if [ "${PATHOME_SKIP_CAPTIONS:-0}" != "1" ]; then
     if [ ! -f "$capt" ] && [ ! -f "${capt%.parquet}.tsv" ]; then
       echo "  [captions] strategy=$s"
       if [ "$CROP_TAG" = "all" ]; then
-        python scripts/build_pathomeood_captions.py --strategy "$s" --out "$capt"
+        "$PY" scripts/build_pathomeood_captions.py --strategy "$s" --out "$capt"
       else
-        python scripts/build_pathomeood_captions.py --strategy "$s" --crop "$CROP_TAG" --out "$capt"
+        "$PY" scripts/build_pathomeood_captions.py --strategy "$s" --crop "$CROP_TAG" --out "$capt"
       fi
     else
       echo "  [captions] strategy=$s already built"
@@ -116,7 +122,7 @@ if [ "${PATHOME_SKIP_FEATURES:-0}" != "1" ]; then
         continue
       fi
       echo "  [features] encoder=$enc strategy=$s"
-      python scripts/build_features.py \
+      "$PY" scripts/build_features.py \
           --captions "$capt" \
           --encoder  "$enc" \
           --eval-pv  "$PV_ROOT" \
@@ -132,7 +138,7 @@ fi
 if [ "${PATHOME_SKIP_TABPFN:-0}" != "1" ]; then
   echo
   echo "[4/7] TabPFN classifier — 14-variant matrix + zero-shot baselines + few-shot"
-  python scripts/tabpfn_eval.py \
+  "$PY" scripts/tabpfn_eval.py \
       --features-root data/bugwood_features \
       --eval-root     data/eval_features \
       --results-dir   "$RESULTS_DIR" \
@@ -158,7 +164,7 @@ if [ "${PATHOME_SKIP_GRADCAM:-0}" != "1" ]; then
         continue
       fi
       echo "  [gradcam] $enc / $kind"
-      python scripts/gradcam_eval.py \
+      "$PY" scripts/gradcam_eval.py \
           --encoder        "$enc" \
           --eval-root      "$root" \
           --eval-kind      "$kind" \
@@ -175,7 +181,7 @@ fi
 if [ "${PATHOME_SKIP_AGG:-0}" != "1" ]; then
   echo
   echo "[6/7] Aggregate paper-style tables"
-  python scripts/aggregate_pathomeood_tables.py --results-dir "$RESULTS_DIR" \
+  "$PY" scripts/aggregate_pathomeood_tables.py --results-dir "$RESULTS_DIR" \
       --out-dir results/tables --report results/pathomeood_report.md
 else
   echo "  [skip] PATHOME_SKIP_AGG=1"

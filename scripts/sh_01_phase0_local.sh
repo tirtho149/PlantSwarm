@@ -41,6 +41,13 @@ PATHOME_USABLE_CSV="${PATHOME_USABLE_CSV:-BugWood_Diseases_usable.csv}"
 GIT_REMOTE="${GIT_REMOTE:-origin}"
 GIT_BRANCH="${GIT_BRANCH:-main}"
 
+# Resolve Python interpreter (macOS: usually only python3 on PATH).
+PY="${PYTHON_BIN:-$(command -v python || command -v python3 || true)}"
+if [ -z "$PY" ]; then
+  echo "ERROR: no python / python3 on PATH. Install Python 3 or set PYTHON_BIN."
+  exit 2
+fi
+
 # Resolve crop allowlist.
 case "$CROPS" in
   smoke) PATHOME_ONLY_CROPS="Soybean,Tomato";;
@@ -68,9 +75,9 @@ fi
 echo "[1/3] Running Phase 0 (Claude discovery -> extraction -> reconciliation)"
 if [ -n "$PATHOME_ONLY_CROPS" ]; then
   PATHOME_ONLY_CROPS="$PATHOME_ONLY_CROPS" \
-    python -m pathome_kb --csv "$PATHOME_USABLE_CSV"
+    "$PY" -m pathome_kb --csv "$PATHOME_USABLE_CSV"
 else
-  python -m pathome_kb --csv "$PATHOME_USABLE_CSV"
+  "$PY" -m pathome_kb --csv "$PATHOME_USABLE_CSV"
 fi
 
 # Stage + commit.

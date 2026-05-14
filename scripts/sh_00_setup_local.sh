@@ -48,6 +48,13 @@ PATHOME_USABLE_CSV="${PATHOME_USABLE_CSV:-BugWood_Diseases_usable.csv}"
 GIT_REMOTE="${GIT_REMOTE:-origin}"
 GIT_BRANCH="${GIT_BRANCH:-main}"
 
+# Resolve Python interpreter (macOS: usually only python3 on PATH).
+PY="${PYTHON_BIN:-$(command -v python || command -v python3 || true)}"
+if [ -z "$PY" ]; then
+  echo "ERROR: no python / python3 on PATH. Install Python 3 or set PYTHON_BIN."
+  exit 2
+fi
+
 echo "================================================================="
 echo " STEP 0 — Filter + (optional) Claude label judge (LOCAL)"
 echo "================================================================="
@@ -77,7 +84,7 @@ fi
 mkdir -p artifacts
 
 # Build the filter command.
-cmd=(python scripts/filter_bugwood_csv.py
+cmd=("$PY" scripts/filter_bugwood_csv.py
      --input  "$PATHOME_RAW_CSV"
      --output "$PATHOME_USABLE_CSV"
      --threshold "$THRESHOLD")

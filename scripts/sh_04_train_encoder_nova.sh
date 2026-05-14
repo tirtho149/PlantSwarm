@@ -41,6 +41,12 @@ GIT_REMOTE="${GIT_REMOTE:-origin}"
 GIT_BRANCH="${GIT_BRANCH:-main}"
 TRAIN_VARIANT="${TRAIN_VARIANT:-T04}"
 
+PY="${PYTHON_BIN:-$(command -v python || command -v python3 || true)}"
+if [ -z "$PY" ]; then
+  echo "ERROR: no python / python3 on PATH. Install Python 3 or set PYTHON_BIN."
+  exit 2
+fi
+
 case "$CROPS" in
   smoke) CROP_TAG="Tomato";;
   all)   CROP_TAG="all";;
@@ -83,9 +89,9 @@ if [ "${PATHOME_SKIP_CAPTIONS:-0}" != "1" ]; then
     echo
     echo "[2/4] Build captions for strategy=$strategy"
     if [ "$CROP_TAG" = "all" ]; then
-      python scripts/build_pathomeood_captions.py --strategy "$strategy" --out "$capt"
+      "$PY" scripts/build_pathomeood_captions.py --strategy "$strategy" --out "$capt"
     else
-      python scripts/build_pathomeood_captions.py --strategy "$strategy" --crop "$CROP_TAG" --out "$capt"
+      "$PY" scripts/build_pathomeood_captions.py --strategy "$strategy" --crop "$CROP_TAG" --out "$capt"
     fi
   else
     echo "[2/4] captions for $strategy already exist; skipping"
@@ -102,7 +108,7 @@ if [ "${PATHOME_SKIP_SHARDS:-0}" != "1" ]; then
   if [ ! -d "$shards_root/train" ]; then
     capt="data/bugwood_captions/${CROP_TAG}_${strategy}.parquet"
     [ -f "$capt" ] || capt="data/bugwood_captions/${CROP_TAG}_${strategy}.tsv"
-    python scripts/build_pathomeood_shards.py --captions "$capt" --out-dir "$shards_root"
+    "$PY" scripts/build_pathomeood_shards.py --captions "$capt" --out-dir "$shards_root"
   else
     echo "  shards already built at $shards_root; skipping"
   fi

@@ -30,6 +30,13 @@ CROPS="${CROPS:-smoke}"
 GIT_REMOTE="${GIT_REMOTE:-origin}"
 GIT_BRANCH="${GIT_BRANCH:-main}"
 
+# Resolve Python interpreter (macOS: usually only python3 on PATH).
+PY="${PYTHON_BIN:-$(command -v python || command -v python3 || true)}"
+if [ -z "$PY" ]; then
+  echo "ERROR: no python / python3 on PATH. Install Python 3 or set PYTHON_BIN."
+  exit 2
+fi
+
 echo "================================================================="
 echo " STEP 3 — Claude+WebSearch validation (LOCAL)"
 echo "================================================================="
@@ -50,10 +57,10 @@ git pull "$GIT_REMOTE" "$GIT_BRANCH" --ff-only
 
 # Validate.
 echo
-echo "[2/3] python scripts/validate_kb.py"
+echo "[2/3] $PY scripts/validate_kb.py"
 CROPS="$CROPS" MAX_TUPLES="${MAX_TUPLES:-0}" \
 ${DRY_RUN:+DRY_RUN=$DRY_RUN} \
-  python3 scripts/validate_kb.py --kb-root artifacts/pathome_kb
+  "$PY" scripts/validate_kb.py --kb-root artifacts/pathome_kb
 
 if [ "${DRY_RUN:-0}" = "1" ]; then
   echo
@@ -79,4 +86,4 @@ fi
 echo
 echo "STEP 3 done."
 echo "  Final KB: artifacts/pathome_kb/<Crop>/final_registry.json"
-echo "  Next: ssh back to Nova, then run scripts/sh_04_finetune_nova.sh"
+echo "  Next: ssh back to Nova, then run scripts/sh_04_train_encoder_nova.sh"
