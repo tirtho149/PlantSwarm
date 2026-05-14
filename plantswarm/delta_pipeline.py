@@ -67,18 +67,15 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Tuple
 
+from agents import SPECIALIST_AGENTS
 from agents.base_agent import AgentDeltaOutput, BaseAgent
 from agents.diagnosis_agent import DiagnosisAgent
-from agents.morphology_agent import MorphologyAgent
-from agents.pathogen_agent import PathogenAgent
-from agents.severity_agent import SeverityAgent
-from agents.symptom_agent import SymptomAgent
 from utils.vllm_client import VLLMClient
 
 
-SPECIALIST_CLASSES: Tuple[type, ...] = (
-    MorphologyAgent, SymptomAgent, PathogenAgent, SeverityAgent,
-)
+# 24 visual-symptom specialists, parallel-invoked per pass. See
+# agents/__init__.py for the breakdown by organ family.
+SPECIALIST_CLASSES: Tuple[type, ...] = SPECIALIST_AGENTS
 
 
 # ---------------------------------------------------------------------------
