@@ -10,12 +10,19 @@ captions** (canonical KB text + per-state regional deltas):
    extraction → reconciliation produces a text-grounded
    `CanonicalDisease` block per (crop, disease) with URL + verbatim
    quote per field. Identical to the previous SAGE-ported Phase 0.
-2. **Phase 0R — regional deltas** (Qwen swarm). For each (crop,
-   disease, state) tuple with a cached Bugwood photograph, a 5-agent
-   Qwen2.5-VL-7B swarm reads the canonical KB as context, inspects the
-   photograph, and emits state-specific deltas — additions or
-   contradictions backed by image evidence. Deltas never restate
-   canonical.
+2. **Phase 0R — regional deltas** (24-agent real swarm). For each
+   (crop, disease, state) tuple with a cached Bugwood photograph, a
+   **24-specialist Qwen2.5-VL-7B swarm** runs a **2-round protocol**
+   over the photograph and canonical KB. Round 1: each specialist
+   asks ONE focused visual question independently. Round 2: every
+   specialist reads a shared blackboard of round-1 outputs and may
+   `SUPPORT` / `CHALLENGE` / `WITHDRAW` against peers (the
+   stigmergy + cross-talk that makes it a real swarm). The
+   `VisualDiagnosisAgent` consolidator walks a 5-step CoT from
+   `DR.Arti.docx` over both rounds and emits state-specific deltas —
+   additions or contradictions backed by image evidence. Deltas never
+   restate canonical. Claude+WebSearch verifier validates each delta
+   against extension / APS / CABI before merge.
 3. **Phase PathomeOOD — KB-grounded CLIP training**
    ([BioCAP paper](https://arxiv.org/abs/2510.20095)). The KB seed +
    per-image state-specific deltas are rendered into captions by
@@ -36,12 +43,15 @@ and Figure 3 on Bugwood data.
 
 ```
   ┌─────────────────────┐       ┌─────────────────────┐       ┌─────────────────────┐
-  │ Phase 0  CANONICAL  │  →    │ Phase 0R REGIONAL   │  →    │   symptoms_seed.json│
-  │ pathome_kb          │       │ plantswarm/delta_   │       │ canonical +         │
-  │ claude -p:          │       │ pipeline.py         │       │ regional_observa-   │
-  │   discovery         │       │ qwen2.5-vl-7b:      │       │ tions[state]        │
-  │   extraction        │       │   4 specialists     │       │ .deltas[]           │
-  │   reconciliation    │       │   + consolidator    │       │                     │
+  │ Phase 0  CANONICAL  │  →    │ Phase 0R REGIONAL   │  →    │ artifacts/          │
+  │ pathome_kb          │       │ plantswarm/delta_   │       │   pathome_kb/Crop/  │
+  │ claude -p:          │       │ pipeline.py         │       │   final_registry    │
+  │   discovery         │       │ qwen2.5-vl-7b:      │       │   .json             │
+  │   extraction        │       │   24 specialists    │       │ canonical +         │
+  │   reconciliation    │       │   round 1 + round 2 │       │ regional_observa-   │
+  │ (NON-visual KB:     │       │   + blackboard      │       │ tions[state]        │
+  │  pathogen, parts,   │       │   + consolidator    │       │   .deltas[] with    │
+  │  treatments)        │       │ (visual-only)       │       │   support + status  │
   └─────────────────────┘       └─────────────────────┘       └─────────────────────┘
    text-grounded, URL +           image-grounded, one              { field,
    verbatim quote per field       delta per state-specific            canonical_says,
@@ -138,18 +148,33 @@ PlantSwarm/
 │   └── shared.py, utils.py, config.py
 │
 ├── plantswarm/                           Qwen-swarm regional delta extraction
-│   ├── delta_pipeline.py                 orchestrates 4 specialists + consolidator
+│   ├── delta_pipeline.py                 2-round real swarm: 24 specialists × 2 rounds + consolidator
 │   └── latex/                            EMNLP 2026 paper sources
 │
 ├── agents/                               5 delta-extraction agents
-│   ├── base_agent.py                     shared delta-prompt scaffolding
-│   ├── morphology_agent.py               lesion_morphology, affected_organs, diagnostic_features
-│   ├── symptom_agent.py                  spread_pattern, diagnostic_features
-│   ├── pathogen_agent.py                 look_alikes, type_of_disease
-│   ├── severity_agent.py                 severity, treatments
-│   └── diagnosis_agent.py                consolidator: dedupe + drop restatements
+│   ├── base_agent.py                     shared prompt scaffolding + Blackboard +
+│   │                                     CROSS_REF_ACTIONS + DELTA_USER_PROMPT_R2
+│   ├── leaf_agents.py                    8 leaf specialists (lesion shape/color/
+│   │                                     texture, chlorosis, necrosis, curl, vein, geometry)
+│   ├── stem_agents.py                    4 stem specialists (lesion, pith, surface,
+│   │                                     discoloration) — pith is the decisive SDS/BSR fork
+│   ├── root_agents.py                    Root + CrownCollar
+│   ├── reproductive_agents.py            Flower + Fruit
+│   ├── sign_agents.py                    Sporulation (mycelium / spores / ooze)
+│   ├── pattern_agents.py                 Wilting + Defoliation + SpatialPattern
+│   ├── diagnostic_agents.py              ConcentricPattern + ColorPalette (color
+│   │                                     encoder) + LookAlikeCoT (decision-graph)
+│   │                                     + SeverityVisual
+│   └── diagnosis_agent.py                VisualDiagnosisAgent — 5-step CoT consolidator
 │
-├── pathome/                              schema definitions for symptoms_seed.json
+├── train_and_eval/                       PathomeOOD CLIP training + eval
+│   ├── open_clip/                        forked openclip with TWO visual projectors
+│   ├── open_clip_train/                  torchrun entry (data.py + train.py adapted
+│   │                                     to 2-field shards: taxon + caption)
+│   ├── evaluation/                       zero_shot_iid + retrieval_openclip + metrics
+│   └── imageomics/                       naming_eval + disk + helpers (minimum subset)
+│
+├── pathome/                              schema for the KB
 │   └── symptoms.py                       SymptomLibrary / SymptomProfile /
 │                                         CanonicalDisease / RegionalObservation /
 │                                         RegionalDelta / Citation
@@ -163,11 +188,27 @@ PlantSwarm/
 │
 ├── scripts/
 │   ├── filter_bugwood_csv.py             Setup: CSV → filtered usable CSV
-│   ├── ensure_state_image_cache.py       Phase 0R input: per-(crop, disease, state) image cache
-│   ├── registry_to_excel.py              final_registry.json → 1-sheet decision-tree xlsx
-│   ├── run_phase0_local.sh               LOCAL: canonical-only Phase 0
+│   ├── ensure_state_image_cache.py       per-(crop, disease, state) image cache
+│   ├── registry_to_excel.py              final_registry.json → 1-sheet xlsx
+│   ├── run_phase0_local.sh               LOCAL: canonical-only Phase 0 (Claude)
 │   ├── submit_pathome_setup_filter.sh    Nova: filter CSV (~30 s, CPU)
-│   ├── submit_phase0r_regional.sh        Nova: boot vLLM + run Phase 0R (~6–10 h, A100)
+│   ├── submit_phase0r_regional.sh        Nova: vLLM + 24-agent real swarm + verifier
+│   │                                     (~10–24 h prod, A100)
+│   │   ----- PathomeOOD pipeline ----------------------------------------------
+│   ├── build_pathomeood_captions.py      KB → per-image (taxon, caption) parquet
+│   ├── build_pathomeood_shards.py        parquet → WebDataset tar shards
+│   ├── pathomeood_variants.sh            T01..T11 variant matrix (canonical source)
+│   ├── train_pathomeood.py               wrapper around open_clip_train.main
+│   ├── submit_pathomeood_train.sh        SLURM: one variant
+│   ├── submit_pathomeood_matrix.sh       SLURM: sbatch all 11 variants
+│   ├── fetch_baselines.py                cache 5 off-shelf CLIP baselines
+│   ├── setup_plantdoc.py                 clone PlantDoc to data/eval/PlantDoc/
+│   ├── evaluate_pathomeood.py            zero-shot eval on PV/PD/PW
+│   ├── evaluate_pathomeood_retrieval.py  Bugwood held-out R@k
+│   ├── evaluate_pathomeood_fewshot.py    prototype-mean K-shot
+│   ├── aggregate_pathomeood_tables.py    results JSONs → paper-style table .md
+│   ├── e2e_local.sh / e2e_nova.sh /      umbrellas — see "End-to-end pipeline" §
+│   │   e2e_visualize.sh / e2e_full.sh
 │   └── build_latex_pdf.sh                paper compile helper
 │
 ├── smoke/                                two-crop happy path (Soybean + Tomato)
@@ -177,7 +218,8 @@ PlantSwarm/
 │   ├── BugWood_Diseases_smoke.csv        2-crop subset
 │   └── README.md                         smoke specifics
 │
-└── artifacts/                            outputs (gitignored except symptoms_seed.json)
+└── artifacts/                            outputs (gitignored)
+    └── pathome_kb/<Crop>/                Phase 0 + 0R KB per crop
 ```
 
 ---
@@ -239,8 +281,7 @@ What this does:
 **Smoke variant** (2 crops, ~30 min, ~$2–5 in API quota):
 ```bash
 SMOKE_CROPS="Soybean,Tomato" bash smoke/run_phase0_local.sh
-git add -f smoke/artifacts/pathome_seed/symptoms_seed.json \
-           artifacts/pathome_kb/{Soybean,Tomato}/*.json
+git add -f artifacts/pathome_kb/{Soybean,Tomato}/final_registry.json
 git commit -m "smoke: phase 0 canonical" && git push
 ```
 
@@ -276,7 +317,7 @@ bash scripts/e2e_nova.sh
 What this does (see `scripts/e2e_nova.sh` for full source):
 1. `git pull` — fetches canonical artefacts you pushed in step 2.
 2. `sbatch --wait scripts/submit_phase0r_regional.sh` — Phase 0R: vLLM
-   boot, Qwen swarm (4 specialists + consolidator), K-of-N agreement
+   boot, 24-agent Qwen swarm (2 rounds + blackboard + consolidator), K-of-N agreement
    filter, Claude+WebSearch verifier, conservative merge. Updates
    `final_registry.json` with `regional_observations.<state>.deltas[]`.
 3. **BioCAP captions + shards** — for each unique strategy in the
@@ -301,7 +342,6 @@ What this does (see `scripts/e2e_nova.sh` for full source):
 PATHOME_ONLY_CROPS="Soybean,Tomato" \
   PATHOME_SEED_QUICK=1 \
   PATHOME_USABLE_CSV=smoke/BugWood_Diseases_smoke_usable.csv \
-  PATHOME_SEED_FILE=smoke/artifacts/pathome_seed/symptoms_seed.json \
   bash scripts/e2e_nova.sh
 ```
 
@@ -443,16 +483,13 @@ artifacts/pathome_kb/<Crop>/
   ├── final_registry.json               canonical + (after Phase 0R) regional deltas
   ├── final_registry.xlsx               1-sheet decision-tree view
   └── registry.md                       human-readable canonical summary
-
-smoke/artifacts/pathome_seed/symptoms_seed.json    merged seed
 ```
 
 For canonical-only smoke (no GPU needed), push the canonical artefacts and
 run Phase 0R on Nova:
 
 ```bash
-git add -f smoke/artifacts/pathome_seed/symptoms_seed.json \
-           smoke/BugWood_Diseases_smoke_usable.csv \
+git add -f smoke/BugWood_Diseases_smoke_usable.csv \
            artifacts/pathome_kb/{Soybean,Tomato}/{discovery_results,final_registry}.json
 git commit -m "Phase 0: canonical KB (smoke)"
 git push origin main
@@ -467,36 +504,42 @@ tail -f logs/pathome_phase0r-*.out
 ```
 
 The submitter boots vLLM in the same job, waits for `/v1/models` to
-respond, then runs `python -m pathome_kb --regional-only`. Final
-`symptoms_seed.json` lands at `smoke/artifacts/pathome_seed/`.
+respond, then runs `python -m pathome_kb --regional-only` against the
+cached canonical registries. The 24-agent 2-round swarm writes the
+regional deltas back into `artifacts/pathome_kb/<Crop>/final_registry.json`
+under each disease's `regional_observations[<state>]` field.
 
 ---
 
-## Production run (484 classes)
+## Production run (484 classes, ~10K Bugwood images)
 
 ```bash
 # === LOCAL (Phase 0 only, ~16–24 h, ~$60–180 in Anthropic API spend) ===
 python -m pathome_kb \
-  --csv BugWood_Diseases_usable.csv \
-  --out artifacts/pathome_seed/symptoms_seed.json
+  --csv BugWood_Diseases_usable.csv
+# Writes canonical-only artifacts/pathome_kb/<Crop>/final_registry.json
+# files. The KB is per-crop, no merged seed file needed.
 
-git add -f artifacts/pathome_seed/symptoms_seed.json
-git add -f artifacts/pathome_kb/                    # optional audit trail
+git add -f artifacts/pathome_kb/*/final_registry.json
 git commit -m "Phase 0 canonical (484 classes)"
 git push origin main
 
-# === Nova (Phase 0R, ~6–10 h on a single A100) ===
+# === Nova (Phase 0R + PathomeOOD, ~10–24 h on a single A100) ===
 ssh tirtho@hpc-login.iastate.edu
 cd /work/mech-ai-scratch/tirtho/PlantSwarm && git pull origin main
-sbatch scripts/submit_phase0r_regional.sh
+
+# Full e2e: Phase 0R -> captions -> shards -> 11-variant matrix ->
+#           baselines -> eval -> paper-table aggregation -> push
+bash scripts/e2e_nova.sh
 ```
 
-`submit_phase0r_regional.sh`:
+`submit_phase0r_regional.sh` (part of e2e_nova.sh):
 - boots `vllm.entrypoints.openai.api_server` serving
   `Qwen/Qwen2.5-VL-7B-Instruct` on `:8000`
 - waits up to 10 min for `/v1/models` to respond
 - runs `python -m pathome_kb --regional-only` against the cached
-  canonical registries
+  canonical registries (this drives the 24-agent 2-round swarm
+  through `plantswarm/delta_pipeline.run_for_state`)
 - tears down vLLM on exit
 
 Override knobs at submit time:
@@ -505,9 +548,18 @@ PATHOME_ONLY_CROPS="Soybean,Tomato,Corn"   # crop allowlist
 PATHOME_SEED_QUICK=1                       # cap states per disease
 PATHOME_USABLE_CSV=other.csv               # override input CSV
 VLLM_MODEL=Qwen/Qwen2.5-VL-7B-Instruct     # override served model
+VLLM_SWARM_ROUNDS=2                        # real-swarm rounds (set 1 to disable)
+VLLM_N_RUNS=10                             # stochastic passes per tuple
+VLLM_AGREEMENT_MIN=3                       # K-of-N agreement floor
+CROP=all                                   # crop tag for PathomeOOD captions/shards
+PATHOME_TRACE_DIR=artifacts/swarm_traces   # set to capture per-pass traces
 ```
 
-Final output: `artifacts/pathome_seed/symptoms_seed.json`.
+Final outputs:
+- `artifacts/pathome_kb/<Crop>/final_registry.json` — KB (canonical + per-state deltas)
+- `train_and_eval/checkpoints/<VARIANT>/` — one trained ViT-B/16 per variant
+- `results/pathomeood_eval/<run_id>/*.json` — per-eval-cell raw JSON
+- `results/tables/*.md` + `results/pathomeood_report.md` — paper-style table reproduction
 
 ---
 
@@ -540,10 +592,10 @@ schema, the SAGE prompts, and a worked example.
 | Compute          | 1× A100-80GB, 8 CPUs, 64 GB RAM, vLLM booted in-job                                              |
 | Walltime         | Smoke (~50 tuples): ~20 min. Production (~3,000+ tuples): 6–10 h.                                |
 | Inputs           | `artifacts/pathome_kb/<Crop>/final_registry.json` (canonical, from Phase 0), `BugWood_..._usable.csv`, `.bugwood_cache/` |
-| Outputs          | regional deltas embedded into `final_registry.json[*].regional_observations[state]`; merged `symptoms_seed.json`  |
+| Outputs          | regional deltas embedded into `final_registry.json[*].regional_observations[state]`; per-pass trace JSONL if `PATHOME_TRACE_DIR` is set  |
 
-Inside one (crop, disease, state) call (parallel-swarm + verifier; no
-routing):
+Inside one (crop, disease, state) call (24-agent real swarm,
+2-round protocol, then K-of-N + verifier + merge):
 
 1. **Load existing regional deltas** for THIS state from
    `final_registry.json` (`existing_deltas_for_state()`). On cold start
@@ -551,16 +603,44 @@ routing):
    committed. The agents see these in their context.
 2. `flatten_canonical()` reduces the SAGE-shaped record to plain values.
 3. **N stochastic passes** run independently (default N=10, T=0.8;
-   smoke uses N=5). Each pass is:
-   - The 4 specialists (Morphology, Symptom, Pathogen, Severity) run
-     in **parallel** on `(image, canonical, existing KB)`. Each emits
-     `{deltas, confidence (κ), reasoning}` for the fields it owns.
-   - `DiagnosisAgent` consolidates the union of the 4 specialists'
-     deltas, dropping restatements of canonical / existing KB and
-     deduping overlapping fields.
-   - The consolidator's output is the pass's final delta list.
-   There is no routing, no κ-gated handoff, and no backtrack — passes
-   are stochastic but the agent graph is fixed (parallel + consolidator).
+   smoke uses N=5). Each pass runs the **2-round real swarm**:
+
+   **Round 1 — independent observation.** All 24 single-feature
+   visual specialists (grouped into 7 organ families: 8 LEAF, 4 STEM,
+   2 BELOW-GROUND, 2 REPRODUCTIVE, 1 PATHOGEN SIGNS, 3 WHOLE-PLANT
+   PATTERNS, 4 DIAGNOSTIC CROSS-CUTTERS) run in **parallel** on
+   `(image, canonical, existing KB)`. Each asks ONE laser-focused
+   question (e.g. "is the lower stem pith white or brown?") and emits
+   `{deltas, confidence (κ), reasoning}` for the single field it owns.
+   No peer visibility yet.
+
+   **Blackboard.** All round-1 outputs are collected into a shared
+   dict keyed by `AGENT_NAME`. This is the stigmergy substrate that
+   makes the swarm a real swarm (not just a parallel ensemble).
+
+   **Round 2 — cross-talk refinement (the "real swarm" round).**
+   The same 24 specialists run AGAIN in parallel, but each now sees
+   the full blackboard rendered into its prompt. Each may:
+     - `REFINE` its own round-1 delta given peer evidence
+     - emit a `NEW` delta prompted by a peer observation
+     - `SUPPORT` a peer with a `cross_ref` (raises peer confidence)
+     - `CHALLENGE` a peer with a `cross_ref` (consolidator adjudicates)
+     - `WITHDRAW` its own round-1 delta with a self-targeted cross_ref
+
+   **VisualDiagnosisAgent (consolidator)** sees BOTH rounds rendered
+   grouped by organ family + a cross-ref digest grouped by action,
+   and walks a **5-step CoT** (1 triage which organs are visible; 2
+   decisive forks from `DR.Arti.docx` — e.g. white pith → SDS, bare
+   petioles → SDS, blue masses → SDS; 3 adjudicate cross_refs; 4
+   dedup; 5 emit final deltas with a CoT trace).
+
+   The consolidator's output is the pass's final delta list.
+   Passes are stochastic but the agent graph is fixed.
+
+   *Per-pass cost*: 24 (round 1) + 24 (round 2) + 1 consolidator
+   = **49 vLLM calls**. Set `VLLM_SWARM_ROUNDS=1` to fall back to
+   the legacy 25-call single-round mode.
+
 4. **K-of-N cross-pass agreement filter**: deltas from the N passes are
    clustered by (`field`, Jaccard similarity over `image_shows` tokens).
    Clusters whose support covers ≥ K distinct passes (default K=3;
@@ -593,11 +673,22 @@ routing):
 The merged result is what lands in `regional_observations[state]`.
 States not processed this run are preserved verbatim.
 
-Agent ownership (each agent's `OWNED_FIELDS`):
-- **MorphologyAgent** — `lesion_morphology, affected_organs, diagnostic_features`
-- **SymptomAgent** — `spread_pattern, diagnostic_features`
-- **PathogenAgent** — `look_alikes, type_of_disease`
-- **SeverityAgent** — `severity, treatments`
+Specialist roster (24 agents, one field each):
+
+**LEAF (8)** — `LeafLesionShape, LeafLesionColor, LeafLesionTexture,
+LeafChlorosis, LeafNecrosis, LeafCurl, LeafVeinPattern, LeafGeometry`
+**STEM (4)** — `StemLesion, StemPith (decisive SDS/BSR fork),
+StemSurface, StemDiscoloration`
+**BELOW-GROUND (2)** — `Root (cysts → SCN; blue masses → SDS),
+CrownCollar`
+**REPRODUCTIVE (2)** — `Flower, Fruit`
+**PATHOGEN SIGNS (1)** — `Sporulation` (signs vs symptoms — mycelium,
+spores, fruiting bodies, bacterial ooze, rust pustules)
+**PATTERNS (3)** — `Wilting (whole/hemispheric/branch),
+Defoliation (bare-petiole attachment is the SDS fork), SpatialPattern`
+**DIAGNOSTIC CROSS-CUTTERS (4)** — `ConcentricPattern,
+ColorPalette (color encoder), LookAlikeCoT (decision-graph CoT),
+SeverityVisual`
 
 The vLLM endpoint and swarm knobs are read from env at client-build time:
 
@@ -606,7 +697,8 @@ VLLM_BASE_URL       default http://localhost:8000/v1
 VLLM_MODEL          default Qwen/Qwen2.5-VL-7B-Instruct
 VLLM_TIMEOUT        seconds per HTTP call (default 180)
 VLLM_TEMPERATURE    per-call sampling temp (default 0.8; paper §5.3 used 0.9)
-VLLM_N_RUNS         stochastic traces per tuple (default 10; smoke 5)
+VLLM_N_RUNS         stochastic passes per tuple (default 10; smoke 5)
+VLLM_SWARM_ROUNDS   real-swarm rounds per pass (default 2; set to 1 for legacy single-round)
 VLLM_AGREEMENT_MIN  K-of-N agreement to keep a delta (default 3; smoke 2)
 VLLM_SIM_THRESHOLD  Jaccard threshold for delta clustering AND merge dedup (default 0.4)
 PATHOME_USE_VERIFIER     enable Claude web-search verifier (default 1; 0 = skip)
@@ -763,13 +855,13 @@ section just chain these.
 
 | Script | Purpose | Inputs | Outputs |
 |---|---|---|---|
-| `scripts/run_phase0_local.sh` | Run Claude discovery + extraction + reconciliation per crop | filtered CSV, Claude CLI | `artifacts/pathome_kb/<Crop>/final_registry.json`, `symptoms_seed.json` |
+| `scripts/run_phase0_local.sh` | Run Claude discovery + extraction + reconciliation per crop | filtered CSV, Claude CLI | `artifacts/pathome_kb/<Crop>/final_registry.json` (canonical NON-visual KB) |
 
 ### Phase 0R — regional deltas (Nova, Qwen + Claude verifier)
 
 | Script | Purpose | Inputs | Outputs |
 |---|---|---|---|
-| `scripts/submit_phase0r_regional.sh` | Nova SBATCH: boot vLLM, run Qwen swarm (4 specialists in parallel + DiagnosisAgent consolidator, N stochastic passes), K-of-N agreement filter, Claude web-search verifier, conservative merge | canonical KB, image cache | regional deltas merged into `final_registry.json`; `symptoms_seed.json`; `phase0r_traces.jsonl` if `PATHOME_TRACE_DIR` set |
+| `scripts/submit_phase0r_regional.sh` | Nova SBATCH: boot vLLM, run 24-agent 2-round real swarm (round 1 = independent fan-out, round 2 = blackboard cross-talk with SUPPORT/CHALLENGE/WITHDRAW, then VisualDiagnosisAgent 5-step CoT consolidator), K-of-N agreement filter, Claude web-search verifier, conservative merge | canonical KB, image cache | regional deltas merged into `final_registry.json[*].regional_observations[<state>].deltas[]`; `phase0r_traces.jsonl` if `PATHOME_TRACE_DIR` set |
 
 ### BioCAP — KB-grounded CLIP training (Nova, CUDA)
 
@@ -792,7 +884,7 @@ section just chain these.
 
 | Script | Purpose | Inputs | Outputs |
 |---|---|---|---|
-| `scripts/viz_kb.sh` | KB stats: per-status pie, field-count bar, support histogram, per-state coverage | `symptoms_seed.json` | `results/figures/kb_*.png`, `plantswarm/latex/auto_kb_stats.tex` |
+| `scripts/viz_kb.sh` | KB stats: per-status pie, field-count bar, support histogram, per-state coverage | `artifacts/pathome_kb/<Crop>/final_registry.json` | `results/figures/kb_*.png`, `plantswarm/latex/auto_kb_stats.tex` |
 | `scripts/viz_traces.sh` | Phase 0R trace stats: path lengths, κ-by-agent | `phase0r_traces.jsonl` | `results/figures/trace_*.png`, `plantswarm/latex/auto_trace_stats.tex` |
 | `scripts/viz_all.sh` | Run KB + trace viz scripts in sequence | — | — |
 | `scripts/aggregate_pathomeood_tables.py` | Paper-table markdown summary (re-runnable any time) | `results/pathomeood_eval/*/` | `results/pathomeood_report.md` |
@@ -821,17 +913,32 @@ PATHOME_SKIP_PHASE0R=1 bash scripts/e2e_nova.sh     # train + eval only
 
 ---
 
-## Consuming the seed JSON downstream
+## Consuming the KB downstream
+
+PathomeOOD reads `final_registry.json` directly via
+`plantswarm.captioning.load_kb_profiles`. Legacy consumers that want
+the merged `symptoms_seed.json` shape can still produce it via
+`pathome_kb.symptoms_adapter.merge_registries_to_seed(...)`, but it is
+off the critical path.
 
 ```python
+# Recommended: read per-crop final_registry.json directly
+from plantswarm.captioning import load_kb_profiles, caption_for_row
+
+profiles = load_kb_profiles("artifacts/pathome_kb", crop_filter=["Tomato"])
+# profiles is dict[(crop, disease) -> disease_record from final_registry.json]
+
+caption, used_kb = caption_for_row(
+    crop="Tomato", disease="Early Blight", state="CA",
+    profiles=profiles, strategy="canonical_deltas_3",
+)
+# caption is a multi-sentence text combining canonical summary,
+# diagnostic features, look-alikes, and the top-3 regional deltas
+# for the given state.
+
+# Legacy path: merged seed (no longer required by PathomeOOD)
 from pathome import SymptomLibrary
-
 lib = SymptomLibrary.load("artifacts/pathome_seed/symptoms_seed.json")
-
-# Canonical-only context (no state)
-prompt = lib.context_for("Soybean", "Charcoal Rot")
-
-# Canonical + this state's image-grounded deltas
 prompt = lib.context_for("Soybean", "Charcoal Rot", state="Alabama")
 ```
 
