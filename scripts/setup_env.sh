@@ -92,11 +92,17 @@ echo "[env] torch present=$TORCH_PRESENT  torch.version.cuda='${TORCH_CUDA:-none
 # Is this a PACKAGE problem (no torch / CPU-only torch / bundled CUDA
 # NEWER than the driver) or a NODE problem (packages fine, CUDA still
 # dead)? Decide before touching pip — reinstalling can't fix a node.
-DRIVER=""; MAXCUDA=""
+DRIVER=""; MAXCUDA=""; GPU_VISIBLE=1
 if command -v nvidia-smi >/dev/null 2>&1; then
-  DRIVER="$(nvidia-smi --query-gpu=driver_version --format=csv,noheader 2>/dev/null | head -1 | tr -d ' ')"
-  MAXCUDA="$(nvidia-smi 2>/dev/null | grep -m1 -oE 'CUDA Version: [0-9]+\.[0-9]+' | grep -oE '[0-9]+\.[0-9]+')"
-  echo "[env] NVIDIA driver: ${DRIVER:-?}   driver max CUDA: ${MAXCUDA:-?}"
+  SMI_RAW="$(nvidia-smi --query-gpu=driver_version --format=csv,noheader 2>&1 | head -1)"
+  if echo "$SMI_RAW" | grep -qiE 'No devices were found|Unknown Error|couldn'\''t communicate|has fallen off the bus'; then
+    GPU_VISIBLE=0
+    echo "[env] nvidia-smi CANNOT SEE A GPU on this node: '$SMI_RAW'"
+  else
+    DRIVER="$(echo "$SMI_RAW" | tr -d ' ')"
+    MAXCUDA="$(nvidia-smi 2>/dev/null | grep -m1 -oE 'CUDA Version: [0-9]+\.[0-9]+' | grep -oE '[0-9]+\.[0-9]+')"
+    echo "[env] NVIDIA driver: ${DRIVER:-?}   driver max CUDA: ${MAXCUDA:-?}"
+  fi
 fi
 
 _cuda_int() { local v="${1:-}"; [ -z "$v" ] && { echo 0; return; }
@@ -144,12 +150,19 @@ if echo "$PROBE" | grep -q "CUDA_PROBE_OK"; then
   exit 0
 fi
 
-# Still dead AND we did not need a reinstall => NODE-LEVEL CUDA FAULT.
+# Still dead AND we did not need a reinstall => NODE-LEVEL fault.
 echo "[env] ====================================================================="
+if [ "$GPU_VISIBLE" = 0 ]; then
+echo "[env] NODE HARDWARE/DRIVER FAULT — nvidia-smi CANNOT SEE A GPU here."
+echo "[env]   This is NOT a package or code problem. The GPU on this node"
+echo "[env]   has fallen off / the driver<->kernel-module is out of sync"
+echo "[env]   (typical right after a cluster driver rollout without reboot)."
+else
 echo "[env] NODE CUDA FAULT — packages are fine, the GPU node cannot init CUDA."
 echo "[env]   driver=${DRIVER:-?} (supports CUDA ${MAXCUDA:-?}); torch cuda=${TORCH_CUDA:-none}"
 echo "[env]   nvidia-smi works but the CUDA runtime does not -> typically a"
 echo "[env]   missing/unhealthy /dev/nvidia-uvm or an Xid'd GPU on THIS node."
+fi
 echo "[env]   Quick checks on the node:"
 echo "[env]     ls -l /dev/nvidia*            # is /dev/nvidia-uvm present?"
 echo "[env]     nvidia-smi -q | grep -iE 'Xid|Pending|ECC mode|MIG'"
