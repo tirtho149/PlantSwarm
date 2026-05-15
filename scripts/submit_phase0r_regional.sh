@@ -30,6 +30,18 @@ RUNLOG="$PATHOME_LOG_DIR/phase0r_${SLURM_JOB_ID:-manual}_$(date +%Y%m%d_%H%M%S).
 exec > >(tee -a "$RUNLOG") 2>&1
 echo "[log] full job output is being stored at: $RUNLOG"
 
+# ---- load secrets/env from .env (gitignored) ------------------------------
+# e.g. HF_TOKEN to remove the HuggingFace unauthenticated rate limit
+# (the real cause of the slow Qwen2.5-VL download). Auto-export every
+# var defined there. Contents are NEVER printed.
+if [ -f "$PATHOME_REPO/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$PATHOME_REPO/.env"
+  set +a
+  echo "[env-file] loaded $PATHOME_REPO/.env (HF_TOKEN=$([ -n "${HF_TOKEN:-}" ] && echo set || echo unset))"
+fi
+
 # ============================================================================
 # Phase 0R — Qwen-swarm regional delta extraction (Nova A100, in-process vLLM)
 # ============================================================================
