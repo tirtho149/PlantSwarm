@@ -93,18 +93,22 @@ export VLLM_TIMEOUT="${VLLM_TIMEOUT:-180}"
 echo "[swarm] N=$VLLM_N_RUNS K=$VLLM_AGREEMENT_MIN T=$VLLM_TEMPERATURE Tmax=$VLLM_TMAX bt=$VLLM_MAX_BACKTRACKS sim>=$VLLM_SIM_THRESHOLD"
 
 # ---- ensure Bugwood image cache is populated -------------------------------
-# Phase 0R's regional-observation stage only READS from the cache — it does
-# not download. The pipeline drops 100% of tuples (logging "[skipped: no
-# cached image for N tuples]") when the cache is empty. ensure_state_image_cache.py
-# is idempotent: existing files are no-ops, so re-runs are cheap.
+# Phase 0R's regional-observation runner tries every image_id per (crop,
+# disease, state) and takes the first cache hit (regional_observation.py:174).
+# Pre-download EVERY CSV row (deduped by Image Number) so no image_id can
+# dead-end. ensure_state_image_cache.py is idempotent (file-exists short-circuit
+# at both candidate-selection and HTTP-fetch levels), so re-runs are cheap.
 export PATHOME_IMAGE_CACHE_DIR="${PATHOME_IMAGE_CACHE_DIR:-$PATHOME_REPO/.bugwood_cache}"
 mkdir -p "$PATHOME_IMAGE_CACHE_DIR"
-echo "[cache] populating $PATHOME_IMAGE_CACHE_DIR from $CSV"
+CACHE_WORKERS="${PATHOME_CACHE_WORKERS:-8}"
+echo "[cache] populating $PATHOME_IMAGE_CACHE_DIR from $CSV (all-rows, workers=$CACHE_WORKERS)"
 python scripts/ensure_state_image_cache.py \
     --csv "$CSV" \
     --cache-dir "$PATHOME_IMAGE_CACHE_DIR" \
+    --all-rows \
+    --workers "$CACHE_WORKERS" \
   || { echo "[cache] FAILED — aborting before vLLM boot"; exit 2; }
-echo "[cache] populated: $(ls "$PATHOME_IMAGE_CACHE_DIR" | wc -l) files"
+echo "[cache] populated: $(find "$PATHOME_IMAGE_CACHE_DIR" -maxdepth 1 -type f | wc -l) files"
 
 VLLM_LOG="logs/vllm-${SLURM_JOB_ID}.log"
 

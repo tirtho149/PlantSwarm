@@ -31,6 +31,7 @@ import time
 import urllib.error
 import urllib.request
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -74,6 +75,13 @@ def parse_args() -> argparse.Namespace:
                    help="filtered Bugwood CSV with NormCrop/NormDisease/Location/Image URL")
     p.add_argument("--cache-dir", default="smoke/.bugwood_cache",
                    help="where downloaded JPEGs land")
+    p.add_argument("--all-rows", action="store_true",
+                   help="download EVERY row in the CSV (deduped by Image Number), "
+                        "not just the lowest-numbered image per (crop, disease, state). "
+                        "Recommended for Phase 0R so any image_id referenced by the "
+                        "swarm resolves to a cached file.")
+    p.add_argument("--workers", type=int, default=1,
+                   help="parallel downloads (default 1). Use 8-16 for full-CSV runs.")
     p.add_argument("--dry-run", action="store_true",
                    help="just count how many fetches WOULD happen")
     return p.parse_args()
@@ -104,22 +112,31 @@ def main() -> None:
     print(f"loaded {sum(len(v) for v in groups.values())} rows across "
           f"{len(groups)} (crop, disease, state) tuples")
 
+    # Build candidate list. In --all-rows mode every row is a candidate;
+    # otherwise only the lowest Image Number per (crop, disease, state).
+    # Dedupe by Image Number — the same image often appears across rows.
+    seen_nums: set[str] = set()
     todo: List[Tuple[Tuple[str, str, str], str, Path]] = []
     already_cached = 0
     for key, rows in groups.items():
         rows.sort(key=lambda r: int(r["num"]) if r["num"].isdigit() else 0)
-        chosen = rows[0]
-        ext = os.path.splitext(chosen["url"].split("?", 1)[0])[1] or ".jpg"
-        if ext.lower() not in {".jpg", ".jpeg", ".png", ".webp"}:
-            ext = ".jpg"
-        dest = cache_dir / f"{chosen['num']}{ext}"
-        if dest.exists() and dest.stat().st_size > 0:
-            already_cached += 1
-            continue
-        todo.append((key, chosen["url"], dest))
+        candidates = rows if args.all_rows else rows[:1]
+        for chosen in candidates:
+            if chosen["num"] in seen_nums:
+                continue
+            seen_nums.add(chosen["num"])
+            ext = os.path.splitext(chosen["url"].split("?", 1)[0])[1] or ".jpg"
+            if ext.lower() not in {".jpg", ".jpeg", ".png", ".webp"}:
+                ext = ".jpg"
+            dest = cache_dir / f"{chosen['num']}{ext}"
+            if dest.exists() and dest.stat().st_size > 0:
+                already_cached += 1
+                continue
+            todo.append((key, chosen["url"], dest))
 
+    print(f"mode:           {'ALL rows' if args.all_rows else 'first-per-tuple'}")
     print(f"already cached: {already_cached}")
-    print(f"to download:    {len(todo)}")
+    print(f"to download:    {len(todo)} (workers={args.workers})")
 
     if args.dry_run:
         for key, url, dest in todo[:10]:
@@ -130,15 +147,26 @@ def main() -> None:
 
     n_ok = n_fail = 0
     t0 = time.time()
-    for i, (key, url, dest) in enumerate(todo, 1):
-        ok = _fetch(url, dest)
-        n_ok += int(ok); n_fail += int(not ok)
-        if i % 10 == 0 or i == len(todo):
-            print(f"  [{i}/{len(todo)}] ok={n_ok} fail={n_fail} "
-                  f"rate={i / max(time.time() - t0, 1e-3):.2f}/s")
+    if args.workers <= 1:
+        for i, (key, url, dest) in enumerate(todo, 1):
+            ok = _fetch(url, dest)
+            n_ok += int(ok); n_fail += int(not ok)
+            if i % 50 == 0 or i == len(todo):
+                print(f"  [{i}/{len(todo)}] ok={n_ok} fail={n_fail} "
+                      f"rate={i / max(time.time() - t0, 1e-3):.2f}/s")
+    else:
+        with ThreadPoolExecutor(max_workers=args.workers) as pool:
+            futures = {pool.submit(_fetch, url, dest): (key, url, dest)
+                       for key, url, dest in todo}
+            for i, fut in enumerate(as_completed(futures), 1):
+                ok = fut.result()
+                n_ok += int(ok); n_fail += int(not ok)
+                if i % 50 == 0 or i == len(todo):
+                    print(f"  [{i}/{len(todo)}] ok={n_ok} fail={n_fail} "
+                          f"rate={i / max(time.time() - t0, 1e-3):.2f}/s")
 
     print(f"\ndone: {n_ok} downloaded, {n_fail} failed in {time.time() - t0:.0f}s")
-    print(f"cache size: {sum(p.stat().st_size for p in cache_dir.iterdir()) / 1024 / 1024:.1f} MB")
+    print(f"cache size: {sum(p.stat().st_size for p in cache_dir.iterdir() if p.is_file()) / 1024 / 1024:.1f} MB")
 
 
 if __name__ == "__main__":
