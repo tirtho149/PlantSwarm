@@ -103,6 +103,20 @@ echo "venv: $VENV"
 source "$VENV/bin/activate"
 mkdir -p logs
 
+# ---- environment setter: self-heal torch/CUDA -----------------------------
+# Idempotent: no-op (no pip) when torch.cuda + transformers are already
+# good; otherwise detects the driver and installs a matching torch wheel.
+# Set PATHOME_SKIP_ENV_SETUP=1 to skip. Compute nodes often have no
+# internet — if a heal is actually needed it will say to run
+# `bash scripts/setup_env.sh` on a login node, and we abort early.
+if [ "${PATHOME_SKIP_ENV_SETUP:-0}" != "1" ]; then
+  if ! PATHOME_VENV="$VENV" bash "$PATHOME_REPO/scripts/setup_env.sh"; then
+    echo "[env] environment not ready. Run this on a LOGIN node, then re-sbatch:"
+    echo "      PATHOME_VENV=$VENV bash $PATHOME_REPO/scripts/setup_env.sh"
+    exit 3
+  fi
+fi
+
 # ---- CUDA preflight: fail fast with a CLEAR diagnostic ---------------------
 # torch._C._cuda_init() was raising "CUDA unknown error ... Setting the
 # available devices to be zero" deep inside model load. Surface the real
