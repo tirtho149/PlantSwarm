@@ -1,55 +1,55 @@
 """
 utils/vllm_inproc.py
 ====================
-In-process vLLM backend for the Phase 0R swarm.
+In-process Qwen2.5-VL backend for the Phase 0R swarm — **transformers**,
+not vLLM.
 
-Why this exists
----------------
-The original ``utils/vllm_client.py`` talks to a separately-launched
-``vllm serve`` over OpenAI-compatible HTTP. On Nova that produced
-``HTTPError: 400 Client Error`` on every specialist call after the
-server returned non-OpenAI responses for some image+prompt combinations,
-and the failure mode left every (crop, disease, state) tuple with zero
-deltas. Phase 0R is a single-node, single-GPU pipeline — there is no
-reason to keep an HTTP boundary inside the same job.
+Why transformers and not vLLM
+-----------------------------
+vLLM (server OR in-process EngineCore) repeatedly failed on Nova:
+first ``HTTPError 400`` over the socket, then ``CUDA unknown error ...
+Setting the available devices to be zero`` because vLLM v1 spawns an
+EngineCore subprocess that could not initialise CUDA, retry-storming
+forever. Phase 0R is a single-GPU, single-node job — it does not need
+a serving engine. Plain HuggingFace ``transformers`` just loads the
+model in THIS process and calls ``model.generate``: no server, no
+port, no subprocess, no spawn, no CUDA-init race.
 
-This module loads ``vllm.LLM`` directly in the same Python process, so
-the swarm calls the model via a Python method instead of a socket.
-There is no server, no port, no JSON wire format, and no path where a
-400 can silently zero out a run.
+This mirrors the canonical transformers recipe:
 
-API surface
------------
-``InProcessVLLMClient`` duck-types the subset of ``utils.vllm_client.VLLMClient``
-that Phase 0R actually uses:
+    tok   = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-7B-Instruct")
+    model = AutoModelForImageTextToText.from_pretrained(...)
+    text  = tok.apply_chat_template(messages, add_generation_prompt=True, ...)
+    out   = model.generate(**inputs, max_new_tokens=...)
+    print(tok.decode(out[0][inputs["input_ids"].shape[-1]:]))
 
-  - ``chat(messages, system_prompt=..., seed=..., temperature=...) -> (text, tokens)``
-  - ``chat_with_logprobs(...) -> ChatResult``  (compat shim; logprobs disabled)
+adapted to the VISION model: the swarm sends an image + text, so it
+uses ``AutoProcessor`` (image + text) instead of a text-only tokenizer.
+
+API surface (unchanged — duck-types the old vLLM client)
+--------------------------------------------------------
+  - ``chat(messages, system_prompt=, seed=, temperature=) -> (text, tokens)``
+  - ``chat_with_logprobs(...) -> ChatResult``  (logprobs disabled)
+  - ``warmup()``      build the model now, on the calling (main) thread
   - ``count_tokens(text)``
-
-That is the entire contract observed by ``agents/base_agent.py`` and
-``agents/diagnosis_agent.py``.
+  - ``get_inproc_client()``  process-wide singleton from env
 
 Concurrency
 -----------
-``vllm.LLM`` is a single batched engine — calling ``.chat()`` from
-multiple Python threads concurrently is unsafe. The swarm currently
-fans out 24 specialists through ``ThreadPoolExecutor``. Each thread's
-call to ``InProcessVLLMClient.chat`` acquires a process-wide lock and
-hands one prompt to ``LLM.chat()``. The lock is short enough that
-threads behave like a serial queue feeding the engine, which is also
-what vLLM expects for the single-LLM offline-batching style.
-
-A batched-fanout variant (collect all 24 round-1 prompts, hand them
-to ``LLM.chat()`` in one call, dispatch results back) is a bigger
-refactor of ``delta_pipeline._run_single_pass`` and is left for a
-follow-up — correctness first.
+``model.generate`` is not safe to call concurrently on one model, so
+every call is serialised through ``_engine_lock``. The swarm's
+ThreadPoolExecutor still fans out, but the threads queue through the
+lock. The model is built ONCE, on the main thread, via ``warmup()``
+(``plantswarm.delta_pipeline`` calls it before any pool spawns).
 """
 
 from __future__ import annotations
 
+import base64
+import io
 import logging
 import os
+import re
 import threading
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
@@ -59,7 +59,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ChatResult:
-    """Drop-in shape match for utils.vllm_client.ChatResult."""
+    """Shape-compatible with the old utils.vllm_client.ChatResult."""
 
     text: str
     completion_tokens: int
@@ -68,21 +68,17 @@ class ChatResult:
 
 
 class InProcessVLLMClient:
-    """vLLM running in-process via the ``vllm.LLM`` library API.
+    """Qwen2.5-VL run in-process via HuggingFace transformers.
 
-    The first call to ``chat`` lazily loads Qwen2.5-VL-7B-Instruct (or
-    whatever ``VLLM_MODEL`` is set to) onto the local GPU. Subsequent
-    calls reuse the same engine instance, serialised through
-    ``_engine_lock``.
+    Name kept as ``InProcessVLLMClient`` so existing imports / type
+    hints in ``plantswarm.delta_pipeline`` and ``agents`` do not change.
     """
 
-    # Single engine shared across all instances + threads in this process.
-    _engine = None
-    _engine_lock = threading.Lock()
+    # Shared across all instances + threads in this process.
+    _model = None
+    _processor = None
+    _engine_lock = threading.Lock()      # serialises model.generate
     _init_lock = threading.Lock()
-    # Cache a failed init so we FAIL FAST instead of re-attempting a
-    # full LLM() boot on every one of the N*agents calls (that produced
-    # the EngineCore retry-storm).
     _engine_init_error: Optional[BaseException] = None
 
     def __init__(
@@ -91,14 +87,14 @@ class InProcessVLLMClient:
         temperature: float = 0.8,
         seed: int = 42,
         max_new_tokens: int = 512,
-        max_model_len: int = 32768,
+        max_model_len: int = 32768,          # kept for API compat
         min_image_pixels: int = 50176,
         max_image_pixels: int = 1003520,
         dtype: str = "auto",
-        gpu_memory_utilization: float = 0.90,
+        gpu_memory_utilization: float = 0.90,  # vLLM-only; ignored here
         **_ignored: Any,
     ):
-        self.model = model
+        self.model_id = model
         self.temperature = temperature
         self.seed = seed
         self.max_new_tokens = max_new_tokens
@@ -106,136 +102,152 @@ class InProcessVLLMClient:
         self.min_image_pixels = min_image_pixels
         self.max_image_pixels = max_image_pixels
         self.dtype = dtype
-        self.gpu_memory_utilization = gpu_memory_utilization
 
-        # Compat flags expected by VLLMClient callers — all no-ops here
-        # since this client doesn't do guided/logprob scoring.
+        # No-op flags expected by old callers.
         self.chat_request_logprobs: bool = False
         self.prefer_structured_outputs: bool = False
         self.guided_scoring_enabled: bool = False
         self.top_logprobs: int = 0
 
     # ------------------------------------------------------------------
-    # Lazy engine init
+    # Model load (once, fail-fast)
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _force_inprocess_engine_env() -> None:
-        """vLLM v1 spawns an EngineCore SUBPROCESS by default. When the
-        parent has already touched CUDA (our pipeline imports torch via
-        agents/cache) the spawned core dies with::
-
-            RuntimeError: CUDA unknown error ... Setting the available
-            devices to be zero.
-
-        and because init is lazy + per-call it retry-storms. Run the
-        engine core IN-PROCESS (no subprocess) and use spawn for any
-        residual worker. Must be set BEFORE importing vllm.
-        """
-        os.environ.setdefault("VLLM_ENABLE_V1_MULTIPROCESSING", "0")
-        os.environ.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
-
     def warmup(self) -> None:
-        """Build the engine NOW, on the calling thread. The pipeline
-        calls this on the MAIN thread before any ThreadPoolExecutor —
-        vLLM must not be constructed inside a worker thread."""
-        self._ensure_engine()
+        """Build the model NOW on the calling thread. The pipeline calls
+        this on the MAIN thread before any ThreadPoolExecutor."""
+        self._ensure_model()
 
-    def _ensure_engine(self):
-        """Load the LLM once; subsequent calls return the cached engine.
-        A failed init is cached and re-raised immediately (fail fast —
-        no per-call EngineCore retry-storm)."""
-        if InProcessVLLMClient._engine is not None:
-            return InProcessVLLMClient._engine
+    def _ensure_model(self):
+        if InProcessVLLMClient._model is not None:
+            return InProcessVLLMClient._model, InProcessVLLMClient._processor
         if InProcessVLLMClient._engine_init_error is not None:
             raise InProcessVLLMClient._engine_init_error
         with InProcessVLLMClient._init_lock:
-            if InProcessVLLMClient._engine is not None:
-                return InProcessVLLMClient._engine
+            if InProcessVLLMClient._model is not None:
+                return (InProcessVLLMClient._model,
+                        InProcessVLLMClient._processor)
             if InProcessVLLMClient._engine_init_error is not None:
                 raise InProcessVLLMClient._engine_init_error
             try:
-                self._force_inprocess_engine_env()
-                # Lazy import — vllm is heavyweight and not available on
-                # CPU-only LOCAL hosts.
-                from vllm import LLM  # type: ignore
+                import torch  # noqa: F401
+                from transformers import AutoProcessor
+
+                # Qwen2.5-VL class name varies across transformers
+                # versions; prefer the generic VL auto-class, fall back.
+                try:
+                    from transformers import AutoModelForImageTextToText \
+                        as _VLModel
+                except ImportError:  # older transformers
+                    from transformers import (  # type: ignore
+                        Qwen2_5_VLForConditionalGeneration as _VLModel)
+
+                td = {
+                    "auto": "auto", "bfloat16": torch.bfloat16,
+                    "float16": torch.float16, "float32": torch.float32,
+                }.get(str(self.dtype).lower(), "auto")
 
                 logger.info(
-                    "[vllm_inproc] loading %s (max_model_len=%d, "
-                    "image pixels %d..%d, gpu_mem=%.2f) — engine core "
-                    "in-process",
-                    self.model, self.max_model_len,
+                    "[hf_inproc] loading %s (dtype=%s, pixels %d..%d) "
+                    "— transformers, in-process, no vLLM",
+                    self.model_id, self.dtype,
                     self.min_image_pixels, self.max_image_pixels,
-                    self.gpu_memory_utilization,
                 )
-                engine = LLM(
-                    model=self.model,
+                processor = AutoProcessor.from_pretrained(
+                    self.model_id,
+                    min_pixels=self.min_image_pixels,
+                    max_pixels=self.max_image_pixels,
                     trust_remote_code=True,
-                    max_model_len=self.max_model_len,
-                    limit_mm_per_prompt={"image": 1},
-                    mm_processor_kwargs={
-                        "min_pixels": self.min_image_pixels,
-                        "max_pixels": self.max_image_pixels,
-                    },
-                    dtype=self.dtype,
-                    gpu_memory_utilization=self.gpu_memory_utilization,
                 )
+                model = _VLModel.from_pretrained(
+                    self.model_id,
+                    torch_dtype=td,
+                    device_map="cuda",
+                    trust_remote_code=True,
+                )
+                model.eval()
             except BaseException as e:  # noqa: BLE001
                 InProcessVLLMClient._engine_init_error = e
-                logger.error("[vllm_inproc] engine init FAILED (cached, "
-                             "will fail fast): %s: %s",
-                             type(e).__name__, e)
+                logger.error("[hf_inproc] model load FAILED (cached, "
+                             "fail-fast): %s: %s", type(e).__name__, e)
                 raise
-            InProcessVLLMClient._engine = engine
-            logger.info("[vllm_inproc] engine ready")
-            return engine
+            InProcessVLLMClient._model = model
+            InProcessVLLMClient._processor = processor
+            logger.info("[hf_inproc] model ready on %s", model.device)
+            return model, processor
 
     # ------------------------------------------------------------------
-    # Message preparation
+    # Message / image conversion
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _prepare_messages(
+    def _data_url_to_pil(url: str):
+        from PIL import Image
+        m = re.match(r"data:image/[^;]+;base64,(.+)$", url, re.DOTALL)
+        if m:
+            raw = base64.b64decode(m.group(1))
+            return Image.open(io.BytesIO(raw)).convert("RGB")
+        # bare base64 or local path fallback
+        if os.path.exists(url):
+            return Image.open(url).convert("RGB")
+        try:
+            return Image.open(io.BytesIO(base64.b64decode(url))).convert("RGB")
+        except Exception as e:  # noqa: BLE001
+            raise ValueError(f"unrecognised image url: {url[:48]}...") from e
+
+    def _to_qwen(
+        self,
         messages: List[Dict[str, Any]],
         system_prompt: Optional[str],
         image_b64: Optional[str],
-    ) -> List[Dict[str, Any]]:
-        """Build the message list passed to ``LLM.chat()``.
-
-        ``vllm.LLM.chat`` accepts OpenAI-style messages directly,
-        including ``{"type": "image_url", "image_url": {"url": ...}}``
-        with data URLs — so existing agent prompts pass through
-        unchanged.
-        """
+    ):
+        """Return (qwen_messages, [PIL images in order]). Converts the
+        swarm's OpenAI-style content blocks to Qwen2.5-VL format."""
+        imgs: List[Any] = []
         out: List[Dict[str, Any]] = []
         if system_prompt:
             out.append({"role": "system", "content": system_prompt})
 
-        # If image_b64 is supplied as a separate arg (legacy code path
-        # in VLLMClient), inject it into the first user message exactly
-        # the way VLLMClient does.
+        msgs = [dict(m) for m in messages]
         if image_b64 is not None:
-            messages = [dict(m) for m in messages]
-            for m in messages:
+            for m in msgs:
                 if m.get("role") == "user":
-                    original = m.get("content")
-                    if isinstance(original, str):
-                        original = [{"type": "text", "text": original}]
-                    m["content"] = [
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{image_b64}",
-                            },
-                        }
-                    ] + list(original or [])
+                    orig = m.get("content")
+                    if isinstance(orig, str):
+                        orig = [{"type": "text", "text": orig}]
+                    m["content"] = [{
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_b64}"},
+                    }] + list(orig or [])
                     break
 
-        out.extend(messages)
-        return out
+        for m in msgs:
+            role = m.get("role", "user")
+            content = m.get("content")
+            if isinstance(content, str):
+                out.append({"role": role, "content": content})
+                continue
+            new_content: List[Dict[str, Any]] = []
+            for block in content or []:
+                btype = block.get("type")
+                if btype == "image_url":
+                    pil = self._data_url_to_pil(
+                        (block.get("image_url") or {}).get("url", ""))
+                    imgs.append(pil)
+                    new_content.append({"type": "image", "image": pil})
+                elif btype in ("image", "image_pil"):
+                    pil = block.get("image") or block.get("image_pil")
+                    imgs.append(pil)
+                    new_content.append({"type": "image", "image": pil})
+                else:
+                    new_content.append(
+                        {"type": "text", "text": block.get("text", "")})
+            out.append({"role": role, "content": new_content})
+        return out, imgs
 
     # ------------------------------------------------------------------
-    # Public API — matches VLLMClient
+    # Public API
     # ------------------------------------------------------------------
 
     def chat(
@@ -246,14 +258,11 @@ class InProcessVLLMClient:
         seed: Optional[int] = None,
         temperature: Optional[float] = None,
     ) -> Tuple[str, int]:
-        result = self.chat_with_logprobs(
-            messages=messages,
-            image_b64=image_b64,
-            system_prompt=system_prompt,
-            seed=seed,
-            temperature=temperature,
-        )
-        return result.text, result.completion_tokens
+        r = self.chat_with_logprobs(
+            messages=messages, image_b64=image_b64,
+            system_prompt=system_prompt, seed=seed,
+            temperature=temperature)
+        return r.text, r.completion_tokens
 
     def chat_with_logprobs(
         self,
@@ -263,44 +272,51 @@ class InProcessVLLMClient:
         seed: Optional[int] = None,
         temperature: Optional[float] = None,
     ) -> ChatResult:
-        from vllm import SamplingParams  # type: ignore
+        import torch
 
-        engine = self._ensure_engine()
-        prepared = self._prepare_messages(messages, system_prompt, image_b64)
+        model, processor = self._ensure_model()
+        qmsgs, imgs = self._to_qwen(messages, system_prompt, image_b64)
 
-        sp = SamplingParams(
-            temperature=self.temperature if temperature is None else float(temperature),
-            seed=self.seed if seed is None else int(seed),
-            max_tokens=self.max_new_tokens,
-        )
+        text = processor.apply_chat_template(
+            qmsgs, tokenize=False, add_generation_prompt=True)
+        proc_kwargs: Dict[str, Any] = dict(
+            text=[text], return_tensors="pt", padding=True)
+        if imgs:
+            proc_kwargs["images"] = imgs
 
-        # Serialise concurrent threads through the single engine.
+        temp = self.temperature if temperature is None else float(temperature)
+        sd = self.seed if seed is None else int(seed)
+
+        # generate() is not concurrency-safe on one model — serialise.
         with InProcessVLLMClient._engine_lock:
-            outputs = engine.chat(
-                messages=prepared,
-                sampling_params=sp,
-                use_tqdm=False,
-            )
+            inputs = processor(**proc_kwargs).to(model.device)
+            torch.manual_seed(sd)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed_all(sd)
+            gen_kwargs: Dict[str, Any] = dict(
+                max_new_tokens=self.max_new_tokens)
+            if temp and temp > 0.0:
+                gen_kwargs.update(do_sample=True, temperature=temp,
+                                  top_p=0.9)
+            else:
+                gen_kwargs.update(do_sample=False)
+            with torch.inference_mode():
+                out_ids = model.generate(**inputs, **gen_kwargs)
+            in_len = inputs["input_ids"].shape[-1]
+            trimmed = out_ids[0][in_len:]
+            n_tok = int(trimmed.shape[-1])
+            txt = processor.batch_decode(
+                trimmed.unsqueeze(0), skip_special_tokens=True,
+                clean_up_tokenization_spaces=False)[0]
 
-        if not outputs:
-            return ChatResult(text="", completion_tokens=0)
-
-        first = outputs[0]
-        comp_outputs = getattr(first, "outputs", None) or []
-        if not comp_outputs:
-            return ChatResult(text="", completion_tokens=0)
-        comp = comp_outputs[0]
-
-        text = getattr(comp, "text", None) or ""
-        token_ids = getattr(comp, "token_ids", None) or []
-        return ChatResult(text=text, completion_tokens=len(token_ids))
+        return ChatResult(text=(txt or "").strip(), completion_tokens=n_tok)
 
     def count_tokens(self, text: str) -> int:
         return len(text.split())
 
 
 # ---------------------------------------------------------------------------
-# Factory helper for callers that want one shared singleton
+# Process-wide singleton
 # ---------------------------------------------------------------------------
 
 _GLOBAL: Optional[InProcessVLLMClient] = None
@@ -322,18 +338,9 @@ def _float_env(name: str, default: float) -> float:
 
 
 def get_inproc_client() -> InProcessVLLMClient:
-    """Return a process-wide singleton configured from env vars.
-
-    Env knobs (matching the old VLLMClient knobs where they overlap):
-        VLLM_MODEL                 Qwen/Qwen2.5-VL-7B-Instruct
-        VLLM_TEMPERATURE           0.8
-        VLLM_MAX_NEW_TOKENS        512
-        VLLM_MAX_MODEL_LEN         32768
-        VLLM_MIN_PIXELS            50176
-        VLLM_MAX_PIXELS            1003520
-        VLLM_DTYPE                 auto
-        VLLM_GPU_MEMORY_UTIL       0.90
-    """
+    """Process-wide singleton, configured from env. Env knob names are
+    kept (``VLLM_*``) for sbatch/doc continuity even though the backend
+    is now transformers; ``VLLM_GPU_MEMORY_UTIL`` is ignored."""
     global _GLOBAL
     if _GLOBAL is not None:
         return _GLOBAL
@@ -348,6 +355,5 @@ def get_inproc_client() -> InProcessVLLMClient:
             min_image_pixels=_int_env("VLLM_MIN_PIXELS", 50176),
             max_image_pixels=_int_env("VLLM_MAX_PIXELS", 1003520),
             dtype=os.environ.get("VLLM_DTYPE", "auto"),
-            gpu_memory_utilization=_float_env("VLLM_GPU_MEMORY_UTIL", 0.90),
         )
         return _GLOBAL

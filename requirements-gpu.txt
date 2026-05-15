@@ -2,13 +2,17 @@
 # Install AFTER `pip install -r requirements.txt`.
 #
 # What this pulls in:
-#   vllm                Phase 0R Qwen2.5-VL-7B engine (step 2).
-#                       Loaded IN-PROCESS via utils/vllm_inproc.py; no
-#                       `vllm serve` boot. Pin >=0.7.0 because that's the
-#                       first release with native Qwen2.5-VL support and
-#                       the LLM.chat() multimodal-messages API.
-#   torch               step 4 encoder fine-tune + step 5 frozen forward
-#   transformers        tokenisers + HF model loaders
+#   transformers        Phase 0R Qwen2.5-VL-7B (step 2) is run IN-PROCESS
+#                       via plain transformers in utils/vllm_inproc.py
+#                       (AutoProcessor + AutoModelForImageTextToText +
+#                       model.generate). NO vLLM — its server/EngineCore
+#                       kept failing on Nova (HTTP 400, then CUDA-init).
+#                       Pin >=4.49.0: first release with Qwen2.5-VL.
+#                       Also: tokenisers + HF loaders for steps 4-5.
+#   torch / torchvision step 4 encoder fine-tune + step 5 frozen forward
+#                       + Qwen2.5-VL image processor
+#   vllm                OPTIONAL — only if VLLM_INPROCESS=0 selects the
+#                       legacy HTTP client. Not on the Phase 0R path.
 #   open_clip_torch     CLIP factory for all 7 step-5 encoders
 #                       (BioCLIP, BioCLIP-2, CLIP, SigLIP, FG-CLIP,
 #                        BioTrove, your trained pathomeood_v1)
@@ -19,9 +23,10 @@
 # Multi-GB install. CPU-only LOCAL doesn't need this file — step 5 will
 # run on CPU (slower) if torch is missing the CUDA build.
 
-vllm>=0.7.0
+transformers>=4.49.0
 torch>=2.1.0
-transformers>=4.40.0
+torchvision>=0.16.0
+vllm>=0.7.0          # optional; legacy HTTP path only (VLLM_INPROCESS=0)
 open_clip_torch>=2.29.0
 huggingface_hub>=0.24.0
 webdataset>=0.2.86
