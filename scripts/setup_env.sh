@@ -67,13 +67,33 @@ fi
 echo "[env] environment needs healing (torch.cuda or transformers not ready)"
 
 # ---- detect the driver's max CUDA -----------------------------------------
+# HPC reality: login node = internet, NO nvidia-smi; compute node = GPU
+# + (on Nova) internet. So:
+#   - no nvidia-smi AND no forced wheel  -> not the place to heal. Exit
+#     0 (NOT an error): the sbatch runs this again ON the GPU node where
+#     it can both detect and install. Don't block / don't look broken.
+#   - no nvidia-smi BUT PATHOME_FORCE_TORCH set -> user already knows the
+#     wheel; install here (login node has internet).
 if ! command -v nvidia-smi >/dev/null 2>&1; then
-  echo "[env] ERROR: nvidia-smi not found — run this on a GPU node."
-  exit 4
+  if [ -z "${PATHOME_FORCE_TORCH:-}" ]; then
+    echo "[env] no nvidia-smi here (login node) and no PATHOME_FORCE_TORCH."
+    echo "[env] Nothing to do here — the sbatch re-runs this ON the GPU"
+    echo "      node (which has nvidia-smi AND internet) and heals there."
+    echo "      Just: sbatch scripts/submit_phase0r_regional.sh"
+    echo "      To pre-install from a login node instead, first check the"
+    echo "      driver:  srun --gres=gpu:a100:1 --partition=nova nvidia-smi | head -4"
+    echo "      then:    PATHOME_FORCE_TORCH=cu121 bash scripts/setup_env.sh"
+    exit 0
+  fi
+  echo "[env] no nvidia-smi but PATHOME_FORCE_TORCH=$PATHOME_FORCE_TORCH — "
+  echo "      installing that wheel here (login node has internet)."
+  DRIVER="(unknown — login node)"
+  MAXCUDA=""
+else
+  DRIVER="$(nvidia-smi --query-gpu=driver_version --format=csv,noheader 2>/dev/null | head -1 | tr -d ' ')"
+  MAXCUDA="$(nvidia-smi 2>/dev/null | grep -m1 -oE 'CUDA Version: [0-9]+\.[0-9]+' | grep -oE '[0-9]+\.[0-9]+')"
+  echo "[env] NVIDIA driver: ${DRIVER:-?}   driver max CUDA: ${MAXCUDA:-?}"
 fi
-DRIVER="$(nvidia-smi --query-gpu=driver_version --format=csv,noheader 2>/dev/null | head -1 | tr -d ' ')"
-MAXCUDA="$(nvidia-smi 2>/dev/null | grep -m1 -oE 'CUDA Version: [0-9]+\.[0-9]+' | grep -oE '[0-9]+\.[0-9]+')"
-echo "[env] NVIDIA driver: ${DRIVER:-?}   driver max CUDA: ${MAXCUDA:-?}"
 
 # Map driver-max-CUDA -> the highest torch wheel index it can run.
 choose_wheel() {
