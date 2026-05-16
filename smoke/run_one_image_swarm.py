@@ -56,6 +56,11 @@ from pathlib import Path
 REPO = Path(os.environ.get("PATHOME_REPO")
             or Path(__file__).resolve().parent.parent)
 os.chdir(REPO)
+# Running a script file puts smoke/ (not the repo root) on sys.path[0],
+# so `import pathome_kb` would fail. The repo is not pip-installed —
+# put its root first on sys.path.
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
 
 
 def _load_dotenv(path: Path) -> None:
