@@ -257,11 +257,12 @@ class InProcessVLLMClient:
         system_prompt: Optional[str] = None,
         seed: Optional[int] = None,
         temperature: Optional[float] = None,
+        max_new_tokens: Optional[int] = None,
     ) -> Tuple[str, int]:
         r = self.chat_with_logprobs(
             messages=messages, image_b64=image_b64,
             system_prompt=system_prompt, seed=seed,
-            temperature=temperature)
+            temperature=temperature, max_new_tokens=max_new_tokens)
         return r.text, r.completion_tokens
 
     def chat_with_logprobs(
@@ -271,6 +272,7 @@ class InProcessVLLMClient:
         system_prompt: Optional[str] = None,
         seed: Optional[int] = None,
         temperature: Optional[float] = None,
+        max_new_tokens: Optional[int] = None,
     ) -> ChatResult:
         import torch
 
@@ -294,7 +296,9 @@ class InProcessVLLMClient:
             if torch.cuda.is_available():
                 torch.cuda.manual_seed_all(sd)
             gen_kwargs: Dict[str, Any] = dict(
-                max_new_tokens=self.max_new_tokens)
+                max_new_tokens=(max_new_tokens
+                                if max_new_tokens is not None
+                                else self.max_new_tokens))
             if temp and temp > 0.0:
                 gen_kwargs.update(do_sample=True, temperature=temp,
                                   top_p=0.9)

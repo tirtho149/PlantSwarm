@@ -80,13 +80,16 @@ class VLLMClient:
         system_prompt: Optional[str] = None,
         seed: Optional[int] = None,
         temperature: Optional[float] = None,
+        max_new_tokens: Optional[int] = None,
     ) -> Tuple[str, int]:
         """Send a chat request. Returns (response_text, tokens_used).
 
         ``seed`` and ``temperature`` override the client-level defaults
         for this single call — needed for the stochastic N-run swarm
         where each run must use a distinct seed to actually sample
-        differently.
+        differently. ``max_new_tokens`` likewise overrides the
+        client-level budget for this one call (the consolidator needs a
+        far larger budget than the specialists).
         """
         r = self.chat_with_logprobs(
             messages=messages,
@@ -94,6 +97,7 @@ class VLLMClient:
             system_prompt=system_prompt,
             seed=seed,
             temperature=temperature,
+            max_new_tokens=max_new_tokens,
         )
         return r.text, r.completion_tokens
 
@@ -104,6 +108,7 @@ class VLLMClient:
         system_prompt: Optional[str] = None,
         seed: Optional[int] = None,
         temperature: Optional[float] = None,
+        max_new_tokens: Optional[int] = None,
     ) -> ChatResult:
         """
         Chat completion with per-token logprobs (``logprobs.content``) for entropy H_t, h_i.
@@ -134,7 +139,9 @@ class VLLMClient:
             "messages": full_messages,
             "temperature": self.temperature if temperature is None else float(temperature),
             "seed": self.seed if seed is None else int(seed),
-            "max_tokens": self.max_new_tokens,
+            "max_tokens": (max_new_tokens
+                           if max_new_tokens is not None
+                           else self.max_new_tokens),
         }
         if self.chat_request_logprobs:
             payload["logprobs"] = True

@@ -16,6 +16,7 @@ compatibility with ``plantswarm.delta_pipeline``.
 
 from __future__ import annotations
 
+import os
 from typing import Any, Dict, List, Optional
 
 from agents.base_agent import (
@@ -25,6 +26,21 @@ from agents.base_agent import (
     _clean,
     parse_agent_output,
 )
+
+
+def _consolidator_max_new_tokens() -> int:
+    """Token budget for the single consolidator call per image.
+
+    The consolidator restates/dedupes deltas from ~22 specialists, so
+    its JSON is far longer than any individual specialist's. At the
+    shared specialist budget (``VLLM_MAX_NEW_TOKENS``, default 512) it
+    truncates mid-string on leaf-heavy profiles and the parser then
+    drops every delta for that image. Give it its own, larger budget.
+    """
+    try:
+        return int(os.environ.get("VLLM_CONSOLIDATOR_MAX_NEW_TOKENS", "2048"))
+    except (TypeError, ValueError):
+        return 2048
 
 
 # How specialists are grouped in the consolidator prompt so the LLM
@@ -201,6 +217,7 @@ class DiagnosisAgent(BaseAgent):
         text, _tokens = self.client.chat(
             messages=messages, system_prompt=self.SYSTEM_PROMPT,
             seed=seed, temperature=temperature,
+            max_new_tokens=_consolidator_max_new_tokens(),
         )
         deltas, confidence, reasoning, _cross_refs = parse_agent_output(
             text=text, owned_fields=list(ALLOWED_DELTA_FIELDS),
