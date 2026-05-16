@@ -815,37 +815,70 @@ def run_batch(
         record["__image_ids__"] = list(it.image_ids) or [it.primary_image_id]
         return it.profile_id, it.state, record
 
-    completed = 0
     total = len(items)
+    started = 0
+    completed = 0
+    total_added = 0
+    start_lock = threading.Lock()
+
+    def _p(msg: str) -> None:
+        # flush so progress shows in real time through the tee'd log
+        print(msg, flush=True)
+
+    def _worker_logged(it: WorkItem):
+        nonlocal started
+        with start_lock:
+            started += 1
+            s = started
+        _p(f"    [start {s}/{total} | left {total - s}] "
+           f"{it.profile_id} / {it.state}  "
+           f"(KB context: existing_deltas={len(it.existing_deltas or [])}, "
+           f"canonical_visual_symptoms=loaded)  image={it.primary_image_id}")
+        return _worker(it)
+
+    _p(f"  processing {total} (crop,disease,state) image tuples "
+       f"(max_parallel={max_parallel}); each runs the real swarm vs the "
+       f"generated KB and emits ADDITIONAL deltas only")
+    t_batch = time.time()
     with ThreadPoolExecutor(max_workers=max(1, max_parallel)) as pool:
-        futures = {pool.submit(_worker, it): it for it in items}
+        futures = {pool.submit(_worker_logged, it): it for it in items}
         for fut in as_completed(futures):
             try:
                 profile_id, state, record = fut.result()
             except Exception as e:
                 it = futures[fut]
-                print(f"    ERROR on {it.profile_id} / {it.state}: "
-                      f"{type(e).__name__}: {e}")
+                completed += 1
+                _p(f"    [done {completed}/{total} | left {total - completed}]"
+                   f" ERROR {it.profile_id} / {it.state}: "
+                   f"{type(e).__name__}: {e}")
                 continue
             completed += 1
             meta = record.get("__swarm_meta__", {})
             mg = (meta.get("merge") or {})
             vf = (meta.get("verifier") or {})
             n_deltas = len(record.get("deltas") or [])
-            tag = "ok" if n_deltas else "..."
+            n_added = mg.get("n_added", 0)
+            total_added += int(n_added or 0)
+            tag = "OK " if n_deltas else "---"
             v_summary = (
                 f"vfy={vf.get('n_verified', 0)}/{vf.get('n_provisional', 0)}/"
                 f"{vf.get('n_contradictory', 0)}, "
                 if vf.get("enabled") else ""
             )
-            print(
-                f"    [{completed}/{total}] {tag} {profile_id} / {state}  "
+            _p(
+                f"    [done {completed}/{total} | left {total - completed}] "
+                f"{tag} {profile_id} / {state}  "
                 f"deltas={n_deltas} (N={meta.get('n_runs')}, "
-                f"K>={meta.get('agreement_min')}, {v_summary}"
+                f"K>={meta.get('agreement_min')}, "
+                f"organ={meta.get('detected_organ_per_pass')}, {v_summary}"
                 f"existing={mg.get('n_existing', 0)}, "
-                f"added={mg.get('n_added', 0)}, "
-                f"bumped={mg.get('n_overlaps_bumped', 0)})"
+                f"ADDED={n_added}, "
+                f"bumped={mg.get('n_overlaps_bumped', 0)})  "
+                f"[run total added so far: {total_added}]"
             )
             results.setdefault(profile_id, {})[state] = record
 
+    _p(f"  BATCH DONE: {completed}/{total} tuples in "
+       f"{time.time() - t_batch:.0f}s; NEW delta-KB found this run = "
+       f"{total_added} (additional observations beyond the generated KB)")
     return results

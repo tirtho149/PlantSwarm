@@ -264,9 +264,13 @@ if [ -n "${PATHOME_ONLY_CROPS:-}" ]; then ARGS+=("--only-crops" "$PATHOME_ONLY_C
 if [ "${PATHOME_SEED_QUICK:-0}" = "1" ]; then ARGS+=("--quick"); fi
 
 echo "================================"
-echo "running: python -m pathome_kb ${ARGS[*]}"
+echo "running: python -u -m pathome_kb ${ARGS[*]}"
 echo "================================"
-python -m pathome_kb "${ARGS[@]}"
+# -u / PYTHONUNBUFFERED: stdout is a pipe (tee'd to the log), so Python
+# block-buffers it and progress would only appear minutes late. Force
+# unbuffered so every [start ..]/[done ..] line shows in real time.
+export PYTHONUNBUFFERED=1
+stdbuf -oL -eL python -u -m pathome_kb "${ARGS[@]}"
 
 echo
 echo "Phase 0R complete: $(date)"
