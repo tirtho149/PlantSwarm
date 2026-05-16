@@ -30,3 +30,4 @@ plantswarm/latex/*.fls
 plantswarm/latex/*.out
 plantswarm/latex/pdflatex*.fls
 plantswarm/latex/*.synctex.gz
+.torch_cache/

@@ -92,6 +92,17 @@ os.environ.setdefault("HUGGINGFACE_HUB_CACHE",
 os.environ.setdefault("HF_HUB_ENABLE_HF_TRANSFER", "1")
 Path(os.environ["HF_HOME"]).mkdir(parents=True, exist_ok=True)
 
+# torch JIT/inductor caches off restricted /tmp -> persist on /work
+# (removes the "kernel cache directory could not be created" warning
+# and the slow recompile on every first generate).
+_tc = REPO / ".torch_cache"
+os.environ.setdefault("PYTORCH_KERNEL_CACHE_PATH", str(_tc / "kernels"))
+os.environ.setdefault("TORCHINDUCTOR_CACHE_DIR", str(_tc / "inductor"))
+os.environ.setdefault("TRITON_CACHE_DIR", str(_tc / "triton"))
+for _p in ("PYTORCH_KERNEL_CACHE_PATH", "TORCHINDUCTOR_CACHE_DIR",
+           "TRITON_CACHE_DIR"):
+    Path(os.environ[_p]).mkdir(parents=True, exist_ok=True)
+
 # swarm-only smoke: no Claude verifier on a GPU node
 os.environ.setdefault("PATHOME_USE_VERIFIER", "0")
 os.environ.setdefault("PATHOME_IMAGE_CACHE_DIR", str(REPO / ".bugwood_cache"))

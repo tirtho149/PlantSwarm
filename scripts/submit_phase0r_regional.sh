@@ -149,6 +149,17 @@ python -c "import hf_transfer" 2>/dev/null || \
   export HF_HUB_ENABLE_HF_TRANSFER=0   # fall back if the pkg can't install
 echo "[hf] HF_HOME=$HF_HOME  hf_transfer=$HF_HUB_ENABLE_HF_TRANSFER  token=$([ -n "${HF_TOKEN:-}" ] && echo set || echo unset)"
 
+# torch JIT/inductor caches: the compute node restricts /tmp, so the
+# default /tmp/.cache/torch/kernels can't be created and kernels
+# recompile every run ("kernel cache directory could not be created"
+# warning + slow first generate). Point them at /work so kernels
+# persist and first-inference is fast on every later run.
+export PYTORCH_KERNEL_CACHE_PATH="${PYTORCH_KERNEL_CACHE_PATH:-$PATHOME_REPO/.torch_cache/kernels}"
+export TORCHINDUCTOR_CACHE_DIR="${TORCHINDUCTOR_CACHE_DIR:-$PATHOME_REPO/.torch_cache/inductor}"
+export TRITON_CACHE_DIR="${TRITON_CACHE_DIR:-$PATHOME_REPO/.torch_cache/triton}"
+mkdir -p "$PYTORCH_KERNEL_CACHE_PATH" "$TORCHINDUCTOR_CACHE_DIR" "$TRITON_CACHE_DIR"
+echo "[torch] kernel cache -> $PATHOME_REPO/.torch_cache (persists; was failing on /tmp)"
+
 if [ "${PATHOME_SKIP_ENV_SETUP:-0}" != "1" ]; then
   if ! PATHOME_VENV="$VENV" bash "$PATHOME_REPO/scripts/setup_env.sh"; then
     echo "[env] environment not ready on node ${SLURMD_NODENAME:-?}."
